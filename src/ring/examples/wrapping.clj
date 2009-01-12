@@ -1,6 +1,6 @@
-; A failry typical middleware configuration wrapping the dump endpoint.
+; A example of modular construction of Ring apps.
 
-(ns ring.examples.basic-stack
+(ns ring.examples.wrapping
   (:require (ring show-exceptions file-info file reloading dump jetty))
   (:import (java.io File)))
 
@@ -8,7 +8,9 @@
   (ring.show-exceptions/wrap
     (ring.file-info/wrap
       (ring.file/wrap (File. "src/ring/examples/public")
-        (ring.reloading/wrap '(ring.dump)
-          ring.dump/app)))))
+        (fn [req]
+          (if (= "/error" (:uri req))
+            (throw (Exception. "Demonstrating ring.show-exceptions"))
+            (ring.dump/app req)))))))
 
 (ring.jetty/run {:port 8080} app)

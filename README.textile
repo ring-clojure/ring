@@ -1,42 +1,47 @@
 h1. Ring
 
-Ring is a library inspired by Python's WSGI and Ruby's Rack that 
-enables modular and concise Clojure web applications. Ring abstracts the details 
-of HTTP and defines a simple API by which web application components can 
-cleanly interact.
+Ring is a library inspired by Python's WSGI and Ruby's Rack that enables modular and concise Clojure web applications. Ring abstracts the details of HTTP and defines a simple API by which web application components can cleanly interact.
+
+The @SPEC@ file at the root of this distribution for provides a complete description of the Ring interface.
 
 h2. Quick Setup
 
-All jars needed to load any of the @ring.*@ libs in this distribution are 
-included in the jars/ directory. To see a live Ring app, run:
+First clone the Ring source:
+  
+  git clone git clone git://github.com/mmcgrana/ring.git
+  cd ring
+
+All jars needed to load any of the @ring.*@ libs are included in the jars/ directory. You only need Java. To see a live "Hello World" Ring app, simply run:
 
     java -Djava.ext.dirs=jars clojure.main src/ring/examples/hello_world.clj
-    curl localhost:8080/
 
-You can find additional example Ring apps in the @src/examples@ directory of this distribution, including a "basic stack" example that shows a typical Ring  setup with wrapping middleware.
+then visit @http://localhost:8080/@ in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
-h2. Spec
+To see a more sophisticated Ring app, run:
+  
+  java -Djava.ext.dirs=jars clojure.main src/ring/examples/wrapping.clj
 
-Please consult the @SPEC@ file at the root of this distribution for a complete 
-description of the Ring interface.
-
-h2. Available Libs
+ * If you request @http://localhost:8080/@ in your browser the @ring.dump@ endpoint will respond with an HTML page representing the Ring request that it received (see the @SPEC@ for details on the Ring request).
+ * If you request @http://localhost:8080/clojure.png@, the @ring.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
+ * If you request @http://localhost:8080/error@, the app will produce an error that will be caught by the @ring.show-exceptions@ middleware, which will in turn return a readable backtrace as the HTML response.
+ 
+h2. All Available Libs
 
  * @ring.jetty@: Handler for the Jetty webserver.
  * @ring.file@: Middleware that serves static files out of a public directory.
  * @ring.file-info@: Middleware that augments response headers with info about File responses.
  * @ring.dump@: Endpoint that dumps the Ring requests as HTML responses for debugging.
- * @ring.show-exceptions@: Middleware that catches exceptions and displays readable stack traces for debugging.
+ * @ring.show-exceptions@: Middleware that catches exceptions and displays readable backtraces for debugging.
  * @ring.reloading@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
  * @ring.builder@: Helpers for combining Ring endpoints and middleware into Ring apps.
- * @ring.lint@: Linter for the Ring interface, ensures compliance with the @SPEC@.
+ * @ring.lint@: Linter for the Ring interface, ensures compliance with the Ring spec.
  * @ring.examples.*@: Various example Ring apps.
 
 h2. Development
 
-Ring is being actively developed; you can track its progress and contribute at: "github.com/mmcgrana/ring":http://github.com/mmcgrana/ring.
+Ring is being actively developed; you can track its progress and contribute at the project's "GitHub"::http://github.com/mmcgrana/ring page.
 
-To run all of the @ring.*@ unit tests:
+To run all the Ring unit tests:
    
     java -Djava.ext.dirs=jars clojure.main test/ring/run.clj
 
@@ -58,3 +63,4 @@ You can learn more about Ring's dependencies at the following sites:
 </code></pre>
 
 Copyright (c) 2009 Mark McGranaghan and released under an MIT license.
+Clojure logo by Tom Hickey.

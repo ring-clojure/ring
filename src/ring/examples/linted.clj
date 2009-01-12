@@ -1,4 +1,5 @@
-; Like basic_stack.clj, but with the linter inserted between each component.
+; An example of inserting the linter inserted each component to ensure 
+; compliance to the Ring spec.
 
 (ns ring.examples.linted
   (:require (ring show-exceptions file file-info reloading lint dump jetty))
