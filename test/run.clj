@@ -5,5 +5,5 @@
   'ring.lint-test
   'ring.file-test
   'ring.file-info-test
-  'ring.reloading-test
-  'ring.show-exceptions-test)
+  'ring.reload-test
+  'ring.backtrace-test)

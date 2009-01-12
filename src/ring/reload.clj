@@ -1,4 +1,4 @@
-(ns ring.reloading)
+(ns ring.reload)
 
 (defn wrap
   "Wrap an app such that before a request is passed to the app, each namespace

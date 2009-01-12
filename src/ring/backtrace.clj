@@ -1,4 +1,4 @@
-(ns ring.show-exceptions
+(ns ring.backtrace
   (:use (clj-html core utils helpers)
         clojure.contrib.str-utils
         (clj-backtrace core repl)
@@ -30,7 +30,7 @@
          [:html {:xmlns "http://www.w3.org/1999/xhtml"}
            [:head
              [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
-             [:title "Ring: Show Exceptions"]
+             [:title "Ring: Backtrace"]
              [:style {:type "text/css"} css]
              [:body
                [:div#content

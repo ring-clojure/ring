@@ -1,5 +1,5 @@
-(ns ring.show-exceptions-test
-  (:use clj-unit.core ring.show-exceptions))
+(ns ring.backtrace-test
+  (:use clj-unit.core ring.backtrace))
 
 (def app (wrap #(throw (Exception. "fail"))))
 

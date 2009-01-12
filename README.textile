@@ -32,7 +32,7 @@ h2. All Available Libs
  * @ring.file-info@: Middleware that augments response headers with info about File responses.
  * @ring.dump@: Endpoint that dumps the Ring requests as HTML responses for debugging.
  * @ring.show-exceptions@: Middleware that catches exceptions and displays readable backtraces for debugging.
- * @ring.reloading@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
+ * @ring.reload@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
  * @ring.builder@: Helpers for combining Ring endpoints and middleware into Ring apps.
  * @ring.lint@: Linter for the Ring interface, ensures compliance with the Ring spec.
  * @ring.examples.*@: Various example Ring apps.
