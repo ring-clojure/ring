@@ -118,7 +118,3 @@ A Ring response is a Clojure map containing at least the following keys and corr
 
 As with environments, keys other than those listed above should be appropriately
 namespaced.
-
-
-== Credit
-This project borrows heavily from Ruby's Rack and Python's WSGI, and I thank the communities developing and supporting those projects.

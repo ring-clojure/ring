@@ -52,6 +52,10 @@ You can learn more about Ring's dependencies at the following sites:
  * @commons-io-1.4.jar@: "commons.apache.org/io":http://commons.apache.org/io/
  * @clj-html.jar@, @clj-html-helpers.jar@, @clj-backtrace.jar@, @clj-unit@ (testing): "github.com/mmcgrana":http://github.com/mmcgrana
 
+h2. Thanks
+
+This project borrows heavily from Ruby's Rack and Python's WSGI, and I thank the communities developing and supporting those projects.
+
 ---
 
 <pre><code>
