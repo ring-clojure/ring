@@ -1,0 +1,17 @@
+<project name="ring" default="jar">
+  <description>Pack all sources into a JAR.</description>
+
+  <property name="jarfile" location="ring.jar"/>
+
+  <target name="clean" description="Remove generated files and directories.">
+    <delete file="${jarfile}"/>
+  </target>
+
+  <target name="jar" description="Create jar file.">
+    <jar jarfile="${jarfile}">
+      <path location="LICENSE"/>
+      <fileset dir="./src" includes="ring/**/*.clj"/>
+      <fileset dir="./test" includes="ring/**/*.clj"/>
+    </jar>
+  </target>
+</project>
