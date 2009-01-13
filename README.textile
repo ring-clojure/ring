@@ -1,6 +1,6 @@
 h1. Ring
 
-Ring is a library inspired by Python's WSGI and Ruby's Rack that enables modular and concise Clojure web applications. Ring abstracts the details of HTTP and defines a simple API by which web application components can cleanly interact.
+Ring is a Clojure web applications library inspired by Python's WSGI and Ruby's Rack. By abstracting the details of HTTP into a simple, unified API, Ring allows web applications to be constructed of modular components that can be shared among a variety of applications, web servers, and web frameworks.
 
 The @SPEC@ file at the root of this distribution for provides a complete description of the Ring interface.
 
@@ -8,7 +8,7 @@ h2. Quick Setup
 
 First clone the Ring source:
   
-  git clone git clone git://github.com/mmcgrana/ring.git
+  git clone git://github.com/mmcgrana/ring.git
   cd ring
 
 All jars needed to load any of the @ring.*@ libs are included in the jars/ directory. You only need Java. To see a live "Hello World" Ring app, simply run:
