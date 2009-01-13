@@ -6,7 +6,7 @@
            (org.apache.commons.io IOUtils))
   (:use (clojure.contrib fcase except)))
 
-(defn- req-map
+(defn- build-req-map
   "Returns a map representing the given Servlet request, to be passed as the
   Ring request to an app."
   [#^HttpServletRequest request]
@@ -30,7 +30,7 @@
    :character-encoding (.getCharacterEncoding request)
    :body               (.getInputStream request)})
 
-(defn- apply-response-map
+(defn- apply-resp-map
   "Apply the given response map to the servlet response, therby completing
   the HTTP response."
   [#^HttpServletResponse response {:keys [status headers body]}]
@@ -69,9 +69,9 @@
   [app]
   (proxy [AbstractHandler] []
     (handle [target request response dispatch]
-      (let [req   (req-map request)
-            tuple (app req)]
-        (apply-response-map response tuple)
+      (let [req   (build-req-map request)
+            resp  (app req)]
+        (apply-resp-map response resp)
         (.setHandled request true)))))
 
 (defn run
