@@ -28,8 +28,10 @@ To see a more sophisticated Ring app, run:
 h2. All Available Libs
 
  * @ring.jetty@: Handler for the Jetty webserver.
+ * @ring.branch@: Middleware that proxies to one of multiple backing apps depending on the request uri.
  * @ring.file@: Middleware that serves static files out of a public directory.
  * @ring.file-info@: Middleware that augments response headers with info about File responses.
+ * @ring.static@: Middleware that serves static files with specified prefixes out of a public directory.
  * @ring.dump@: Endpoint that dumps the Ring requests as HTML responses for debugging.
  * @ring.show-exceptions@: Middleware that catches exceptions and displays readable backtraces for debugging.
  * @ring.reload@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
