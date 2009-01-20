@@ -47,6 +47,10 @@
     (string? body)
       (with-open [writer (.getWriter response)]
         (.println writer body))
+    (seq? body)
+      (with-open [writer (.getWriter response)]
+        (doseq [chunk body]
+          (.print writer (str chunk))))
     (instance? InputStream body)
       (let [#^InputStream in body]
         (with-open [out (.getOutputStream response)]

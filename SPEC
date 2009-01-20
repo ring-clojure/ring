@@ -109,6 +109,8 @@ A Ring response is a Clojure map containing at least the following keys and corr
   the response's status code. The respond body is handled according to its type:
   String:
     Contents are sent to the client as-is.
+  ISeq:
+    Each element of the seq is sent to the client as a string.
   File:
     Contents at the specified location are sent to the client. The server may 
     use an optimized method to send the file if such a method is available.
