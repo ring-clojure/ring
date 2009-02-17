@@ -104,7 +104,7 @@ A Ring response is a Clojure map containing at least the following keys and corr
   sent for each such String value.
 
 :body
-  (Optional, {String, File, InputStream})
+  (Optional, {String, ISeq, File, InputStream})
   A representation of the response body, if a response body is appropriate for 
   the response's status code. The respond body is handled according to its type:
   String:
