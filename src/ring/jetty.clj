@@ -42,6 +42,9 @@
       (.setHeader response key val-or-vals)
       (doseq [val val-or-vals]
         (.addHeader response key val))))
+  ; Some headers must be set through specific methods
+  (when-let [content-type (headers "Content-Type")]
+    (.setContentType response content-type))
   ; Apply the body - the method depends on the given body type.
   (cond
     (string? body)
