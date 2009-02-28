@@ -78,6 +78,7 @@ table.request tr {
 table.request td.key {
   padding-left: .5em;
   text-aligh: left;
+  width: 150px;
 }
 
 table.request td.val {
