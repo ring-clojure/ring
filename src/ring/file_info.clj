@@ -48,6 +48,7 @@
    "rtf"   "application/rtf"
    "sgm"   "text/sgml"
    "sgml"  "text/sgml"
+   "swf"   "application/x-shockwave-flash"
    "tif"   "image/tiff"
    "tiff"  "image/tiff"
    "txt"   "text/plain"
