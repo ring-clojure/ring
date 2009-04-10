@@ -3,7 +3,7 @@
   (:import org.apache.commons.io.FilenameUtils
            java.io.File))
 
-(defvar- mime-type-map
+(defvar- base-mime-types
   {"ai"    "application/postscript"
    "asc"   "text/plain"
    "avi"   "video/x-msvideo"
@@ -62,19 +62,24 @@
 (defn- guess-mime-type
   "Returns a String corresponding to the guessed mime type for the given file,
   or application/octet-stream if a type cannot be guessed."
-  [#^File file]
-  (get mime-type-map (FilenameUtils/getExtension (.getPath file))
+  [#^File file mime-types]
+  (get mime-types (FilenameUtils/getExtension (.getPath file))
     "application/octet-stream"))
 
 (defn wrap
   "Wrap an app such that responses with a file a body will have 
   corresponding Content-Type and Content-Length headers added if they are not
-  allready present and can be determined from the file."
-  [app]
-  (fn [req]
-    (let [{:keys [headers body] :as response} (app req)]
-      (if (instance? File body)
-        (assoc response :headers
-          (assoc headers "Content-Length" (str (.length body))
-                         "Content-Type"   (guess-mime-type body)))
-        response))))
+  allready present and can be determined from the file. If two arguments are
+    given the first is taken to be a map of file extensions to content types
+    that will supplement the default, built-in map."
+  ([custom-mime-types app]
+   (let [mime-types (merge base-mime-types custom-mime-types)]
+     (fn [req]
+       (let [{:keys [headers body] :as response} (app req)]
+         (if (instance? File body)
+           (assoc response :headers
+             (assoc headers "Content-Length" (str (.length body))
+                            "Content-Type"   (guess-mime-type body mime-types)))
+           response)))))
+  ([app]
+    (wrap {} app)))

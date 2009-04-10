@@ -30,20 +30,18 @@
   "Wrap an app such that a given directory is checked for a static file
   with which to respond to the request, proxying the request to the
   wrapped app if such a file does not exist."
-  ([dir app]
-   (ensure-dir dir)
-   (fn [req]
-     (if (#{:get :head} (:request-method req))
-       (let [uri (url-decode (:uri req))]
-         (if (str-includes? ".." uri)
-           (forbidden)
-           (let [path (cond
-                        (.endsWith "/" uri) (str uri "index.html")
-                        (re-match? #"\.[a-z]+$" uri) uri
-                        :else (str uri ".html"))]
-             (if-let [file (maybe-file dir path)]
-               (success file)
-               (app req)))))
-       (app req))))
-  ([dir]
-   (partial wrap dir)))
+  [dir app]
+  (ensure-dir dir)
+  (fn [req]
+    (if (#{:get :head} (:request-method req))
+      (let [uri (url-decode (:uri req))]
+        (if (str-includes? ".." uri)
+          (forbidden)
+          (let [path (cond
+                       (.endsWith "/" uri) (str uri "index.html")
+                       (re-match? #"\.[a-z]+$" uri) uri
+                       :else (str uri ".html"))]
+            (if-let [file (maybe-file dir path)]
+              (success file)
+              (app req)))))
+      (app req))))
