@@ -11,15 +11,19 @@ First clone the Ring source:
   git clone git://github.com/mmcgrana/ring.git
   cd ring
 
-All jars needed to load any of the @ring.*@ libs are included in the jars/ directory. You only need Java. To see a live "Hello World" Ring app, simply run:
+Then download the needed dependencies:
+  
+  ant deps
 
-    java -Djava.ext.dirs=jars clojure.main src/ring/examples/hello_world.clj
+The @deps@ ant target downloads all Ring dependencies and unpacks them to @deps/@. To see a live "Hello World" Ring app, run:
+
+    java -Djava.ext.dirs=deps clojure.main src/ring/examples/hello_world.clj
 
 then visit @http://localhost:8080/@ in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
 To see a more sophisticated Ring app, run:
   
-  java -Djava.ext.dirs=jars clojure.main src/ring/examples/wrapping.clj
+  java -Djava.ext.dirs=deps clojure.main src/ring/examples/wrapping.clj
 
  * If you request @http://localhost:8080/@ in your browser the @ring.dump@ endpoint will respond with an HTML page representing the Ring request that it received (see the @SPEC@ for details on the Ring request).
  * If you request @http://localhost:8080/clojure.png@, the @ring.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
@@ -28,6 +32,7 @@ To see a more sophisticated Ring app, run:
 h2. All Available Libs
 
  * @ring.jetty@: Handler for the Jetty webserver.
+ * @ring.httpcore@: Handler for the Apache HttpCore webserver. 
  * @ring.file@: Middleware that serves static files out of a public directory.
  * @ring.file-info@: Middleware that augments response headers with info about File responses.
  * @ring.static@: Middleware that serves static files with specified prefixes out of a public directory.
@@ -44,12 +49,13 @@ Ring is being actively developed; you can track its progress and contribute at t
 
 To run all the Ring unit tests:
    
-    java -Djava.ext.dirs=jars clojure.main test/ring/run.clj
+    java -Djava.ext.dirs=deps clojure.main test/ring/run.clj
 
 You can learn more about Ring's dependencies at the following sites:
 
  * @clojure.jar@, @clojure-contrib.jar@: "clojure.org":http://clojure.org
  * @jetty-6.1.14.jar@, @jetty-util-6.1.14.jar@, @servlet-api-2.5-6.1.14.jar@: "mortbay.org/jetty":http://www.mortbay.org/jetty
+ * @httpcore-4.0.jar@, @httpcore-nio-4.0.jar@: "hc.apache.org":http://hc.apache.org/httpcomponents-core/index.html
  * @commons-io-1.4.jar@: "commons.apache.org/io":http://commons.apache.org/io/
  * @clj-html.jar@, @clj-html-helpers.jar@, @clj-backtrace.jar@, @clj-unit@ (testing): "github.com/mmcgrana":http://github.com/mmcgrana
 
