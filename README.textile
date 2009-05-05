@@ -25,21 +25,21 @@ To see a more sophisticated Ring app, run:
   
   java -Djava.ext.dirs=deps clojure.main src/ring/examples/wrapping.clj
 
- * If you request @http://localhost:8080/@ in your browser the @ring.dump@ endpoint will respond with an HTML page representing the Ring request that it received (see the @SPEC@ for details on the Ring request).
+ * If you request @http://localhost:8080/@ in your browser the @ring.dump@ handler will respond with an HTML page representing the request map that it received (see the @SPEC@ for details on the request map).
  * If you request @http://localhost:8080/clojure.png@, the @ring.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
  * If you request @http://localhost:8080/error@, the app will produce an error that will be caught by the @ring.show-exceptions@ middleware, which will in turn return a readable backtrace as the HTML response.
  
 h2. All Available Libs
 
- * @ring.jetty@: Handler for the Jetty webserver.
- * @ring.httpcore@: Handler for the Apache HttpCore webserver. 
+ * @ring.jetty@: Adapter for the Jetty webserver.
+ * @ring.httpcore@: Adapter for the Apache HttpCore webserver. 
  * @ring.file@: Middleware that serves static files out of a public directory.
  * @ring.file-info@: Middleware that augments response headers with info about File responses.
  * @ring.static@: Middleware that serves static files with specified prefixes out of a public directory.
- * @ring.dump@: Endpoint that dumps the Ring requests as HTML responses for debugging.
+ * @ring.dump@: Handler that dumps request maps as HTML responses for debugging.
  * @ring.show-exceptions@: Middleware that catches exceptions and displays readable backtraces for debugging.
  * @ring.reload@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
- * @ring.builder@: Helpers for combining Ring endpoints and middleware into Ring apps.
+ * @ring.builder@: Helpers for composing Ring apps from multiple handlers and middleware.
  * @ring.lint@: Linter for the Ring interface, ensures compliance with the Ring spec.
  * @ring.examples.*@: Various example Ring apps.
 
@@ -66,11 +66,11 @@ This project borrows heavily from Ruby's Rack and Python's WSGI, and I thank the
 ---
 
 <pre><code>
-     +--->HTTP Request--->[Handler]--->Req1---->[Middleware]--->Req2----+
+     +--->HTTP Request--->[Adapter]--->Req1---->[Middleware]--->Req2----+
      |                                                                  |
- [Client]                                                          [Endpoint]
+ [Client]                                                           [Handler]
      |                                                                  |
-     +----HTTP Response<--[Handler]<---Resp2<---[Middleware]<---Resp1<--+
+     +----HTTP Response<--[Adapter]<---Resp2<---[Middleware]<---Resp1<--+
 </code></pre>
 
 Copyright (c) 2009 Mark McGranaghan and released under an MIT license.

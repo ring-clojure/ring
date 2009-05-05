@@ -1,37 +1,38 @@
 === Ring Spec (Draft Version)
-Ring is defined in terms of Components, Handlers, Requests, and Responses,
-each of which are described below.
+Ring is defined in terms of Handlers, Middleware, Adapters, Requests Maps, and 
+Response Maps, each of which are described below.
 
-
-== Components
-Ring components constitute the logic of the web application and are abstracted 
-form the details of the HTTP protocol.  They are implemented as Clojure 
-functions that process a given request to generate and return a response.
-
-A component is either an 'endpoint' or 'middleware'. An endpoint component is
-used at the leaf of a component tree, i.e. it does not call any other components 
-to generate it's response. A 'middleware' component in contrast may invoke
-other components to generate its response. We can combine 1 or more endpoints
-with 0 or more middleware components to build a complete Ring 'app'. Such an
-app can then be run by a Ring handler.
 
 == Handlers
-A Ring handler is a server implementation than can 'run' apps. Handlers are 
-responsible for implementing the HTTP protocol and abstracting the apps that 
-they run from the details of the protocol.
+Ring handlers constitute the core logic of the web application and are 
+abstracted from the details of the HTTP protocol.  Handlers are implemented as 
+Clojure functions that process a given request map to generate and return a 
+response map.
 
-Handlers are implemented as functions of two arguments, an options map and a 
-Ring app. The options map provides any needed configuration to the handler, such 
+
+== Middleware
+Ring middleware augments the functionality of handlers by invoking them in the 
+process of generating responses. Typically middleware will be implemented as a higher-order function that takes one or more handlers and configuration options
+as arguments and returns a new handler with the desired compound behavior.
+
+
+== Adapters
+Handlers are run via Ring adapters, which are in turn responsible for 
+implementing the HTTP protocol and abstracting the handlers that they run from 
+the details of the protocol.
+
+Adapters are implemented as functions of two arguments: an options map and a 
+handler. The options map provides any needed configuration to the adapter, such 
 as the port on which to run.
 
-Once initialized, handlers receive HTTP requests, parse them to construct an 
-Ring request, and then invoke their Ring app with this request as an
-argument. Once the app returns a Ring response, the handler uses it to construct 
-and send an HTTP response to the client.
+Once initialized, adapters receive HTTP requests, parse them to construct an 
+request map, and then invoke their handler with this request map as an
+argument. Once the handler returns a response map, the adapter uses it to 
+construct and send an HTTP response to the client.
 
 
-== Ring Requests
-A Ring request is a Clojure map containing at least the following keys and 
+== Request Map
+A request map is a Clojure map containing at least the following keys and 
 corresponding values:
 
 :server-port
@@ -84,13 +85,13 @@ corresponding values:
   (Optional, InputStream)
   An InputStream for the request body, if present.
 
-If a component invokes another component with an environment containing 
+If a component invokes another component with a request map containing 
 additional keys, these keys must be namespaced using the Clojure 
 :name.space/key-name convention. The ring.* namespaces are reserved.
 
 
-== Ring Responses
-A Ring response is a Clojure map containing at least the following keys and corresponding values:
+== Response Map
+A response map is a Clojure map containing at least the following keys and corresponding values:
 
 :status
   (Required, Integer)
@@ -118,5 +119,5 @@ A Ring response is a Clojure map containing at least the following keys and corr
     Contents are consumed from the stream and sent to the client. When the
     stream is exhausted, it is .close'd.
 
-As with environments, keys other than those listed above should be appropriately
-namespaced.
+As with request maps, keys in response maps other than those listed above should 
+be appropriately namespaced.
