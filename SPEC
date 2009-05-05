@@ -12,7 +12,8 @@ response map.
 
 == Middleware
 Ring middleware augments the functionality of handlers by invoking them in the 
-process of generating responses. Typically middleware will be implemented as a higher-order function that takes one or more handlers and configuration options
+process of generating responses. Typically middleware will be implemented as a 
+higher-order function that takes one or more handlers and configuration options
 as arguments and returns a new handler with the desired compound behavior.
 
 
