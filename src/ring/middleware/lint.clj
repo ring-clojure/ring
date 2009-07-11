@@ -1,5 +1,6 @@
-(ns ring.lint
-  (:use clojure.set clojure.contrib.except)
+(ns ring.middleware.lint
+  (:use (clojure set)
+        (clojure.contrib except))
   (:import (java.io File InputStream)))
 
 (defn lint
@@ -97,7 +98,7 @@
   (lint-namespacing resp "response"
     #{:status :headers :body}))
 
-(defn wrap
+(defn wrap-lint
   "Wrap an app to validate incoming requests and outgoing responses
   according to the Ring spec."
   [app]

@@ -22,9 +22,9 @@ Handlers are run via Ring adapters, which are in turn responsible for
 implementing the HTTP protocol and abstracting the handlers that they run from 
 the details of the protocol.
 
-Adapters are implemented as functions of two arguments: an options map and a 
-handler. The options map provides any needed configuration to the adapter, such 
-as the port on which to run.
+Adapters are implemented as functions of two arguments: a handler and an options 
+map. The options map provides any needed configuration to the adapter, such as
+the port on which to run.
 
 Once initialized, adapters receive HTTP requests, parse them to construct an 
 request map, and then invoke their handler with this request map as an

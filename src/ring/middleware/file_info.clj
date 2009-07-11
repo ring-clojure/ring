@@ -1,7 +1,7 @@
-(ns ring.file-info
-  (:use clojure.contrib.def)
-  (:import org.apache.commons.io.FilenameUtils
-           java.io.File))
+(ns ring.middleware.file-info
+  (:use (clojure.contrib def))
+  (:import (org.apache.commons.io FilenameUtils)
+           (java.io File)))
 
 (defvar- base-mime-types
   {"ai"    "application/postscript"
@@ -66,20 +66,18 @@
   (get mime-types (FilenameUtils/getExtension (.getPath file))
     "application/octet-stream"))
 
-(defn wrap
+(defn wrap-file-info
   "Wrap an app such that responses with a file a body will have 
   corresponding Content-Type and Content-Length headers added if they are not
   allready present and can be determined from the file. If two arguments are
-    given the first is taken to be a map of file extensions to content types
-    that will supplement the default, built-in map."
-  ([custom-mime-types app]
-   (let [mime-types (merge base-mime-types custom-mime-types)]
-     (fn [req]
-       (let [{:keys [headers body] :as response} (app req)]
-         (if (instance? File body)
-           (assoc response :headers
-             (assoc headers "Content-Length" (str (.length body))
-                            "Content-Type"   (guess-mime-type body mime-types)))
-           response)))))
-  ([app]
-    (wrap {} app)))
+  given, the second is taken to be a map of file extensions to content types
+  that will supplement the default, built-in map."
+  [app & [custom-mime-types]]
+  (let [mime-types (merge base-mime-types custom-mime-types)]
+    (fn [req]
+      (let [{:keys [headers body] :as response} (app req)]
+        (if (instance? File body)
+          (assoc response :headers
+            (assoc headers "Content-Length" (str (.length body))
+                           "Content-Type"   (guess-mime-type body mime-types)))
+          response)))))

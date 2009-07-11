@@ -1,16 +1,16 @@
-(ns ring.httpcore
-  (:import (org.apache.http HttpRequest Header HttpEntity HttpEntityEnclosingRequest HttpResponse 
+(ns ring.adapter.httpcore
+  (:import (org.apache.http HttpRequest Header HttpEntityHttpEntityEnclosingRequest HttpResponse
              ConnectionClosedException HttpException HttpServerConnection)
            (org.apache.http.entity AbstractHttpEntity StringEntity EntityTemplate InputStreamEntity
              FileEntity ContentProducer)
            (org.apache.http.message BasicHeader BasicHeaderElement)
            (org.apache.http.params BasicHttpParams CoreConnectionPNames CoreProtocolPNames)
-           (org.apache.http.protocol HttpRequestHandler BasicHttpContext HttpService BasicHttpProcessor 
+           (org.apache.http.protocol HttpRequestHandler BasicHttpContext HttpService BasicHttpProcessor
              ResponseDate ResponseServer ResponseContent ResponseConnControl HttpRequestHandlerRegistry
              HttpContext)
-           (org.apache.http.impl DefaultConnectionReuseStrategy DefaultHttpResponseFactory 
+           (org.apache.http.impl DefaultConnectionReuseStrategy DefaultHttpResponseFactory
              DefaultHttpServerConnection)
-           (java.io File FileInputStream InputStream OutputStream OutputStreamWriter IOException 
+           (java.io File FileInputStream InputStream OutputStream OutputStreamWriter IOException
              InterruptedIOException)
            (java.net URI ServerSocket)
            (java.util.concurrent Executors Executor ThreadFactory))
@@ -20,9 +20,9 @@
  ([form] form)
  ([form next-form & forms]
    `(when-let [x# ~form] (-?> (-> x# ~next-form) ~@forms))))
-   
+
 (defmacro #^{:private true} instance?-> [type x & forms]
-  `(when (instance? ~type ~x) (-> ~(vary-meta x assoc :tag type) ~@forms)))  
+  `(when (instance? ~type ~x) (-> ~(vary-meta x assoc :tag type) ~@forms)))
 
 (defn- charset [#^BasicHeader content-type-header]
   (-?> content-type-header .getElements #^BasicHeaderElement first (.getParameterByName "charset") .getValue))
@@ -31,20 +31,20 @@
   (.toLowerCase s java.util.Locale/ENGLISH))
 
 (defn- build-req-map
-  "Augments the given request-prototype (a map) to represent the given HTTP 
+  "Augments the given request-prototype (a map) to represent the given HTTP
   request, to be passed as the Ring request to an app."
   [#^HttpRequest request request-prototype]
-  (let [request-line (.getRequestLine request) 
+  (let [request-line (.getRequestLine request)
         headers (reduce
                   (fn [header-map #^Header header]
                     (assoc header-map
                       (-> header .getName lower-case)
                       (.getValue header)))
                   {} (seq (.getAllHeaders request)))
-        host (or (headers "host") 
+        host (or (headers "host")
                (str (request-prototype :server-name) ":" (request-prototype :server-port 80)))
         uri (URI. (str "http://" host (.getUri request-line)))]
-    (into (or request-prototype {})     
+    (into (or request-prototype {})
       {:server-port        (.getPort uri)
        :server-name        (.getHost uri)
        :uri                (.getRawPath uri)
@@ -53,7 +53,7 @@
        :headers            headers
        :content-type       (headers "content-type")
        :content-length     (when-let [len (instance?-> HttpEntityEnclosingRequest request .getEntity .getContentLength)]
-                             (when (>= len 0) len))  
+                             (when (>= len 0) len))
        :character-encoding (instance?-> HttpEntityEnclosingRequest request .getEntity .getContentEncoding charset)
        :body               (instance?-> HttpEntityEnclosingRequest request .getEntity .getContent)})))
 
@@ -73,13 +73,13 @@
   (when body
     (let [content-type (headers "Content-Type")
           charset (when content-type (charset (BasicHeader. "Content-Type" content-type)))
-          content-length (headers "Content-Length") 
+          content-length (headers "Content-Length")
           entity
            (cond
-             (string? body) 
+             (string? body)
                (StringEntity. body)
              (seq? body)
-               (EntityTemplate. 
+               (EntityTemplate.
                  (proxy [ContentProducer] []
                    (writeTo [#^OutputStream s]
                      (let [w (if charset (OutputStreamWriter. s #^String charset) (OutputStreamWriter. s))]
@@ -97,7 +97,7 @@
       (.setEntity response entity))))
 
 (defn- ring-handler
-  "Returns an Handler implementation for the given app. 
+  "Returns an Handler implementation for the given app.
    The HttpContext must contains a map associated to \"ring.request-prototype\"."
   [app]
   (proxy [HttpRequestHandler] []
@@ -110,7 +110,7 @@
 ;; Simple HTTP Server
 
 (defn- handle-request
- "Handle the request, usually called from a worker thread." 
+ "Handle the request, usually called from a worker thread."
  [#^HttpService httpservice #^HttpServerConnection conn request-prototype]
   (let [context (doto (BasicHttpContext. nil)
                   (.setAttribute "ring.request-prototype" request-prototype))]
@@ -135,31 +135,31 @@
                    (.addInterceptor (ResponseConnControl.)))
         registry (doto (HttpRequestHandlerRegistry.)
                    (.register "*" (ring-handler app)))]
-    (doto (HttpService. httpproc 
+    (doto (HttpService. httpproc
             (DefaultConnectionReuseStrategy.)
             (DefaultHttpResponseFactory.))
       (.setParams params)
       (.setHandlerResolver registry))))
 
-(defn executor-execute 
+(defn executor-execute
  "Executes (apply f args) using the specified Executor."
  [#^java.util.concurrent.Executor executor f & args]
   (.execute executor #(apply f args)))
 
-(defn run
+(defn run-httpcore
  "Serve the given app according to the options.
  Options:
-   :port, an Integer,
-   :server-name, a String -- for old HTTP/1.0 clients,
-   :server-port, an Integer -- for old HTTP/1.0 clients, when public facing port is different from :port,  
-   :execute, a function (whose sig is [f & args]) that applies f to args -- usually in another thread."
- [{:keys [port server-name server-port execute]} app] 
-  (let [execute (or execute (partial executor-execute 
+   :port, an Integer.
+   :server-name, a String (for old HTTP/1.0 clients).
+   :server-port, an Integer (for old HTTP/1.0 clients, when public facing port is different from :port).
+   :execute, a function with signature [f & args] that applies f to args, usually in another thread."
+ [app {:keys [port server-name server-port execute]}]
+  (let [execute (or execute (partial executor-execute
                               (Executors/newCachedThreadPool
-                                (proxy [ThreadFactory] [] 
+                                (proxy [ThreadFactory] []
                                   (newThread [r]
                                     (doto (Thread. #^Runnable r)
-                                      (.setDaemon true)))))))  
+                                      (.setDaemon true)))))))
         params (doto (BasicHttpParams.)
                  (.setIntParameter CoreConnectionPNames/SO_TIMEOUT 5000)
                  (.setIntParameter CoreConnectionPNames/SOCKET_BUFFER_SIZE (* 8 1024))
@@ -172,6 +172,5 @@
         (let [socket (.accept serversocket)
               conn (doto (DefaultHttpServerConnection.)
                      (.bind socket params))]
-          (execute handle-request httpservice conn 
+          (execute handle-request httpservice conn
             (assoc request-prototype :remote-addr (-> socket .getInetAddress .getHostAddress))))))))
-            

@@ -1,8 +1,7 @@
-(ns ring.backtrace
+(ns ring.middleware.stacktrace
   (:use (clj-html core utils helpers)
-        clojure.contrib.str-utils
-        (clj-backtrace core repl)
-        ring.utils))
+        (clojure.contrib str-utils)
+        (clj-stacktrace core repl)))
 
 (declare css)
 
@@ -43,11 +42,11 @@
   Currently supports delegation to either js or html exception views."
   [req e]
   (let [accept (get-in req [:headers "accept"])]
-    (if (and accept (re-match? #"^text/javascript" accept))
+    (if (and accept (re-find #"^text/javascript" accept))
       (js-response req e)
       (html-reponse req e))))
 
-(defn wrap
+(defn wrap-stacktrace
   "Wrap an app such that exceptions thrown within the wrapped app are caught 
   and a helpful debugging response is returned."
   [app]

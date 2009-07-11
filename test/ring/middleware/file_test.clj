@@ -1,42 +1,43 @@
-(ns ring.file-test
-  (:use clj-unit.core ring.file)
-  (:import java.io.File))
+(ns ring.middleware.file-test
+  (:use (clj-unit core)
+        (ring.middleware file))
+  (:import (java.io File)))
 
-(deftest "wrap: no directory"
+(deftest "wrap-file: no directory"
   (assert-throws #"Directory does not exist"
-    (wrap (File. "not_here") (constantly :response))))
+    (wrap-file (constantly :response) (File. "not_here"))))
 
-(def public-dir (File. "test/ring/assets"))
+(def public-dir "test/ring/assets")
 (def index-html (File. public-dir "index.html"))
 (def foo-html   (File. public-dir "foo.html"))
 
-(def app (wrap public-dir (constantly :response)))
+(def app (wrap-file (constantly :response) public-dir))
 
-(deftest "wrap: unsafe method"
+(deftest "wrap-file: unsafe method"
   (assert= :response (app {:request-method :post :uri "/foo"})))
 
-(deftest "wrap: forbidden url"
+(deftest "wrap-file: forbidden url"
   (let [{:keys [status body]} (app {:request-method :get :uri "/../foo"})]
     (assert= 403 status)
     (assert-match #"Forbidden" body)))
 
-(deftest "wrap: directory"
+(deftest "wrap-file: directory"
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/"})]
     (assert= 200 status)
     (assert= {} headers)
     (assert= index-html body)))
 
-(deftest "wrap: file without extension"
+(deftest "wrap-file: file without extension"
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/foo"})]
     (assert= 200 status)
     (assert= {} headers)
     (assert= foo-html body)))
 
-(deftest "wrap: file with extension"
+(deftest "wrap-file: file with extension"
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/foo.html"})]
     (assert= 200 status)
     (assert= {} headers)
     (assert= foo-html body)))
 
-(deftest "wrap: no file"
+(deftest "wrap-file: no file"
   (assert= :response (app {:request-method :get :uri "/dynamic"})))

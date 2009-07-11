@@ -1,5 +1,6 @@
-(ns ring.lint-test
-  (:use clj-unit.core ring.lint)
+(ns ring.middleware.lint-test
+  (:use (clj-unit core)
+        (ring.middleware lint))
   (:import (java.io File InputStream ByteArrayInputStream)))
 
 (defn str-input-stream
@@ -25,12 +26,11 @@
   {:status 200 :headers {} :body "valid"})
 
 (def valid-response-app
-  (wrap (fn [req] valid-response)))
+  (wrap-lint (fn [req] valid-response)))
 
 (defn constant-app
   [constant-response]
-  (wrap (fn [req] constant-response)))
-
+  (wrap-lint (fn [req] constant-response)))
 
 (defmacro lints-req
   [key goods bads]

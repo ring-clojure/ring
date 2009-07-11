@@ -1,6 +1,7 @@
-(ns ring.dump-test
-  (:use clj-unit.core ring.dump)
-  (:import java.io.ByteArrayInputStream))
+(ns ring.handler.dump-test
+  (:use (clj-unit core)
+        (ring.handler dump))
+  (:import (java.io ByteArrayInputStream)))
 
 (def post-req
   {:uri            "/foo/bar"
@@ -11,8 +12,8 @@
   {:uri            "/foo/bar"
    :request-method :get})
 
-(deftest "app"
-  (let [{:keys [status]} (app post-req)]
+(deftest "handle-dump"
+  (let [{:keys [status]} (handle-dump post-req)]
     (assert= 200 status))
-  (let [{:keys [status]} (app get-req)]
+  (let [{:keys [status]} (handle-dump get-req)]
     (assert= 200 status)))

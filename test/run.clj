@@ -1,10 +1,9 @@
 (use 'clj-unit.core)
 (require-and-run-tests
-  'ring.builder-test
-  'ring.dump-test
-  'ring.lint-test
-  'ring.file-test
-  'ring.file-info-test
-  'ring.static-test
-  'ring.reload-test
-  'ring.backtrace-test)
+  'ring.handler.dump-test
+  'ring.middleware.lint-test
+  'ring.middleware.file-test
+  'ring.middleware.file-info-test
+  'ring.middleware.static-test
+  'ring.middleware.reload-test
+  'ring.middleware.stacktrace-test)

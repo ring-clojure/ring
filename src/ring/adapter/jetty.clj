@@ -1,4 +1,4 @@
-(ns ring.jetty
+(ns ring.adapter.jetty
   (:import (javax.servlet.http HttpServletRequest HttpServletResponse)
            (org.mortbay.jetty.handler AbstractHandler)
            (org.mortbay.jetty Server)
@@ -81,11 +81,11 @@
         (apply-resp-map response resp)
         (.setHandled request true)))))
 
-(defn run
+(defn run-jetty
   "Serve the given app according to the options.
   Options:
     :port, an Integer."
-  [options app]
+  [app options]
   (let [port    (or (:port options) (throwf ":port missing from options"))
         server  (doto (Server. port) (.setSendDateHeader true))
         handler (proxy-handler app)]

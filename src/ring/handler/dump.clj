@@ -1,7 +1,7 @@
-(ns ring.dump
+(ns ring.handler.dump
   (:use (clj-html core utils helpers)
-        clojure.contrib.def
-        clojure.set)
+        (clojure.contrib def)
+        (clojure set))
   (:import (org.apache.commons.io IOUtils)))
 
 (declare css)
@@ -39,7 +39,7 @@
                  (domap-str [key (sort user-keys)]
                    (req-pair key req))]]]))]]])
 
-(defn app
+(defn handle-dump
   "Returns a response tuple corresponding to an HTML dump of the request
   req as it was recieved by this app."
   [req]
