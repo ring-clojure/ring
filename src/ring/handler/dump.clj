@@ -47,7 +47,7 @@
    :headers {"Content-Type" "text/html"}
    :body    (template req)})
 
-(def css "
+(def #^{:private true} css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:

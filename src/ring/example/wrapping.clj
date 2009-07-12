@@ -4,7 +4,7 @@
   (:use (ring.handler dump)
         (ring.middleware stacktrace file-info file)
         (ring.adapter jetty)
-        (clojure.contrib fcase)))
+        (clojure.contrib except)))
 
 (defn wrap-error [app]
   (fn [req]
@@ -14,9 +14,9 @@
 
 (def app
   (-> handle-dump
-    wrap-stacktrace
+    wrap-error
+    (wrap-file "src/ring/example/public")
     wrap-file-info
-    (wrap-file "src/ring/examples/public")
-    wrap-error))
+    wrap-stacktrace))
 
 (run-jetty app {:port 8080})

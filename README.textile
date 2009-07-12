@@ -14,7 +14,7 @@ First clone the Ring source and download Ring's dependencies:
 
 To see a live "Hello World" Ring app, run:
 
-    java -Djava.ext.dirs=deps clojure.main src/ring/examples/hello_world.clj
+    java -Djava.ext.dirs=deps clojure.main src/ring/example/hello_world.clj
 
 Now visit @http://localhost:8080/@ in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 

@@ -56,7 +56,7 @@
       (catch Exception e
         (response req e)))))
 
-(def css "
+(def #^{:private true} css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
