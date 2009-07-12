@@ -29,7 +29,7 @@
          [:html {:xmlns "http://www.w3.org/1999/xhtml"}
            [:head
              [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
-             [:title "Ring: Backtrace"]
+             [:title "Ring: Stacktrace"]
              [:style {:type "text/css"} css]
              [:body
                [:div#content
