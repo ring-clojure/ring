@@ -1,6 +1,7 @@
 (ns ring.adapter.jetty
   (:import (org.mortbay.jetty.handler AbstractHandler)
-           (org.mortbay.jetty Server))
+           (org.mortbay.jetty Server)
+           (org.mortbay.jetty.security SslSocketConnector))
   (:use (ring.util servlet)
         (clojure.contrib except)))
 
@@ -14,14 +15,36 @@
         (update-servlet-response response response-map)
         (.setHandled request true)))))
 
+(defn- add-ssl-connector!
+  "Add an SslSocketConnector to a Jetty Server instance."
+  [server options]
+  (let [ssl-connector (SslSocketConnector.)]
+    (doto ssl-connector
+      (.setPort        (options :ssl-port 443))
+      (.setKeystore    (options :keystore))
+      (.setKeyPassword (options :key-password)))
+    (when (options :truststore)
+      (.setTruststore ssl-connector (options :truststore)))
+    (when (options :trust-password)
+      (.setTrustPassword ssl-connector (options :trust-password)))
+    (.addConnector server ssl-connector)))
+
+(defn- create-server
+  "Construct a Jetty Server instance."
+  [options]
+  (let [port   (options :port 80)
+        server (Server. port)]
+    (when (or (options :ssl) (options :ssl-port))
+      (add-ssl-connector! server options))
+    (.setSendDateHeader true)
+    server))
+
 (defn run-jetty
   "Serve the given handler according to the options.
   Options:
     :port, an Integer."
   [handler options]
-  (let [port    (or (:port options) (throwf ":port missing from options"))
-        server  (doto (Server. port) (.setSendDateHeader true))
-        handler (proxy-handler handler)]
-    (.setHandler server handler)
-    (.start server)
-    (.join  server)))
+  (doto (create-server options)
+    (.setHandler (proxy-handler handler))
+    (.start)
+    (.join)))
