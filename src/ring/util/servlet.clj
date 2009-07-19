@@ -123,10 +123,10 @@
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
   genclass to compile a HttpServlet class.
-  e.g. (defservice my-routes)
-       (defservice \"my-prefix-\" my-routes)"
-  ([routes]
-   `(defservice "-" ~routes))
+  e.g. (defservice my-handler)
+       (defservice \"my-prefix-\" my-handler)"
+  ([handler]
+   `(defservice "-" ~handler))
   ([prefix handler]
    `(defn ~(symbol (str prefix "service"))
       [servlet# request# response#]
