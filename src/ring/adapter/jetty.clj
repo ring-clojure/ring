@@ -1,6 +1,7 @@
 (ns ring.adapter.jetty
   (:import (org.mortbay.jetty.handler AbstractHandler)
            (org.mortbay.jetty Server)
+           (org.mortbay.jetty.bio SocketConnector)
            (org.mortbay.jetty.security SslSocketConnector))
   (:use (ring.util servlet)
         (clojure.contrib except)))
@@ -32,11 +33,14 @@
 (defn- create-server
   "Construct a Jetty Server instance."
   [options]
-  (let [port   (options :port 80)
-        server (Server. port)]
+  (let [connector (doto (SocketConnector.)
+                    (.setPort (options :port 80))
+                    (.setHost (options :host)))
+        server    (doto (Server.)
+                    (.addConnector connector)
+                    (.setSendDateHeader true))]
     (when (or (options :ssl) (options :ssl-port))
       (add-ssl-connector! server options))
-    (.setSendDateHeader true)
     server))
 
 (defn run-jetty
