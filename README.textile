@@ -22,9 +22,9 @@ To see a more sophisticated Ring app, run:
   
   java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
 
- * If you request @http://localhost:8080/@ in your browser the @ring.dump@ handler will respond with an HTML page representing the request map that it received (see the @SPEC@ for details on the request map).
- * If you request @http://localhost:8080/clojure.png@, the @ring.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
- * If you request @http://localhost:8080/error@, the app will produce an error that will be caught by the @ring.show-exceptions@ middleware, which will in turn return a readable stacktrace as the HTML response.
+ * If you request @http://localhost:8080/@ in your browser the @ring.handler.dump@ handler will respond with an HTML page representing the request map that it received (see the @SPEC@ for details on the request map).
+ * If you request @http://localhost:8080/clojure.png@, the @ring.middleware.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
+ * If you request @http://localhost:8080/error@, the app will produce an error that will be caught by the @ring.middleware.stacktrace@ middleware, which will in turn return a readable stacktrace as the HTML response.
  
 h2. Included Libs
 
@@ -33,7 +33,7 @@ h2. Included Libs
  * @ring.middleware.file@: Middleware that serves static files out of a public directory.
  * @ring.middleware.file-info@: Middleware that augments response headers with info about File responses.
  * @ring.middleware.static@: Middleware that serves static files with specified prefixes out of a public directory.
- * @ring.middleware.show-exceptions@: Middleware that catches exceptions and displays readable stacktraces for debugging.
+ * @ring.middleware.stacktrace@: Middleware that catches exceptions and displays readable stacktraces for debugging.
  * @ring.middleware.reload@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
  * @ring.handler.dump@: Handler that dumps request maps as HTML responses for debugging.
  * @ring.util.builder@: Helpers for composing Ring apps from multiple handlers and middleware.

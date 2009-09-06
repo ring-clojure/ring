@@ -1,13 +1,12 @@
 === Ring Spec (0.1)
-Ring is defined in terms of Handlers, Middleware, Adapters, Requests Maps, and 
-Response Maps, each of which are described below.
+Ring is defined in terms of handlers, middleware, adapters, requests maps, and 
+response maps, each of which are described below.
 
 
 == Handlers
-Ring handlers constitute the core logic of the web application and are 
-abstracted from the details of the HTTP protocol.  Handlers are implemented as 
-Clojure functions that process a given request map to generate and return a 
-response map.
+Ring handlers constitute the core logic of the web application. Handlers are 
+implemented as Clojure functions that process a given request map to generate 
+and return a response map.
 
 
 == Middleware
