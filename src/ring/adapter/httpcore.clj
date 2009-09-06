@@ -1,5 +1,5 @@
 (ns ring.adapter.httpcore
-  (:import (org.apache.http HttpRequest Header HttpEntityHttpEntityEnclosingRequest HttpResponse
+  (:import (org.apache.http HttpRequest Header HttpEntityEnclosingRequest HttpResponse
              ConnectionClosedException HttpException HttpServerConnection)
            (org.apache.http.entity AbstractHttpEntity StringEntity EntityTemplate InputStreamEntity
              FileEntity ContentProducer)
@@ -149,10 +149,10 @@
 (defn run-httpcore
  "Serve the given app according to the options.
  Options:
-   :port, an Integer.
-   :server-name, a String (for old HTTP/1.0 clients).
-   :server-port, an Integer (for old HTTP/1.0 clients, when public facing port is different from :port).
-   :execute, a function with signature [f & args] that applies f to args, usually in another thread."
+   :port (Optional, Integer)
+   :server-name (Optional, String) for old HTTP/1.0 clients
+   :server-port (Optional, Integer) for old HTTP/1.0 clients, when public facing port is different from :port
+   :execute, (Optional, IFn) function with signature [f & args] that applies f to args, usually in another thread"
  [app {:keys [port server-name server-port execute]}]
   (let [execute (or execute (partial executor-execute
                               (Executors/newCachedThreadPool

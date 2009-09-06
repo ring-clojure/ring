@@ -46,7 +46,9 @@
 (defn run-jetty
   "Serve the given handler according to the options.
   Options:
-    :port, an Integer."
+    :port (Optional, Integer)
+    :host (Optional, String)
+    :ssl-port, :keystore, :key-password, :truststore, :trust-password"
   [handler options]
   (doto (create-server options)
     (.setHandler (proxy-handler handler))
