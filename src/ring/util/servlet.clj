@@ -111,14 +111,13 @@
         (update-servlet-response response response-map)
         (throw (NullPointerException. "Handler returned nil"))))))
 
-(definline servlet
-  "Create a servlet from a Ring handler. Automatically updates if the handler
-  binding is redefined."
+(defn servlet
+  "Create a servlet from a Ring handler.."
   [handler]
-  `(proxy [HttpServlet] []
-     (~'service [request# response#]
-       ((make-service-method ~handler)
-          ~'this request# response#))))
+  (proxy [HttpServlet] []
+    (service [request response]
+      ((make-service-method handler)
+         this request response))))
 
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
