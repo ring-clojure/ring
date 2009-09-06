@@ -1,4 +1,4 @@
-=== Ring Spec (Draft Version)
+=== Ring Spec (0.1)
 Ring is defined in terms of Handlers, Middleware, Adapters, Requests Maps, and 
 Response Maps, each of which are described below.
 

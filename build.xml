@@ -2,8 +2,8 @@
   <description>Pack all sources into a JAR.</description>
 
   <property name="jarfile"  location="ring.jar"/>
-  <property name="depsfile" location="deps-0-1-unstable.zip"/>
-  <property name="depsurl"  value="http://cloud.github.com/downloads/mmcgrana/ring/deps-0-1-unstable.zip"/>
+  <property name="depsfile" location="deps.zip"/>
+  <property name="depsurl"  value="http://cloud.github.com/downloads/mmcgrana/ring/deps.zip"/>
   <property name="depsdir"  location="deps/"/>
 
   <target name="clean" description="Remove generated files and directories.">
