@@ -7,20 +7,26 @@ The @SPEC@ file at the root of this distribution for provides a complete descrip
 h2. Quick Start
 
 First clone the Ring source and download Ring's dependencies:
-  
-    git clone git://github.com/mmcgrana/ring.git
-    cd ring  
-    ant deps
+
+<pre><code>  
+git clone git://github.com/mmcgrana/ring.git
+cd ring  
+ant deps
+</code></pre>
 
 To see a live "Hello World" Ring app, run:
 
-    java -Djava.ext.dirs=deps clojure.main src/ring/example/hello_world.clj
+<pre><code>
+java -Djava.ext.dirs=deps clojure.main src/ring/example/hello_world.clj
+</code></pre>
 
 Now visit @http://localhost:8080/@ in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
 To see a more sophisticated Ring app, run:
-  
-    java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
+
+<pre><code>
+java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
+</code></pre>
 
  * If you request @http://localhost:8080/@ in your browser the @ring.handler.dump@ handler will respond with an HTML page representing the request map that it received (see the @SPEC@ for details on the request map).
  * If you request @http://localhost:8080/clojure.png@, the @ring.middleware.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
@@ -45,8 +51,10 @@ h2. Development
 Ring is being actively developed; you can track its progress and contribute at the project's "GitHub"::http://github.com/mmcgrana/ring page.
 
 To run all the Ring unit tests:
-   
-    java -Djava.ext.dirs=deps clojure.main test/ring/run.clj
+  
+<pre><code>
+java -Djava.ext.dirs=deps clojure.main test/ring/run.clj
+</code></pre>
 
 You can learn more about Ring's dependencies at the following sites:
 
