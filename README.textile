@@ -8,9 +8,9 @@ h2. Quick Start
 
 First clone the Ring source and download Ring's dependencies:
   
-  git clone git://github.com/mmcgrana/ring.git
-  cd ring  
-  ant deps
+    git clone git://github.com/mmcgrana/ring.git
+    cd ring  
+    ant deps
 
 To see a live "Hello World" Ring app, run:
 
@@ -20,7 +20,7 @@ Now visit @http://localhost:8080/@ in your browser; the Ring app will respond to
 
 To see a more sophisticated Ring app, run:
   
-  java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
+    java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
 
  * If you request @http://localhost:8080/@ in your browser the @ring.handler.dump@ handler will respond with an HTML page representing the request map that it received (see the @SPEC@ for details on the request map).
  * If you request @http://localhost:8080/clojure.png@, the @ring.middleware.file@ middleware will detect that there is a @clojure.png@ file in the app's @public@ directory and return that image as a response.
@@ -32,12 +32,12 @@ h2. Included Libs
  * @ring.adapter.httpcore@: Adapter for the Apache HttpCore webserver. 
  * @ring.middleware.file@: Middleware that serves static files out of a public directory.
  * @ring.middleware.file-info@: Middleware that augments response headers with info about File responses.
- * @ring.middleware.static@: Middleware that serves static files with specified prefixes out of a public directory.
- * @ring.middleware.stacktrace@: Middleware that catches exceptions and displays readable stacktraces for debugging.
+ * @ring.middleware.lint@: Linter for the Ring interface, ensures compliance with the Ring spec.
  * @ring.middleware.reload@: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
+ * @ring.middleware.stacktrace@: Middleware that catches exceptions and displays readable stacktraces for debugging.
+ * @ring.middleware.static@: Middleware that serves static files with specified prefixes out of a public directory.
  * @ring.handler.dump@: Handler that dumps request maps as HTML responses for debugging.
- * @ring.util.builder@: Helpers for composing Ring apps from multiple handlers and middleware.
- * @ring.util.lint@: Linter for the Ring interface, ensures compliance with the Ring spec.
+ * @ring.util.servlet@: Utilities for interfacing with Java Servlets.
  * @ring.example.*@: Various example Ring apps.
 
 h2. Development
