@@ -78,6 +78,6 @@
       (let [{:keys [headers body] :as response} (app req)]
         (if (instance? File body)
           (assoc response :headers
-            (assoc headers "Content-Length" (str (.length body))
+            (assoc headers "Content-Length" (str (.length #^File body))
                            "Content-Type"   (guess-mime-type body mime-types)))
           response)))))

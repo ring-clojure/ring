@@ -11,7 +11,7 @@
   [app public-dir statics]
   (let [app-with-file (wrap-file app public-dir)]
     (fn [req]
-      (let [uri (:uri req)]
+      (let [#^String uri (:uri req)]
         (if (some #(.startsWith uri %) statics)
           (app-with-file req)
           (app req))))))

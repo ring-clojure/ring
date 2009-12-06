@@ -76,13 +76,15 @@
           (.print writer (str chunk))
           (.flush writer)))
     (instance? InputStream body)
+    (let [#^InputStream b body]
       (with-open [out (.getOutputStream response)]
-        (IOUtils/copy body out)
-        (.close body)
-        (.flush out))
+        (IOUtils/copy b out)
+        (.close b)
+        (.flush out)))
     (instance? File body)
-      (with-open [stream (FileInputStream. body)]
-        (set-body response stream))
+    (let [#^File f body]
+      (with-open [stream (FileInputStream. f)]
+        (set-body response stream)))
     (nil? body)
       nil
     :else
@@ -91,8 +93,11 @@
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
   [#^HttpServletResponse response, {:keys [status headers body]}]
+  (when-not response
+    (throw (Exception. "Null response given.")))
+  (when status
+    (.setStatus response status))
   (doto response
-    (.setStatus status)
     (set-headers headers)
     (set-body body)))
 

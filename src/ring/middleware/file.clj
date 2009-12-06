@@ -9,7 +9,7 @@
 
 (defn- str-includes?
   "Returns logical truth iff the given target appears in the given string"
-  [target string]
+  [#^String target #^String string]
   (<= 0 (.indexOf string target)))
 
 (defn- ensure-dir
@@ -17,7 +17,7 @@
   not. If the directory is given as a String, it is coerced to a Fil before
   returning."
   [dir]
-  (let [fdir (if (string? dir) (File. dir) dir)]
+  (let [#^File fdir (if (string? dir) (File. #^String dir) dir)]
     (throw-if-not (.exists fdir)
       "Directory does not exist: %s" fdir)
     fdir))
@@ -35,7 +35,7 @@
 (defn- maybe-file
   "Returns the File corresponding to the given relative path within the given
   dir if it exists, or nil if no such file exists."
-  [dir path]
+  [#^File dir #^String path]
   (let [file (File. dir path)]
     (and (.exists file) (.canRead file) file)))
 

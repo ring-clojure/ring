@@ -5,7 +5,7 @@
 
 (defn str-input-stream
   "Returns a ByteArrayInputStream for the given String."
-  [string]
+  [#^String string]
   (ByteArrayInputStream. (.getBytes string)))
 
 (def valid-request

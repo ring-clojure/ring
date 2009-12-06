@@ -1,3 +1,5 @@
+(set! *warn-on-reflection* true)
+
 (use 'clj-unit.core)
 (require-and-run-tests
   'ring.handler.dump-test
