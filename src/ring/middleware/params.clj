@@ -4,14 +4,10 @@
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder))
 
-(defvar *encoding* "UTF-8"
-  "The encoding to use to decode urlencoded parameters. Defaults to
-  UTF-8.")
-
 (defn- urldecode
   "Decode a urlencoded string using the *encoding* var."
-  [s]
-  (URLDecoder/decode s *encoding*))
+  [text encoding]
+  (URLDecoder/decode text encoding))
 
 (defn- assoc-vec
   "Associate a key with a value. If the key already exists in the map,
@@ -24,24 +20,24 @@
         [cur val])
       val)))
 
-(defn parse-params
+(defn- parse-params
   "Parse parameters from a string into a map."
-  [#^String param-string]
+  [#^String param-string encoding]
   (reduce
     (fn [param-map encoded-param]
       (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
         (assoc-vec param-map
-          (urldecode key)
-          (urldecode (or val "")))
+          (urldecode key encoding)
+          (urldecode (or val "") encoding))
          param-map))
     {}
     (re-split #"&" param-string)))
 
 (defn- assoc-query-params
   "Parse and assoc parameters from the query string with the request."
-  [request]
+  [request encoding]
   (if-let [query-string (:query-string request)]
-    (let [params (parse-params query-string)]
+    (let [params (parse-params query-string encoding)]
       (merge-with merge request {:query-params params, :params params}))
     request))
 
@@ -53,9 +49,9 @@
 
 (defn- assoc-form-params
   "Parse and assoc parameters from the request body with the request."
-  [request]
+  [request encoding]
   (if-let [body (and (urlencoded-form? request) (:body request))]
-    (let [params (parse-params (slurp* body))]
+    (let [params (parse-params (slurp* body) encoding)]
       (merge-with merge request {:form-params params, :params params}))
     request))
 
@@ -65,10 +61,14 @@
   the request map:
     :query-params - a map of parameters from the query string
     :form-params  - a map of parameters from the body
-    :params       - a merged map of both query and form parameters"
-  [handler]
-  (fn [request]
-    (-> request
-      assoc-form-params
-      assoc-query-params
-      handler)))
+    :params       - a merged map of both query and form parameters
+  Takes an optional argument to specify the encoding of the parameters.
+  Defaults to UTF-8."
+  ([handler]
+    (wrap-params handler "UTF-8"))
+  ([handler encoding]
+    (fn [request]
+      (-> request
+        (assoc-form-params encoding)
+        (assoc-query-params encoding)
+        handler))))
