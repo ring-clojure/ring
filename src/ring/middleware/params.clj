@@ -5,7 +5,7 @@
   (:import java.net.URLDecoder))
 
 (defn- urldecode
-  "Decode a urlencoded string using the *encoding* var."
+  "Decode a urlencoded string using the specified encoding."
   [text encoding]
   (URLDecoder/decode text encoding))
 
@@ -44,7 +44,7 @@
 (defn- urlencoded-form?
   "Does a request have a urlencoded form?"
   [request]
-  (if-let [type (:content-type request)]
+  (if-let [#^String type (:content-type request)]
     (.startsWith type "application/x-www-form-urlencoded")))
 
 (defn- assoc-form-params
@@ -62,13 +62,12 @@
     :query-params - a map of parameters from the query string
     :form-params  - a map of parameters from the body
     :params       - a merged map of both query and form parameters
-  Takes an optional argument to specify the encoding of the parameters.
-  Defaults to UTF-8."
-  ([handler]
-    (wrap-params handler "UTF-8"))
-  ([handler encoding]
-    (fn [request]
-      (-> request
-        (assoc-form-params encoding)
-        (assoc-query-params encoding)
-        handler))))
+  Takes an optional configuration map. Recognized keys are:
+    :encoding - encoding to use for url-decoding (default: \"UTF-8\")"
+  [handler & [opts]]
+    (let [encoding (get opts :encoding "UTF-8")]
+      (fn [request]
+        (-> request
+          (assoc-form-params encoding)
+          (assoc-query-params encoding)
+          handler))))
