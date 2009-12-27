@@ -1,5 +1,5 @@
 (ns ring.handler.dump
-  (:use (clj-html core utils helpers)
+  (:use (clj-html core helpers)
         (clojure.contrib def)
         (clojure set))
   (:import (org.apache.commons.io IOUtils)))
@@ -29,14 +29,14 @@
         [:h3.info "Ring Request Values"]
         [:table.request
           [:tbody
-            (domap-str [key ring-keys]
+            (for [key ring-keys]
               (req-pair key req))]]
         (if-let [user-keys (difference (set (keys req)) (set ring-keys))]
           (html
              [:br]
              [:table.request.user
                [:tbody [:tr
-                 (domap-str [key (sort user-keys)]
+                 (for [key (sort user-keys)]
                    (req-pair key req))]]]))]]])
 
 (defn handle-dump

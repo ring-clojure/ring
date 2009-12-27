@@ -1,5 +1,5 @@
 (ns ring.middleware.stacktrace
-  (:use (clj-html core utils helpers)
+  (:use (clj-html core helpers)
         (clojure.contrib str-utils)
         (clj-stacktrace core repl)))
 
@@ -11,7 +11,7 @@
    :body    (pst-str e)})
 
 (defn- elem-partial [elem]
-  (if-html (:clojure elem)
+  (if (:clojure elem)
     [:tr
       [:td.source (h (source-str         elem))]
       [:td.method (h (clojure-method-str elem))]]
@@ -35,7 +35,7 @@
                [:div#content
                  [:h3.info (h (str e))]
                  [:table.trace [:tbody
-                   (map-str elem-partial (:trace-elems excp))]]]]]])}))
+                   (map elem-partial (:trace-elems excp))]]]]]])}))
 
 (defn- response
   "Returns a response showing debugging information about the exception.
