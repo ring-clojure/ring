@@ -30,21 +30,21 @@ Adding simple middleware:
 Quick Start
 -----------
 
-First clone the Ring source and download Ring's dependencies:
+First, pull in Ring's dependencies using [Leiningen](http://github.com/technomancy/leiningen):
 
-    git clone git://github.com/mmcgrana/ring.git
-    cd ring  
-    ant deps
+    $ lein deps
 
 To see a live "Hello World" Ring app, run:
 
-    java -Djava.ext.dirs=deps clojure.main src/ring/example/hello_world.clj
+    $ clj src/ring/example/hello_world.clj
 
 Now visit `http://localhost:8080/` in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
+Note that your `clj` script needs to add the `src` directory and the jars in `lib` to your classpath.
+
 To see a more sophisticated Ring app, run:
 
-    java -Djava.ext.dirs=deps clojure.main src/ring/example/wrapping.clj
+    $ clj src/ring/example/wrapping.clj
 
 * If you request `http://localhost:8080/` in your browser the `ring.handler.dump` handler will respond with an HTML page representing the request map that it received (see the `SPEC` for details on the request map).
 * If you request `http://localhost:8080/clojure.png`, the `ring.middleware.file` middleware will detect that there is a `clojure.png` file in the app's `public` directory and return that image as a response.
@@ -72,15 +72,7 @@ Ring is being actively developed; you can track its progress and contribute at t
 
 To run all the Ring unit tests:
   
-    java -Djava.ext.dirs=deps clojure.main test/ring/run.clj
-
-You can learn more about Ring's dependencies at the following sites:
-
-* `clojure.jar`, `clojure-contrib.jar`: [clojure.org](http://clojure.org)
-* `jetty-6.1.14.jar`, `jetty-util-6.1.14.jar`, `servlet-api-2.5-6.1.14.jar`: [mortbay.org/jetty](http://www.mortbay.org/jetty)
-* `httpcore-4.0.jar`, `httpcore-nio-4.0.jar`: [hc.apache.org](http://hc.apache.org/httpcomponents-core/index.html)
-* `commons-io-1.4.jar`: [commons.apache.org/io](http://commons.apache.org/io/)
-* `clj-html.jar`, `clj-html-helpers.jar`, `clj-stacktrace.jar`, `clj-unit`: [github.com/mmcgrana](http://github.com/mmcgrana)
+    $ clj test/ring/run.clj
 
 Thanks
 ------
