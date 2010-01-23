@@ -9,4 +9,5 @@
   'ring.middleware.static-test
   'ring.middleware.reload-test
   'ring.middleware.stacktrace-test
-  'ring.middleware.params-test)
+  'ring.middleware.params-test
+  'ring.middleware.cookies-test)
