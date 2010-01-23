@@ -11,5 +11,6 @@
                  [org.apache.httpcomponents/httpcore-nio "4.0.1"]
                  [clj-html "0.1.0-SNAPSHOT"]
                  [clj-stacktrace "0.1.0-SNAPSHOT"]]
+  :repositories [["mvnrepository" "http://mvnrepository.com/"]]
   :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]
                      [clj-unit "0.1.0-SNAPSHOT"]])
