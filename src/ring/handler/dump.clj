@@ -1,8 +1,7 @@
 (ns ring.handler.dump
   (:use (clj-html core helpers)
         (clojure.contrib def)
-        (clojure set))
-  (:import (org.apache.commons.io IOUtils)))
+        (clojure set)))
 
 (declare css)
 

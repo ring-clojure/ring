@@ -1,9 +1,10 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
+  (:use (clojure.contrib duck-streams except))
   (:import (java.io File InputStream FileInputStream)
-           (javax.servlet.http HttpServlet HttpServletRequest HttpServletResponse)
-           (org.apache.commons.io IOUtils))
-  (:use (clojure.contrib except)))
+           (javax.servlet.http HttpServlet
+                               HttpServletRequest
+                               HttpServletResponse)))
 
 (defn- get-headers
   "Creates a name/value map of all the request headers."
@@ -78,7 +79,7 @@
     (instance? InputStream body)
     (let [#^InputStream b body]
       (with-open [out (.getOutputStream response)]
-        (IOUtils/copy b out)
+        (copy b out)
         (.close b)
         (.flush out)))
     (instance? File body)

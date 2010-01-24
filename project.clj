@@ -3,7 +3,6 @@
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[org.clojure/clojure "1.1.0"]
                  [org.clojure/clojure-contrib "1.1.0-master-SNAPSHOT"]
-                 [commons-io "1.4"]
                  [org.mortbay.jetty/jetty "6.1.14"]
                  [org.mortbay.jetty/jetty-util "6.1.14"]
                  [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]

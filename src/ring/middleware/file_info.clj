@@ -1,7 +1,6 @@
 (ns ring.middleware.file-info
-  (:use (clojure.contrib def))
-  (:import (org.apache.commons.io FilenameUtils)
-           (java.io File)))
+  (:use clojure.contrib.def)
+  (:import java.io.File))
 
 (defvar- base-mime-types
   {"ai"    "application/postscript"
@@ -59,12 +58,16 @@
    "xwd"   "image/x-xwindowdump"
    "zip"   "application/zip"})
 
+(defn- get-extension
+  "Returns the file extension of a file."
+  [file]
+  (second (re-find #"\.([^./\\]+)$" (.getPath file))))
+
 (defn- guess-mime-type
   "Returns a String corresponding to the guessed mime type for the given file,
   or application/octet-stream if a type cannot be guessed."
   [#^File file mime-types]
-  (get mime-types (FilenameUtils/getExtension (.getPath file))
-    "application/octet-stream"))
+  (get mime-types (get-extension file) "application/octet-stream"))
 
 (defn wrap-file-info
   "Wrap an app such that responses with a file a body will have 
