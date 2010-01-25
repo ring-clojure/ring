@@ -1,5 +1,5 @@
 (ns ring.middleware.lint-test
-  (:use (clj-unit core)
+  (:use (clojure test)
         (ring.middleware lint))
   (:import (java.io File InputStream ByteArrayInputStream)))
 
@@ -32,40 +32,42 @@
   [constant-response]
   (wrap-lint (fn [req] constant-response)))
 
+(defn is-lint-error [f]
+  (is (thrown-with-msg? Exception #"Ring lint error:.*" (f))))
+
 (defmacro lints-req
   [key goods bads]
-  (let [good-name (str "request " key " valid values")
-        bad-name  (str "request " key " invalid values")]
+  (let [good-name (symbol (str "request-" key "-valid-values"))
+        bad-name  (symbol (str "request-" key "-invalid-values"))]
     `(do
        (deftest ~good-name
          (doseq [good# ~goods]
-           (assert-truth (= valid-response
-                           (valid-response-app (assoc valid-request ~key good#)))
+           (is (= valid-response
+                  (valid-response-app (assoc valid-request ~key good#)))
              (format "%s is a valid value for request key %s"
                (pr-str good#) ~key))))
        (deftest ~bad-name
          (doseq [bad# ~bads]
-           (assert-throws #"Ring lint error:"
-             (valid-response-app (assoc valid-request ~key bad#))))))))
+           (is-lint-error
+             (fn [] (valid-response-app (assoc valid-request ~key bad#)))))))))
 
 (defmacro lints-resp
   [key goods bads]
-  (let [good-name (str "response " key " valid values")
-        bad-name  (str "response " key " invalid values")]
+  (let [good-name (symbol (str "response-" key "-valid-values"))
+        bad-name  (symbol (str "response-" key "-invalid-values"))]
     `(do
        (deftest ~good-name
          (doseq [good# ~goods]
            (let [response# (assoc valid-response ~key good#)
                  app#      (constant-app response#)]
-             (assert-truth (= response# (app# valid-request))
+             (is (= response# (app# valid-request))
                (format "%s is a valid value for response key %s"
                  (pr-str good#) ~key)))))
        (deftest ~bad-name
          (doseq [bad# ~bads]
            (let [response# (assoc valid-response ~key bad#)
                  app#      (constant-app response#)]
-             (assert-throws #"Ring lint error:"
-               (app# valid-request))))))))
+             (is-lint-error (fn [] (app# valid-request)))))))))
 
 (lints-req :server-port
   [80 8080]

@@ -1,5 +1,5 @@
 (ns ring.middleware.static-test
-  (:use (clj-unit core)
+  (:use (clojure test)
         (ring.middleware static))
   (:import (java.io File)))
 
@@ -13,7 +13,7 @@
 (defn app-response-body [uri]
   (:body (app {:request-method :get :uri uri})))
 
-(deftest "wrap-static"
-  (assert= foo-html        (app-response-body "/foo.html"))
-  (assert= nested-foo-html (app-response-body "/bars/foo.html"))
-  (assert= :dynamic        (app-response-body "/not/static")))
+(deftest wrap-static-smoke
+  (is (= foo-html        (app-response-body "/foo.html")))
+  (is (= nested-foo-html (app-response-body "/bars/foo.html")))
+  (is (= :dynamic        (app-response-body "/not/static"))))

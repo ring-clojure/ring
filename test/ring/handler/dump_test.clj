@@ -1,5 +1,5 @@
 (ns ring.handler.dump-test
-  (:use (clj-unit core)
+  (:use (clojure test)
         (ring.handler dump))
   (:import (java.io ByteArrayInputStream)))
 
@@ -12,8 +12,8 @@
   {:uri            "/foo/bar"
    :request-method :get})
 
-(deftest "handle-dump"
+(deftest handler-dump
   (let [{:keys [status]} (handle-dump post-req)]
-    (assert= 200 status))
+    (is (= 200 status)))
   (let [{:keys [status]} (handle-dump get-req)]
-    (assert= 200 status)))
+    (is (= 200 status))))
