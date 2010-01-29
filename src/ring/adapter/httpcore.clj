@@ -14,7 +14,7 @@
              InterruptedIOException)
            (java.net URI ServerSocket)
            (java.util.concurrent Executors Executor ThreadFactory))
-  (:use (clojure.contrib fcase except)))
+  (:use (clojure.contrib except)))
 
 (defmacro #^{:private true} -?>
  ([form] form)
