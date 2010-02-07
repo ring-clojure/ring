@@ -45,14 +45,27 @@
       (add-ssl-connector! server options))
     server))
 
-(defn run-jetty
+(defn #^Server run-jetty
   "Serve the given handler according to the options.
   Options:
+    :configurator (Optional, function; called with the Server instance.)
     :port (Optional, Integer)
     :host (Optional, String)
+    :join? (Optional, true by default. If false, don't block.)
     :ssl-port, :keystore, :key-password, :truststore, :trust-password"
   [handler options]
-  (doto #^Server (create-server options)
-    (.setHandler (proxy-handler handler))
-    (.start)
-    (.join)))
+  (let [#^Server s (create-server (dissoc options :configurator))]
+    (when-let [configurator (:configurator options)]
+      ;; Optional additional configuration, such as
+      ;; adding JMX.
+      (configurator s))
+    
+    (doto s
+      (.setHandler (proxy-handler handler))
+      (.start))
+    
+    (when (:join options true)
+      (.join s))
+    
+    ;; Finally, return the Server.
+    s))
