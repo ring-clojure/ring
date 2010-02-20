@@ -63,11 +63,15 @@
     :form-params  - a map of parameters from the body
     :params       - a merged map of both query and form parameters
   Takes an optional configuration map. Recognized keys are:
-    :encoding - encoding to use for url-decoding (default: \"UTF-8\")"
+    :encoding - encoding to use for url-decoding. If not specified, uses
+                the request character encoding, or \"UTF-8\" if no request
+                character encoding is set."
   [handler & [opts]]
-    (let [encoding (get opts :encoding "UTF-8")]
-      (fn [request]
-        (-> request
-          (assoc-form-params encoding)
-          (assoc-query-params encoding)
-          handler))))
+  (fn [request]
+    (let [encoding (or (:encoding opts)
+                       (:character-encoding request)
+                       "UTF-8")]
+      (-> request
+        (assoc-form-params encoding)
+        (assoc-query-params encoding)
+        handler))))
