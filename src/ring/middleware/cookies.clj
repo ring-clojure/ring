@@ -108,8 +108,9 @@
   to the :cookies key on the request."
   [handler]
   (fn [request]
-    (let [request  (assoc request :cookies (parse-cookies request))
-          response (handler request)]
-      (-> response
-        set-cookies
+    (let [request (if (request :cookies)
+                    request
+                    (assoc request :cookies (parse-cookies request)))]
+      (-> (handler request)
+        (set-cookies)
         (dissoc :cookies)))))

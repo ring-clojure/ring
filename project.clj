@@ -8,6 +8,7 @@
                  [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]
                  [org.apache.httpcomponents/httpcore "4.0.1"]
                  [org.apache.httpcomponents/httpcore-nio "4.0.1"]
+                 [commons-codec "1.4"]
                  [clj-html "0.1.0-SNAPSHOT"]
                  [clj-stacktrace "0.1.0-SNAPSHOT"]]
   :repositories [["mvnrepository" "http://mvnrepository.com/"]
