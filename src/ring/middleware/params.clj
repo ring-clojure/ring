@@ -4,12 +4,7 @@
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder))
 
-(defn- urldecode
-  "Decode a urlencoded string using the specified encoding."
-  [text encoding]
-  (URLDecoder/decode text encoding))
-
-(defn- assoc-vec
+(defn assoc-param
   "Associate a key with a value. If the key already exists in the map,
   create a vector of values."
   [map key val]
@@ -20,13 +15,18 @@
         [cur val])
       val)))
 
+(defn- urldecode
+  "Decode a urlencoded string using the specified encoding."
+  [text encoding]
+  (URLDecoder/decode text encoding))
+
 (defn- parse-params
   "Parse parameters from a string into a map."
   [#^String param-string encoding]
   (reduce
     (fn [param-map encoded-param]
       (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
-        (assoc-vec param-map
+        (assoc-param param-map
           (urldecode key encoding)
           (urldecode (or val "") encoding))
          param-map))
@@ -61,7 +61,7 @@
   the request map:
     :query-params - a map of parameters from the query string
     :form-params  - a map of parameters from the body
-    :params       - a merged map of both query and form parameters
+    :params       - a merged map of all types of parameter
   Takes an optional configuration map. Recognized keys are:
     :encoding - encoding to use for url-decoding. If not specified, uses
                 the request character encoding, or \"UTF-8\" if no request
