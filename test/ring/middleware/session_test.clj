@@ -1,6 +1,6 @@
 (ns ring.middleware.session-test
   (:use clojure.test
-        clojure.contrib.mock
+        clojure.contrib.mock.test-adapter
         ring.middleware.session))
 
 (declare reader writer deleter)
