@@ -15,7 +15,7 @@
 (def app
   (-> handle-dump
     wrap-error
-    (wrap-file "src/ring/example/public")
+    (wrap-file "example/public")
     wrap-file-info
     wrap-stacktrace))
 

@@ -18,12 +18,12 @@ A Ring handler:
 
 Adding simple middleware:
 
-    (defn with-upcase [app]
+    (defn wrap-upcase [app]
       (fn [req]
         (let [orig-resp (app req)]
           (assoc orig-resp :body (.toUpperCase (:body orig-resp))))))
     
-    (def upcase-app (with-upcase app))
+    (def upcase-app (wrap-upcase app))
     
     (run-jetty upcase-app {:port 8080})
 
@@ -36,7 +36,7 @@ First, pull in Ring's dependencies using [Leiningen](http://github.com/technoman
 
 To see a live "Hello World" Ring app, run:
 
-    $ clj src/ring/example/hello_world.clj
+    $ clj example/hello_world.clj
 
 Now visit `http://localhost:8080/` in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
@@ -44,7 +44,7 @@ Note that your `clj` script needs to add the `src` directory and the jars in `li
 
 To see a more sophisticated Ring app, run:
 
-    $ clj src/ring/example/wrapping.clj
+    $ clj example/wrapping.clj
 
 * If you request `http://localhost:8080/` in your browser the `ring.handler.dump` handler will respond with an HTML page representing the request map that it received (see the `SPEC` for details on the request map).
 * If you request `http://localhost:8080/clojure.png`, the `ring.middleware.file` middleware will detect that there is a `clojure.png` file in the app's `public` directory and return that image as a response.
@@ -68,11 +68,11 @@ Included Libs
 Development
 -----------
 
-Ring is being actively developed; you can track its progress and contribute at the project's [GitHub](http://github.com/mmcgrana/ring) page.
+Ring is being actively developed; you can track its progress and contribute at the project's [GitHub page](http://github.com/mmcgrana/ring) and [Google Group](http://groups.google.com/group/ring-clojure).
 
 To run all the Ring unit tests:
   
-    $ clj test/ring/run.clj
+    $ lein test
 
 Thanks
 ------
@@ -82,6 +82,6 @@ This project borrows heavily from Ruby's Rack and Python's WSGI, and I thank the
 License
 -------
 
-Copyright (c) 2009 Mark McGranaghan and released under an MIT license.
+Copyright (c) 2009-2010 Mark McGranaghan and released under an MIT license.
 
 Clojure logo by Tom Hickey.

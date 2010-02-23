@@ -60,7 +60,7 @@
 
 (defn- get-extension
   "Returns the file extension of a file."
-  [file]
+  [#^File file]
   (second (re-find #"\.([^./\\]+)$" (.getPath file))))
 
 (defn- guess-mime-type

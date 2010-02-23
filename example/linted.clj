@@ -13,9 +13,9 @@
     wrap-lint
     wrap-file-info
     wrap-lint
-    (wrap-file "src/ring/example/public")
+    (wrap-file "example/public")
     wrap-lint
-    (wrap-reload '(ring.dump)
-    wrap-lint)))
+    (wrap-reload '(ring.handler.dump))
+    wrap-lint))
 
 (run-jetty app {:port 8080})
