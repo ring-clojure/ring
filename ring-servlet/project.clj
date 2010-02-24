@@ -1,9 +1,6 @@
 (defproject ring/ring-servlet "0.2.0-SNAPSHOT"
-  :description "A Clojure web applications library."
+  :description "Ring servlet utilities."
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[ring/ring-core "0.2.0-SNAPSHOT"]
                  [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]]
-  :repositories [["mvnrepository" "http://mvnrepository.com/"]
-                 ["clojure-releases" "http://build.clojure.org/releases"]]
   :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]])
-
