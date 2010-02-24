@@ -1,4 +1,4 @@
-(defproject ring-core "0.2.0-SNAPSHOT"
+(defproject ring/ring-core "0.2.0-SNAPSHOT"
   :description "A Clojure web applications library."
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[org.clojure/clojure "1.1.0"]
