@@ -1,11 +1,12 @@
+# Ring
+
 Ring is a Clojure web applications library inspired by Python's WSGI and Ruby's Rack. By abstracting the details of HTTP into a simple, unified API, Ring allows web applications to be constructed of modular components that can be shared among a variety of applications, web servers, and web frameworks.
 
 The `SPEC` file at the root of this distribution for provides a complete description of the Ring interface.
 
-Examples
---------
+## Synopsis
 
-A Ring handler:
+A "Hello World" Ring handler:
 
     (use 'ring.adapter.jetty)
     
@@ -27,10 +28,9 @@ Adding simple middleware:
     
     (run-jetty upcase-app {:port 8080})
 
-Quick Start
------------
+## Quick Start
 
-First, pull in Ring's dependencies using [Leiningen](http://github.com/technomancy/leiningen):
+To see some working examples, first pull in Ring's dependencies using [Leiningen](http://github.com/technomancy/leiningen):
 
     $ lein deps
 
@@ -50,10 +50,7 @@ To see a more sophisticated Ring app, run:
 * If you request `http://localhost:8080/clojure.png`, the `ring.middleware.file` middleware will detect that there is a `clojure.png` file in the app's `public` directory and return that image as a response.
 * If you request `http://localhost:8080/error`, the app will produce an error that will be caught by the `ring.middleware.stacktrace` middleware, which will in turn return a readable stacktrace as the HTML response.
  
-Included Libs
--------------
-
-* `ring.example.*`: Various example Ring apps.
+## Available Libraries
 
 ### ring-core
 
@@ -68,10 +65,6 @@ Included Libs
 * `ring.middleware.reload`: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
 * `ring.middleware.stacktrace`: Middleware that catches exceptions and displays readable stacktraces for debugging.
 
-### ring-httpcore-adapter
-
-* `ring.adapter.httpcore`: Adapter for the Apache HttpCore webserver. 
-
 ### ring-servlet
 
 * `ring.util.servlet`: Utilities for interfacing with Java Servlets.
@@ -80,37 +73,41 @@ Included Libs
 
 * `ring.adapter.jetty`: Adapter for the Jetty webserver.
 
-Lein project usage
-------------------
+### ring-httpcore-adapter
 
-To include one of the above libraries in your leiningen project:
+* `ring.adapter.httpcore`: Adapter for the Apache HttpCore webserver. 
 
-    [ring/*lib-name* "0.2.0-SNAPSHOT"]
+## Leiningen Usage
 
-or
+To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependences`:
 
-    [ring "0.2.0-SNAPSHOT"]
-    
-for the "all in one" solution.
+    [ring/ring-core "0.2.0-SNAPSHOT"]
 
-Development
------------
+or to depend on all of the available Ring libraries, add:
+
+    [ring/ring "0.2.0-SNAPSHOT"]
+
+## Development
 
 Ring is being actively developed; you can track its progress and contribute at the project's [GitHub page](http://github.com/mmcgrana/ring) and [Google Group](http://groups.google.com/group/ring-clojure).
 
-To run the Ring unit tests navigate to the individual project and run:
-  
+To run the Ring unit tests, first navigate to the appropriate project and then:
+
+    $ lein deps
     $ lein test
 
-This assumes `lein deps` has been run.
+## Thanks
 
-Thanks
-------
+This project borrows heavily from Ruby's Rack and Python's WSGI; thanks to those communities for their work.
 
-This project borrows heavily from Ruby's Rack and Python's WSGI, and I thank the communities developing and supporting those projects.
+Thanks also to the following Ring contributors:
 
-License
--------
+* James Reeves
+* Christophe Grand
+* Richard Newman
+* Seth Buntin
+
+## License
 
 Copyright (c) 2009-2010 Mark McGranaghan and released under an MIT license.
 
