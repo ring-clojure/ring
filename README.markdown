@@ -53,26 +53,56 @@ To see a more sophisticated Ring app, run:
 Included Libs
 -------------
 
-* `ring.adapter.jetty`: Adapter for the Jetty webserver.
-* `ring.adapter.httpcore`: Adapter for the Apache HttpCore webserver. 
+* `ring.example.*`: Various example Ring apps.
+
+### ring-core
+
 * `ring.middleware.file`: Middleware that serves static files out of a public directory.
 * `ring.middleware.file-info`: Middleware that augments response headers with info about File responses.
+* `ring.middleware.static`: Middleware that serves static files with specified prefixes out of a public directory.
+
+### ring-devel
+
+* `ring.handler.dump`: Handler that dumps request maps as HTML responses for debugging.
 * `ring.middleware.lint`: Linter for the Ring interface, ensures compliance with the Ring spec.
 * `ring.middleware.reload`: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
 * `ring.middleware.stacktrace`: Middleware that catches exceptions and displays readable stacktraces for debugging.
-* `ring.middleware.static`: Middleware that serves static files with specified prefixes out of a public directory.
-* `ring.handler.dump`: Handler that dumps request maps as HTML responses for debugging.
+
+### ring-httpcore-adapter
+
+* `ring.adapter.httpcore`: Adapter for the Apache HttpCore webserver. 
+
+### ring-servlet
+
 * `ring.util.servlet`: Utilities for interfacing with Java Servlets.
-* `ring.example.*`: Various example Ring apps.
+
+###  ring-jetty-adapter
+
+* `ring.adapter.jetty`: Adapter for the Jetty webserver.
+
+Lein project usage
+------------------
+
+To include one of the above libraries in your leiningen project:
+
+    [ring/*lib-name* "0.2.0-SNAPSHOT"]
+
+or
+
+    [ring "0.2.0-SNAPSHOT"]
+    
+for the "all in one" solution.
 
 Development
 -----------
 
 Ring is being actively developed; you can track its progress and contribute at the project's [GitHub page](http://github.com/mmcgrana/ring) and [Google Group](http://groups.google.com/group/ring-clojure).
 
-To run all the Ring unit tests:
+To run the Ring unit tests navigate to the individual project and run:
   
     $ lein test
+
+This assumes `lein deps` has been run.
 
 Thanks
 ------
