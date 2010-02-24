@@ -54,16 +54,20 @@ To see a more sophisticated Ring app, run:
 
 ### ring-core
 
-* `ring.middleware.file`: Middleware that serves static files out of a public directory.
-* `ring.middleware.file-info`: Middleware that augments response headers with info about File responses.
-* `ring.middleware.static`: Middleware that serves static files with specified prefixes out of a public directory.
+* `ring.middleware.file`: Serve static files out of a public directory.
+* `ring.middleware.static`: Serve static files with specified prefixes out of a public directory.
+* `ring.middleware.file-info`: Augment response headers with info about File responses.
+* `ring.middleware.params`: Parse query and form params.
+* `ring.middleware.multipart`: Parse multipart params.
+* `ring.middleware.cookies`: Manage browser cookies.
+* `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
 
 ### ring-devel
 
-* `ring.handler.dump`: Handler that dumps request maps as HTML responses for debugging.
-* `ring.middleware.lint`: Linter for the Ring interface, ensures compliance with the Ring spec.
-* `ring.middleware.reload`: Middleware to automatically reload selected libs before each requests, minimizing server restarts.
-* `ring.middleware.stacktrace`: Middleware that catches exceptions and displays readable stacktraces for debugging.
+* `ring.handler.dump`: Dumps request maps as HTML responses for debugging.
+* `ring.middleware.lint`: Lint requests and responses to ensure compliance with the Ring spec.
+* `ring.middleware.reload`: Automatically reload selected libs before each request.
+* `ring.middleware.stacktrace`: Catch exceptions and displays readable stacktraces for debugging.
 
 ### ring-servlet
 
