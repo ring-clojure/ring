@@ -61,6 +61,8 @@ To see a more sophisticated Ring app, run:
 * `ring.middleware.multipart`: Parse multipart params.
 * `ring.middleware.cookies`: Manage browser cookies.
 * `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
+* 'ring.util.response`: Generate Ring responses.
+* `ring.util.request`: Parse Ring requests.
 
 ### ring-devel
 
