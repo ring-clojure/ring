@@ -1,7 +1,8 @@
 (ns ring.handler.dump
   (:use (clj-html core helpers)
-        (clojure.contrib def)
-        (clojure set)))
+        (clojure.contrib [def :only (defvar-)])
+        ring.util.response)
+  (:require (clojure [set :as set])))
 
 (declare css)
 
@@ -30,7 +31,7 @@
           [:tbody
             (for [key ring-keys]
               (req-pair key req))]]
-        (if-let [user-keys (difference (set (keys req)) (set ring-keys))]
+        (if-let [user-keys (set/difference (set (keys req)) (set ring-keys))]
           (html
              [:br]
              [:table.request.user
@@ -42,11 +43,11 @@
   "Returns a response tuple corresponding to an HTML dump of the request
   req as it was recieved by this app."
   [req]
-  {:status  200
-   :headers {"Content-Type" "text/html"}
-   :body    (template req)})
+  (-> (response (template req))
+    (status 200)
+    (content-type "text/html")))
 
-(def #^{:private true} css "
+(defvar- css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:

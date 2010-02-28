@@ -1,14 +1,15 @@
 (ns ring.middleware.stacktrace
   (:use (clj-html core helpers)
-        (clojure.contrib str-utils)
-        (clj-stacktrace core repl)))
+        (clj-stacktrace core repl)
+        (clojure.contrib [def :only (defvar-)])
+        ring.util.response))
 
 (declare css)
 
-(defn- js-response [req e]
-  {:status  500
-   :headers {"Content-Type" "text/javascript"}
-   :body    (pst-str e)})
+(defn- js-ex-response [e]
+  (-> (response (pst-str e))
+    (status 500)
+    (content-type "text/javascript")))
 
 (defn- elem-partial [elem]
   (if (:clojure elem)
@@ -19,32 +20,33 @@
       [:td.source (h (source-str      elem))]
       [:td.method (h (java-method-str elem))]]))
 
-(defn- html-reponse [req e]
-  (let [excp (parse-exception e)]
-    {:status 500
-     :headers {"Content-Type" "text/html"}
-     :body
-       (html
-         (doctype :xhtml-transitional)
-         [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-           [:head
-             [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
-             [:title "Ring: Stacktrace"]
-             [:style {:type "text/css"} css]
-             [:body
-               [:div#content
-                 [:h3.info (h (str e))]
-                 [:table.trace [:tbody
-                   (map elem-partial (:trace-elems excp))]]]]]])}))
+(defn- html-ex-view [e]
+  (html
+    (doctype :xhtml-transitional)
+    [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+      [:head
+        [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
+        [:title "Ring: Stacktrace"]
+        [:style {:type "text/css"} css]
+        [:body
+          [:div#content
+            [:h3.info (h (str e))]
+            [:table.trace [:tbody
+              (map elem-partial (:trace-elems excp))]]]]]]))
 
-(defn- response
+(defn- html-ex-response [e]
+  (-> (response (html-ex-view e))
+    (status 500)
+    (content-type "text/html")))
+
+(defn- ex-response
   "Returns a response showing debugging information about the exception.
   Currently supports delegation to either js or html exception views."
   [req e]
   (let [accept (get-in req [:headers "accept"])]
     (if (and accept (re-find #"^text/javascript" accept))
-      (js-response req e)
-      (html-reponse req e))))
+      (js-ex-response e)
+      (html-ex-reponse e))))
 
 (defn wrap-stacktrace
   "Wrap an app such that exceptions thrown within the wrapped app are caught 
@@ -54,9 +56,9 @@
     (try
       (app req)
       (catch Exception e
-        (response req e)))))
+        (ex-response req e)))))
 
-(def #^{:private true} css "
+(defvar- css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:

@@ -1,11 +1,13 @@
 (ns ring.middleware.file
-  (:use clojure.contrib.except)
-  (:import (java.io File)))
+  (:use (clojure.contrib [def :only (defvar-)]
+                         [except :only (throw-if-not)])
+        ring.util.response)
+  (:import java.io.File java.net.URLDecoder))
 
 (defn- url-decode
   "Returns the form-url-decoded version of the given string."
   [encoded]
-  (java.net.URLDecoder/decode encoded "UTF-8"))
+  (URLDecoder/decode encoded "UTF-8"))
 
 (defn- str-includes?
   "Returns logical truth iff the given target appears in the given string"
@@ -18,19 +20,14 @@
   returning."
   [dir]
   (let [#^File fdir (if (string? dir) (File. #^String dir) dir)]
-    (throw-if-not (.exists fdir)
+    (ex/throw-if-not (.exists fdir)
       "Directory does not exist: %s" fdir)
     fdir))
 
-(defn- forbidden
-  []
-  {:status  403
-   :headers {"Content-Type" "text/html"}
-   :body    "<html><body><h1>403 Forbidden</h1></body></html>"})
-
-(defn- success
-  [file]
-  {:status 200 :headers {} :body file})
+(defvar- forbidden
+  (-> (response "<html><body><h1>403 Forbidden</h1></body></html>")
+    (status 403)
+    (content-type "text/html")))
 
 (defn- maybe-file
   "Returns the File corresponding to the given relative path within the given
@@ -49,12 +46,12 @@
       (if (#{:get :head} (:request-method req))
         (let [uri (url-decode (:uri req))]
           (if (str-includes? ".." uri)
-            (forbidden)
+            forbidden
             (let [path (cond
                          (.endsWith "/" uri)        (str uri "index.html")
                          (re-find #"\.[a-z]+$" uri) uri
                          :else                      (str uri ".html"))]
               (if-let [file (maybe-file fdir path)]
-                (success file)
+                (respond file)
                 (app req)))))
         (app req)))))
