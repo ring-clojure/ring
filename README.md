@@ -58,7 +58,7 @@ To see a more sophisticated Ring app, run:
 * `ring.middleware.static`: Serve static files with specified prefixes out of a public directory.
 * `ring.middleware.file-info`: Augment response headers with info about File responses.
 * `ring.middleware.params`: Parse query and form params.
-* `ring.middleware.multipart`: Parse multipart params.
+* `ring.middleware.multipart-params`: Parse multipart params.
 * `ring.middleware.cookies`: Manage browser cookies.
 * `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
 * `ring.util.response`: Generate Ring responses.

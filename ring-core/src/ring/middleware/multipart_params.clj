@@ -1,4 +1,4 @@
-(ns ring.middleware.multipart
+(ns ring.middleware.multipart-params
   (:use clojure.contrib.def
         [ring.middleware.params :only (assoc-param)])
   (:import [org.apache.commons.fileupload
