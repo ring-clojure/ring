@@ -1,7 +1,7 @@
 (ns ring.middleware.file-test
-  (:use (clojure test)
-        (ring.middleware file))
-  (:import (java.io File)))
+  (:use clojure.test
+        ring.middleware.file)
+  (:import java.io.File))
 
 (deftest wrap-file-no-directory
   (is (thrown-with-msg? Exception #".*Directory does not exist.*"

@@ -1,5 +1,6 @@
 (ns ring.middleware.file-info
-  (:use clojure.contrib.def)
+  "Augment Ring File responses."
+  (:use [clojure.contrib.def :only (defvar-)])
   (:import java.io.File))
 
 (defvar- base-mime-types

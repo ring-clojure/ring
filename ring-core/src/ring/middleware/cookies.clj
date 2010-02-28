@@ -1,6 +1,7 @@
 (ns ring.middleware.cookies
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.java-utils))
+  "Cookie manipulation."
+  (:use [clojure.contrib.def :only (defvar-)])
+  (:require [clojure.contrib.java-utils :as ju]))
 
 (defvar- re-token #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+"
   "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068")
@@ -74,7 +75,7 @@
 (defn- write-attr
   "Turn a name-value pair into a cookie attr string."
   [name value]
-  (str (as-str name) "=" (pr-str value)))
+  (str (ju/as-str name) "=" (pr-str value)))
 
 (defn- write-attr-map
   "Write a map of cookie attributes to a string."
@@ -99,7 +100,7 @@
   "Add a Set-Cookie header to a response if there is a :cookies key."
   [response]
   (if-let [cookies (:cookies response)]
-    (assoc-in response 
+    (assoc-in response
               [:headers "Set-Cookie"]
               (write-cookies cookies))
     response))

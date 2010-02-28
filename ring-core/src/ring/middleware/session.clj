@@ -1,4 +1,5 @@
 (ns ring.middleware.session
+  "Session manipulation."
   (:use ring.middleware.cookies
         ring.middleware.session.memory))
 

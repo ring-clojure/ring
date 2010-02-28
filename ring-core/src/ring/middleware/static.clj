@@ -1,5 +1,6 @@
 (ns ring.middleware.static
-  (:use (ring.middleware file)))
+  "Static file serving, more selective than ring.middleware.file."
+  (:use ring.middleware.file))
 
 (defn wrap-static
   "Like ring.file, but takes an additional statics, a coll of Strings that will

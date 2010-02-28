@@ -1,7 +1,7 @@
 (ns ring.middleware.params-test
-  (:use (clojure test)
-        (ring.middleware params))
-  (:import (java.io ByteArrayInputStream)))
+  (:use clojure.test
+        ring.middleware.params)
+  (:import java.io.ByteArrayInputStream))
 
 (defn- str-input-stream [#^String s]
   (ByteArrayInputStream. (.getBytes s)))

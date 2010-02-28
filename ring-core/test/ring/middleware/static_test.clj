@@ -1,7 +1,7 @@
 (ns ring.middleware.static-test
-  (:use (clojure test)
-        (ring.middleware static))
-  (:import (java.io File)))
+  (:use clojure.test
+        ring.middleware.static)
+  (:import java.io.File))
 
 (def public-dir      (File. "test/ring/assets"))
 (def foo-html        (File. "test/ring/assets/foo.html"))

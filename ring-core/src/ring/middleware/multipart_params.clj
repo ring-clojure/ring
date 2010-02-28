@@ -1,12 +1,12 @@
 (ns ring.middleware.multipart-params
-  (:use clojure.contrib.def
+  "Parse multipart upload into params."
+  (:use [clojure.contrib.def :only (defvar-)]
         [ring.middleware.params :only (assoc-param)])
-  (:import [org.apache.commons.fileupload
-              FileUpload
-              RequestContext]
-           [org.apache.commons.fileupload.disk
-              DiskFileItemFactory
-              DiskFileItem]))
+  (:import (org.apache.commons.fileupload
+             FileUpload RequestContext)
+           (org.apache.commons.fileupload.disk
+             DiskFileItemFactory
+             DiskFileItem)))
 
 (defn- multipart-form?
   "Does a request have a multipart form?"

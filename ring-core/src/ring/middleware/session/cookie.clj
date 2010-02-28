@@ -1,6 +1,6 @@
 (ns ring.middleware.session.cookie
   "Encrypted cookie session storage."
-  (:use clojure.contrib.def)
+  (:use [clojure.contrib.def :only (defvar-)])
   (:require (ring.util [codec :as codec]))
   (:import java.security.SecureRandom
            (javax.crypto Cipher Mac)

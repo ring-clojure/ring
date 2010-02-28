@@ -1,5 +1,7 @@
 (ns ring.util.codec
-  (:import java.io.File java.net.URLDecoder
+  "Encoding and decoding utilities."
+  (:import java.io.File
+           java.net.URLDecoder
            org.apache.commons.codec.binary.Base64))
 
 (defn url-decode
