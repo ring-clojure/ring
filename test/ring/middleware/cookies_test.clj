@@ -55,3 +55,8 @@
         resp    ((wrap-cookies handler) {})]
     (is (= {"Set-Cookie" (list "a=\"b\";Path=\"/\";Secure")}
            (:headers resp)))))
+
+(deftest wrap-cookies-always-assocs-map
+  (let [req  {:headers {}}
+        resp ((wrap-cookies :cookies) req)]
+    (is (= {} resp))))

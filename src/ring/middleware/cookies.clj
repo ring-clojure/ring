@@ -68,7 +68,8 @@
       parse-cookie-header
       normalize-quoted-strs
       to-cookie-map
-      (dissoc "$Version"))))
+      (dissoc "$Version"))
+    {}))
 
 (defn- write-attr
   "Turn a name-value pair into a cookie attr string."
