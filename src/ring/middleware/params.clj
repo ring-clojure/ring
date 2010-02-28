@@ -70,8 +70,11 @@
   (fn [request]
     (let [encoding (or (:encoding opts)
                        (:character-encoding request)
-                       "UTF-8")]
-      (-> request
-        (assoc-form-params encoding)
-        (assoc-query-params encoding)
-        handler))))
+                       "UTF-8")
+          request  (if (:form-params request)
+                     request
+                     (assoc-form-params request encoding))
+          request  (if (:query-params request)
+                     request
+                     (assoc-query-params request encoding))]
+      (handler request))))
