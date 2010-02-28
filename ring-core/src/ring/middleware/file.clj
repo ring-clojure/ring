@@ -2,7 +2,8 @@
   (:use (clojure.contrib [def :only (defvar-)]
                          [except :only (throw-if-not)])
         ring.util.response)
-  (:require (ring.util [codec :as codec])))
+  (:require (ring.util [codec :as codec]))
+  (:import java.io.File))
 
 (defn- str-includes?
   "Returns logical truth iff the given target appears in the given string"
@@ -15,7 +16,7 @@
   returning."
   [dir]
   (let [#^File fdir (if (string? dir) (File. #^String dir) dir)]
-    (ex/throw-if-not (.exists fdir)
+    (throw-if-not (.exists fdir)
       "Directory does not exist: %s" fdir)
     fdir))
 
@@ -47,6 +48,6 @@
                          (re-find #"\.[a-z]+$" uri) uri
                          :else                      (str uri ".html"))]
               (if-let [file (maybe-file fdir path)]
-                (respond file)
+                (response file)
                 (app req)))))
         (app req)))))

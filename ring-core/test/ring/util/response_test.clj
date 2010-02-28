@@ -2,8 +2,6 @@
   (:use clojure.test
         ring.util.response))
 
-(deftest test-redirects-to
+(deftest test-redirect
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
-         (redirect-to "http://google.com")))
-  (is (= {:status 303 :headers {"Location" "http://google.com"} :body ""}
-         (redirect-to "http://google.com" {:status 303}))))
+         (redirect "http://google.com"))))

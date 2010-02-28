@@ -5,7 +5,7 @@
 
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
-  [url & [opts]]
+  [url]
   {:status  302
    :headers {"Location" url}
    :body    ""})
@@ -13,7 +13,7 @@
 (defn response
   "Returns a skeletal Ring response with the given body, status of 200, and no
   headers."
-  [body & [opts]]
+  [body]
   {:status  200
    :body    body
    :headers {}})
@@ -35,8 +35,8 @@
   [resp status]
   (assoc resp :status status))
 
-(def content-type
-  "Returns an update Ring response with the a Content-Type header corresponding
+(defn content-type
+  "Returns an updated Ring response with the a Content-Type header corresponding
   to the given content-type."
   [resp content-type]
   (assoc-in resp [:headers "Content-Type"] content-type))

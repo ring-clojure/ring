@@ -1,4 +1,5 @@
-(ns ring.util.file)
+(ns ring.util.file
+  (:import java.io.File))
 
 (defn safe-path?
   "Is a filepath safe for a particular root?"
