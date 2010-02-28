@@ -1,8 +1,6 @@
 (ns ring.middleware.params
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.duck-streams)
-  (:use clojure.contrib.str-utils)
-  (:import java.net.URLDecoder))
+  (:use (clojure.contrib def duck-streams str-utils))
+  (:require (ring.util [codec :as codec])))
 
 (defn assoc-param
   "Associate a key with a value. If the key already exists in the map,
@@ -15,11 +13,6 @@
         [cur val])
       val)))
 
-(defn- urldecode
-  "Decode a urlencoded string using the specified encoding."
-  [text encoding]
-  (URLDecoder/decode text encoding))
-
 (defn- parse-params
   "Parse parameters from a string into a map."
   [#^String param-string encoding]
@@ -27,8 +20,8 @@
     (fn [param-map encoded-param]
       (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
         (assoc-param param-map
-          (urldecode key encoding)
-          (urldecode (or val "") encoding))
+          (codec/url-decode key encoding)
+          (codec/url-decode (or val "") encoding))
          param-map))
     {}
     (re-split #"&" param-string)))

@@ -2,12 +2,7 @@
   (:use (clojure.contrib [def :only (defvar-)]
                          [except :only (throw-if-not)])
         ring.util.response)
-  (:import java.io.File java.net.URLDecoder))
-
-(defn- url-decode
-  "Returns the form-url-decoded version of the given string."
-  [encoded]
-  (URLDecoder/decode encoded "UTF-8"))
+  (:require (ring.util [codec :as codec])))
 
 (defn- str-includes?
   "Returns logical truth iff the given target appears in the given string"
@@ -44,7 +39,7 @@
   (let [fdir (ensure-dir dir)]
     (fn [req]
       (if (#{:get :head} (:request-method req))
-        (let [uri (url-decode (:uri req))]
+        (let [uri (codec/url-decode (:uri req))]
           (if (str-includes? ".." uri)
             forbidden
             (let [path (cond
