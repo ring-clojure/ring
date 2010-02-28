@@ -12,7 +12,7 @@
   (let [req  {:query-string "foo=bar&biz=bat%25"}
         resp (wrapped-echo req)]
     (is (= {"foo" "bar" "biz" "bat%"} (:query-params resp)))
-    (is (nil? (:form-params resp)))
+    (is (empty? (:form-params resp)))
     (is (= {"foo" "bar" "biz" "bat%"} (:params resp)))))
 
 (deftest wrap-params-query-and-form-params
@@ -28,5 +28,14 @@
   (let [req  {:content-type "application/json"
               :body         (str-input-stream "{foo: \"bar\"}")}
         resp (wrapped-echo req)]
-    (is (nil? (:form-params resp)))
-    (is (nil? (:params resp)))))
+    (is (empty? (:form-params resp)))
+    (is (empty? (:params resp)))))
+
+(deftest wrap-params-always-assocs-maps
+  (let [req  {:query-string ""
+              :content-type "application/x-www-form-urlencoded"
+              :body         (str-input-stream "")}
+        resp (wrapped-echo req)]
+    (is (= {} (:query-params resp)))
+    (is (= {} (:form-params resp)))
+    (is (= {} (:params resp)))))

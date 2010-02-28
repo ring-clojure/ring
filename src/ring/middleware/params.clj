@@ -36,10 +36,11 @@
 (defn- assoc-query-params
   "Parse and assoc parameters from the query string with the request."
   [request encoding]
-  (if-let [query-string (:query-string request)]
-    (let [params (parse-params query-string encoding)]
-      (merge-with merge request {:query-params params, :params params}))
-    request))
+  (merge-with merge request
+    (if-let [query-string (:query-string request)]
+      (let [params (parse-params query-string encoding)]
+        {:query-params params, :params params})
+      {:query-params {}, :params {}})))
 
 (defn- urlencoded-form?
   "Does a request have a urlencoded form?"
@@ -50,10 +51,11 @@
 (defn- assoc-form-params
   "Parse and assoc parameters from the request body with the request."
   [request encoding]
-  (if-let [body (and (urlencoded-form? request) (:body request))]
-    (let [params (parse-params (slurp* body) encoding)]
-      (merge-with merge request {:form-params params, :params params}))
-    request))
+  (merge-with merge request
+    (if-let [body (and (urlencoded-form? request) (:body request))]
+      (let [params (parse-params (slurp* body) encoding)]
+        {:form-params params, :params params})
+      {:form-params {}, :params {}})))
 
 (defn wrap-params
   "Middleware to parse urlencoded parameters from the query string and form
