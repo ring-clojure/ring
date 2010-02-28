@@ -1,6 +1,6 @@
 (ns ring.middleware.reload-test
-  (:use (clojure test)
-        (ring.middleware reload)))
+  (:use clojure.test
+        ring.middleware.reload))
 
 (def app
   (wrap-reload (constantly :response) '(ring.middleware.reload)))

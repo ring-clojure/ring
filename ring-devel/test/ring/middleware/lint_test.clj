@@ -1,6 +1,6 @@
 (ns ring.middleware.lint-test
-  (:use (clojure test)
-        (ring.middleware lint))
+  (:use clojure.test
+        ring.middleware.lint)
   (:import (java.io File InputStream ByteArrayInputStream)))
 
 (defn str-input-stream

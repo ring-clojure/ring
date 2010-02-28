@@ -1,6 +1,6 @@
 (ns ring.middleware.stacktrace-test
-  (:use (clojure test)
-        (ring.middleware stacktrace)))
+  (:use clojure.test
+        ring.middleware.stacktrace))
 
 (def app (wrap-stacktrace #(throw (Exception. "fail"))))
 

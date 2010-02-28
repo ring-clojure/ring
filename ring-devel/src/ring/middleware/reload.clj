@@ -1,4 +1,5 @@
-(ns ring.middleware.reload)
+(ns ring.middleware.reload
+  "Reload namespaces before requests.")
 
 (defn wrap-reload
   "Wrap an app such that before a request is passed to the app, each namespace

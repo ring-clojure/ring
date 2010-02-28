@@ -1,9 +1,10 @@
 (ns ring.middleware.lint
-  (:use (clojure set)
-        (clojure.contrib except))
+  "Lint Ring requests and responses."
+  (:use [clojure.contrib.except :only (throwf)])
+  (:require [clojure.set :as set])
   (:import (java.io File InputStream)))
 
-(defn lint
+(defn- lint
   "Asserts that spec applied to val returns logical truth, otherwise raises
   an exception with a message produced by applying format to the message-pattern
   argument and a printing of an invalid val."
@@ -18,16 +19,16 @@
           message (pr-str val) (.getMessage e))
         (throw e)))))
 
-(defn lint-namespacing
+(defn- lint-namespacing
   "Asserts that all keys are namespaces other than those included in a 
   specified set of permitted unnamspaced keys"
   [map map-name no-namespace-needed]
-  (let [must-namespace (difference (set (keys map)) no-namespace-needed)]
+  (let [must-namespace (set/difference (set (keys map)) no-namespace-needed)]
     (doseq [k must-namespace]
       (lint k namespace
         (format "user keys in the %s map must be namespaced" map-name)))))
 
-(defn check-req
+(defn- check-req
   "Validates the request, throwing an exception on violations of the spec"
   [req]
   (lint req map?
@@ -73,7 +74,7 @@
       :request-method :content-type :content-length :character-encoding
       :headers :body}))
 
-(defn check-resp
+(defn- check-resp
   "Validates the response, throwing an exception on violations of the spec"
   [resp]
   (lint resp map?
