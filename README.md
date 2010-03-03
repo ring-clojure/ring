@@ -59,6 +59,7 @@ To see a more sophisticated Ring app, run:
 * `ring.middleware.file-info`: Augment response headers with info about File responses.
 * `ring.middleware.params`: Parse query and form params.
 * `ring.middleware.multipart-params`: Parse multipart params.
+* 'ring.middleware.keyword-params`: Convert string param keys to keywords.
 * `ring.middleware.cookies`: Manage browser cookies.
 * `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
 * `ring.util.response`: Generate Ring responses.
