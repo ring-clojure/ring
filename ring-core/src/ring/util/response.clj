@@ -14,8 +14,8 @@
   headers."
   [body]
   {:status  200
-   :body    body
-   :headers {}})
+   :headers {}
+   :body    body})
 
 (defn- safe-path?
   "Is a filepath safe for a particular root?"
