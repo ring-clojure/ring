@@ -2,8 +2,6 @@
   "Generate and augment Ring responses."
   (:import java.io.File))
 
-; Ring responses
-
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
   [url]
@@ -34,30 +32,27 @@
        (.listFiles dir))))
 
 (defn- get-file
-  "Safely retrieve the correct file. See static-file for an
+  "Safely retrieve the correct file. See file-response for an
   explanation of options."
   [#^String path opts]
-  (let [file (if-let [#^String root (:root opts)]
-               (if (safe-path? root path)
-                 (File. root path))
-               (File. path))]
-    (if (.exists file)
-      (if (.isDirectory file)
-        (if (:index-files? opts true)
-          (find-index-file file))
-        file))))
+  (if-let [file (if-let [#^String root (:root opts)]
+                  (and (safe-path? root path) (File. root path))
+                  (File. path))]
+    (cond
+      (.isDirectory file)
+        (and (:index-files? opts true) (find-index-file file))
+      (.exists file)
+        file)))
 
-(defn static-file
-  "Returns a Ring response to serve a static file, or nil if the file does
-  not exist.
+(defn file-response
+  "Returns a Ring response to serve a static file, or nil if an appropriate
+  file does not exist.
   Options:
     :root         - take the filepath relative to this root path
     :index-files? - look for index.* files in directories, defaults to true"
   [filepath & [opts]]
   (if-let [file (get-file filepath opts)]
     (response file)))
-
-; Ring response augmenters
 
 (defn status
   "Returns an updated Ring response with the given status."
