@@ -14,7 +14,7 @@
   (if-let [#^String content-type (:content-type request)]
     (.startsWith content-type "multipart/form-data")))
 
-(defvar- file-upload
+(defvar- #^FileUpload file-upload
   (FileUpload.
     (doto (DiskFileItemFactory.)
       (.setSizeThreshold -1)
@@ -23,6 +23,7 @@
 
 (defn- request-context
   "Create a RequestContext object from a request map."
+  {:tag RequestContext}
   [request encoding]
   (proxy [RequestContext] []
     (getContentType []       (:content-type request))
@@ -55,7 +56,7 @@
        file-upload
        (request-context request encoding))))
 
-(defn wrap-multipart
+(defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
   following keys to the request map:
     :multipart-params - a map of multipart parameters
