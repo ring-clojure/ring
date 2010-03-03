@@ -11,7 +11,7 @@
 (defn- multipart-form?
   "Does a request have a multipart form?"
   [request]
-  (if-let [content-type (:content-type request)]
+  (if-let [#^String content-type (:content-type request)]
     (.startsWith content-type "multipart/form-data")))
 
 (defvar- file-upload

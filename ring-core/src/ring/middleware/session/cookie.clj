@@ -59,7 +59,7 @@
   [options]
   (if-let [secret-key (:key options)]
     (if (string? secret-key)
-      (.getBytes secret-key)
+      (.getBytes #^String secret-key)
       secret-key)
     (secure-random-bytes 16)))
 
@@ -71,7 +71,7 @@
 
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
-  [key string]
+  [key #^String string]
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
     (if (= mac (hmac key data))

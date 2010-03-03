@@ -21,23 +21,23 @@
 
 (defn- safe-path?
   "Is a filepath safe for a particular root?"
-  [root path]
+  [#^String root #^String path]
   (.startsWith (.getCanonicalPath (File. root path))
                (.getCanonicalPath (File. root))))
 
 (defn- find-index-file
   "Search the directory for an index file."
-  [dir]
+  [#^File dir]
   (first
     (filter
-      #(.startsWith (.toLowerCase (.getName %)) "index.")
+      #(.startsWith (.toLowerCase (.getName #^File %)) "index.")
        (.listFiles dir))))
 
 (defn- get-file
   "Safely retrieve the correct file. See static-file for an
   explanation of options."
-  [path opts]
-  (let [file (if-let [root (:root opts)]
+  [#^String path opts]
+  (let [file (if-let [#^String root (:root opts)]
                (if (safe-path? root path)
                  (File. root path))
                (File. path))]
