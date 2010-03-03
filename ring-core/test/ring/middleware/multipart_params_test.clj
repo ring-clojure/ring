@@ -2,18 +2,16 @@
   (:use clojure.test
         ring.middleware.multipart-params
         [clojure.contrib.def :only (defvar-)])
-  (:require [clojure.contrib.duck-streams :as du])
-  (:import (java.io File ByteArrayInputStream)))
-
-(defn- str-input-stream [#^String s]
-  (ByteArrayInputStream. (.getBytes s)))
+  (:require [clojure.contrib.duck-streams :as du]
+            [ring.util.test :as test :as tu])
+  (:import java.io.File))
 
 (defvar- upload-content-type
   "multipart/form-data; boundary=----WebKitFormBoundaryAyGUY6aMxOI6UF5s")
 
 (defvar- upload-content-length 188)
 
-(defvar- upload-body (str-input-stream
+(defvar- upload-body (tu/string-input-stream
   "------WebKitFormBoundaryAyGUY6aMxOI6UF5s\r\nContent-Disposition: form-data; name=\"upload\"; filename=\"test.txt\"\r\nContent-Type: text/plain\r\n\r\nfoo\r\n\r\n------WebKitFormBoundaryAyGUY6aMxOI6UF5s--"))
 
 (defvar- wrapped-echo (wrap-multipart-params identity))

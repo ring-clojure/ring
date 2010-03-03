@@ -1,12 +1,8 @@
 (ns ring.middleware.lint-test
   (:use clojure.test
         ring.middleware.lint)
-  (:import (java.io File InputStream ByteArrayInputStream)))
-
-(defn str-input-stream
-  "Returns a ByteArrayInputStream for the given String."
-  [#^String string]
-  (ByteArrayInputStream. (.getBytes string)))
+  (:require [ring.util.test :as test :as tu])
+  (:import (java.io File InputStream)))
 
 (def valid-request
   {:server-port        80
@@ -114,7 +110,7 @@
   [nil {:foo "bar"} {"bar" :foo} {"Bar" "foo"}])
 
 (lints-req :body
-  [nil (str-input-stream "thebody")]
+  [nil (tu/string-input-stream "thebody")]
   ["thebody" :thebody])
 
 
@@ -127,5 +123,5 @@
   [nil {:foo "bar"} {"foo" :bar} {"dir" 123}])
 
 (lints-resp :body
-  [nil "thebody" (str-input-stream "thebody") (File. "test/ring/assets/foo.html")]
+  [nil "thebody" (tu/string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
   [123 :thebody])
