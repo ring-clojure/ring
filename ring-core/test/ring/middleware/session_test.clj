@@ -53,3 +53,22 @@
         response (handler {:cookies {"ring-session" {:value "foo:bar"}}})]
     (is (= (get-in response [:headers "Set-Cookie"])
            ["ring-session=\"deleted\""]))))
+
+(deftest session-cookie-has-attributes
+  (let [store {:read (constantly {})
+	       :write (constantly "foo:bar")}
+	handler (constantly {:session {:foo "bar"}})
+	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
+	response (handler {:cookies {}})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+	   ["ring-session=\"foo:bar\";Max-Age=5"]))))
+
+(deftest session-does-not-clobber-response-cookies
+  (let [store {:read (constantly {})
+	       :write (constantly "foo:bar")}
+	handler (constantly {:session {:foo "bar"}
+			     :cookies {"cookie2" "value2"}})
+	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
+	response (handler {:cookies {}})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+	   ["ring-session=\"foo:bar\";Max-Age=5" "cookie2=\"value2\""]))))

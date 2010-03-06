@@ -16,12 +16,16 @@
       in-memory storage.
     :cookie-name
       The name of the cookie that holds the session key. Defaults to
-      \"ring-session\""
+      \"ring-session\"
+    :cookie-attrs
+      A map of attributes to associate with the session cookie. Defaults
+      to {}."
   ([handler]
     (wrap-session handler {}))
   ([handler options]
-    (let [store  (options :store (memory-store))
-          cookie (options :cookie-name "ring-session")]
+     (let [store        (options :store (memory-store))
+	   cookie       (options :cookie-name "ring-session")
+	   cookie-attrs (options :cookie-attrs {})]
       (wrap-cookies
         (fn [request]
           (let [sess-key (get-in request [:cookies cookie :value])
@@ -35,5 +39,8 @@
                                 ((store :delete) sess-key))))
                 response (dissoc response :session)]
               (if (and sess-key* (not= sess-key sess-key*))
-                (assoc response :cookies {cookie sess-key*})
+                (assoc response
+		  :cookies (merge (response :cookies)
+				  {cookie (merge cookie-attrs
+						 {:value sess-key*})}))
                 response)))))))
