@@ -24,7 +24,7 @@
 (defvar- set-cookie-attrs
   {:comment "Comment", :comment-url "CommentURL", :discard "Discard",
    :domain "Domain", :max-age "Max-Age", :path "Path", :port "Port",
-   :secure "Secure", :version "Version"}
+   :secure "Secure", :version "Version", :expires "Expires"}
   "Attributes defined by RFC2109 and RFC2965 that apply to the Set-Cookie
   header.")
 
