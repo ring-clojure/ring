@@ -4,4 +4,5 @@
   :dependencies [[ring/ring-core "0.2.0-SNAPSHOT"]
                  [clj-html "0.1.0-SNAPSHOT"]
                  [clj-stacktrace "0.1.0"]]
+  :namespaces :all
   :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]])

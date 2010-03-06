@@ -7,4 +7,5 @@
                  [commons-io "1.4"]
                  [commons-fileupload "1.2.1"]
                  [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]]
+  :namespaces :all
   :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]])
