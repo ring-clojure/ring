@@ -72,10 +72,10 @@
 
 (defn wrap-file-info
   "Wrap an app such that responses with a file a body will have 
-  corresponding Content-Type and Content-Length headers added if they are not
-  allready present and can be determined from the file. If two arguments are
-  given, the second is taken to be a map of file extensions to content types
-  that will supplement the default, built-in map."
+  corresponding Content-Type and Content-Length headers added if they can be
+  determined from the file.
+  If two arguments are given, the second is taken to be a map of file extensions
+  to content types that will supplement the default, built-in map."
   [app & [custom-mime-types]]
   (let [mime-types (merge base-mime-types custom-mime-types)]
     (fn [req]
