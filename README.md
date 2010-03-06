@@ -112,6 +112,7 @@ Thanks also to the following Ring contributors:
 * Christophe Grand
 * Richard Newman
 * Seth Buntin
+* David Santiago
 
 ## License
 
