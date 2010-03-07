@@ -48,24 +48,23 @@
 (defn #^Server run-jetty
   "Serve the given handler according to the options.
   Options:
-    :configurator (Optional, function; called with the Server instance.)
-    :port (Optional, Integer)
-    :host (Optional, String)
-    :join? (Optional, true by default. If false, don't block.)
-    :ssl-port, :keystore, :key-password, :truststore, :trust-password"
+    :configurator   - A function called with the Server instance.
+    :port
+    :host
+    :join?          - Block the caller: defaults to true.
+    :ssl            - Use SSL.
+    :ssl-port       - SSL port: defaults to 443, implies :ssl?
+    :keystore
+    :key-password
+    :truststore
+    :trust-password"
   [handler options]
   (let [#^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
-      ;; Optional additional configuration, such as
-      ;; adding JMX.
       (configurator s))
-    
     (doto s
       (.setHandler (proxy-handler handler))
       (.start))
-    
     (when (:join options true)
       (.join s))
-    
-    ;; Finally, return the Server.
     s))

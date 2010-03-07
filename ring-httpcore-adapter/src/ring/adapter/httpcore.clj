@@ -1,20 +1,29 @@
 (ns ring.adapter.httpcore
-  (:import (org.apache.http HttpRequest Header HttpEntityEnclosingRequest HttpResponse
+  (:import (org.apache.http
+             HttpRequest Header HttpEntityEnclosingRequest HttpResponse
              ConnectionClosedException HttpException HttpServerConnection)
-           (org.apache.http.entity AbstractHttpEntity StringEntity EntityTemplate InputStreamEntity
+           (org.apache.http.entity
+             AbstractHttpEntity StringEntity EntityTemplate InputStreamEntity
              FileEntity ContentProducer)
-           (org.apache.http.message BasicHeader BasicHeaderElement)
-           (org.apache.http.params BasicHttpParams CoreConnectionPNames CoreProtocolPNames)
-           (org.apache.http.protocol HttpRequestHandler BasicHttpContext HttpService BasicHttpProcessor
-             ResponseDate ResponseServer ResponseContent ResponseConnControl HttpRequestHandlerRegistry
-             HttpContext)
-           (org.apache.http.impl DefaultConnectionReuseStrategy DefaultHttpResponseFactory
+           (org.apache.http.message
+             BasicHeader BasicHeaderElement)
+           (org.apache.http.params
+             BasicHttpParams CoreConnectionPNames CoreProtocolPNames)
+           (org.apache.http.protocol
+             HttpRequestHandler BasicHttpContext HttpService BasicHttpProcessor
+             ResponseDate ResponseServer ResponseContent ResponseConnControl
+             HttpRequestHandlerRegistry HttpContext)
+           (org.apache.http.impl
+             DefaultConnectionReuseStrategy DefaultHttpResponseFactory
              DefaultHttpServerConnection)
-           (java.io File FileInputStream InputStream OutputStream OutputStreamWriter IOException
-             InterruptedIOException)
-           (java.net URI ServerSocket)
-           (java.util.concurrent Executors Executor ThreadFactory))
-  (:use (clojure.contrib except)))
+           (java.io
+             File FileInputStream InputStream OutputStream OutputStreamWriter
+             IOException InterruptedIOException)
+           (java.net URI
+             ServerSocket)
+           (java.util.concurrent
+             Executors Executor ThreadFactory))
+  (:use [clojure.contrib.except :only (throwf)]))
 
 (defmacro #^{:private true} -?>
  ([form] form)
@@ -25,14 +34,15 @@
   `(when (instance? ~type ~x) (-> ~(vary-meta x assoc :tag type) ~@forms)))
 
 (defn- charset [#^BasicHeader content-type-header]
-  (-?> content-type-header .getElements #^BasicHeaderElement first (.getParameterByName "charset") .getValue))
+  (-?> content-type-header .getElements
+    #^BasicHeaderElement first (.getParameterByName "charset") .getValue))
 
 (defn- lower-case [#^String s]
   (.toLowerCase s java.util.Locale/ENGLISH))
 
 (defn- build-req-map
   "Augments the given request-prototype (a map) to represent the given HTTP
-  request, to be passed as the Ring request to an app."
+  request, to be passed as the Ring request to a handler."
   [#^HttpRequest request request-prototype]
   (let [request-line (.getRequestLine request)
         headers (reduce
@@ -42,7 +52,8 @@
                       (.getValue header)))
                   {} (seq (.getAllHeaders request)))
         host (or (headers "host")
-               (str (request-prototype :server-name) ":" (request-prototype :server-port 80)))
+               (str (request-prototype :server-name) ":"
+                    (request-prototype :server-port 80)))
         uri (URI. (str "http://" host (.getUri request-line)))]
     (into (or request-prototype {})
       {:server-port        (.getPort uri)
@@ -54,8 +65,10 @@
        :content-type       (headers "content-type")
        :content-length     (when-let [len (instance?-> HttpEntityEnclosingRequest request .getEntity .getContentLength)]
                              (when (>= len 0) len))
-       :character-encoding (instance?-> HttpEntityEnclosingRequest request .getEntity .getContentEncoding charset)
-       :body               (instance?-> HttpEntityEnclosingRequest request .getEntity .getContent)})))
+       :character-encoding (instance?-> HttpEntityEnclosingRequest
+                             request .getEntity .getContentEncoding charset)
+       :body               (instance?-> HttpEntityEnclosingRequest
+                             request .getEntity .getContent)})))
 
 (defn- apply-resp-map
   "Apply the given response map to the servlet response, therby completing
@@ -72,7 +85,8 @@
   ; Apply the body - the method depends on the given body type.
   (when body
     (let [content-type (headers "Content-Type")
-          charset (when content-type (charset (BasicHeader. "Content-Type" content-type)))
+          charset (when content-type
+                    (charset (BasicHeader. "Content-Type" content-type)))
           content-length (headers "Content-Length")
           entity
            (cond
@@ -82,12 +96,16 @@
                (EntityTemplate.
                  (proxy [ContentProducer] []
                    (writeTo [#^OutputStream s]
-                     (let [w (if charset (OutputStreamWriter. s #^String charset) (OutputStreamWriter. s))]
+                     (let [w (if charset
+                                (OutputStreamWriter. s #^String charset)
+                                (OutputStreamWriter. s))]
                        (doseq [#^String chunk body]
                          (.write w chunk))
                        (.flush w)))))
              (instance? InputStream body)
-               (InputStreamEntity. body (let [l (or content-length -1)] (if (>= Long/MAX_VALUE l) l -1)))
+               (InputStreamEntity. body
+                 (let [l (or content-length -1)]
+                   (if (>= Long/MAX_VALUE l) l -1)))
              (instance? File body)
                (FileEntity. body content-type)
              :else
@@ -97,17 +115,15 @@
       (.setEntity response entity))))
 
 (defn- ring-handler
-  "Returns an Handler implementation for the given app.
+  "Returns an Handler implementation for the given Ring handler.
    The HttpContext must contains a map associated to \"ring.request-prototype\"."
-  [app]
+  [handler]
   (proxy [HttpRequestHandler] []
     (handle [request response #^HttpContext context]
-      (let [req (build-req-map request (.getAttribute context "ring.request-prototype"))
-            resp (app req)]
+      (let [req (build-req-map request
+                  (.getAttribute context "ring.request-prototype"))
+            resp (handler req)]
         (apply-resp-map response resp)))))
-
-
-;; Simple HTTP Server
 
 (defn- handle-request
  "Handle the request, usually called from a worker thread."
@@ -125,16 +141,17 @@
           (.shutdown conn)
           (catch IOException _ nil))))))
 
-(defn- create-http-service [app]
+(defn- create-http-service [handler]
   (let [params (doto (BasicHttpParams.)
-                 (.setParameter CoreProtocolPNames/ORIGIN_SERVER "HttpComponents/1.1"))
+                 (.setParameter CoreProtocolPNames/ORIGIN_SERVER
+                   "HttpComponents/1.1"))
         httpproc (doto (BasicHttpProcessor.)
                    (.addInterceptor (ResponseDate.))
                    (.addInterceptor (ResponseServer.))
                    (.addInterceptor (ResponseContent.))
                    (.addInterceptor (ResponseConnControl.)))
         registry (doto (HttpRequestHandlerRegistry.)
-                   (.register "*" (ring-handler app)))]
+                   (.register "*" (ring-handler handler)))]
     (doto (HttpService. httpproc
             (DefaultConnectionReuseStrategy.)
             (DefaultHttpResponseFactory.))
@@ -147,13 +164,15 @@
   (.execute executor #(apply f args)))
 
 (defn run-httpcore
- "Serve the given app according to the options.
+ "Serve the given handler according to the options.
  Options:
-   :port (Optional, Integer)
-   :server-name (Optional, String) for old HTTP/1.0 clients
-   :server-port (Optional, Integer) for old HTTP/1.0 clients, when public facing port is different from :port
-   :execute, (Optional, IFn) function with signature [f & args] that applies f to args, usually in another thread"
- [app {:keys [port server-name server-port execute]}]
+   :port      
+   :server-name - For old HTTP/1.0 clients
+   :server-port - For old HTTP/1.0 clients, when public facing port is different
+                  from :port
+   :execute     - Function with signature [f & args] that applies f to args,
+                  usually in another thread"
+ [handler {:keys [port server-name server-port execute]}]
   (let [execute (or execute (partial executor-execute
                               (Executors/newCachedThreadPool
                                 (proxy [ThreadFactory] []
@@ -165,7 +184,7 @@
                  (.setIntParameter CoreConnectionPNames/SOCKET_BUFFER_SIZE (* 8 1024))
                  (.setBooleanParameter CoreConnectionPNames/STALE_CONNECTION_CHECK false)
                  (.setBooleanParameter CoreConnectionPNames/TCP_NODELAY true))
-        httpservice (create-http-service app)
+        httpservice (create-http-service handler)
         request-prototype {:scheme :http :server-port (or server-port port) :server-name server-name}]
     (with-open [serversocket (ServerSocket. port)]
       (while (not (.isInterrupted (Thread/currentThread)))
