@@ -5,4 +5,4 @@
                  [ring/ring-servlet "0.2.0-SNAPSHOT"]
                  [org.mortbay.jetty/jetty "6.1.14"]
                  [org.mortbay.jetty/jetty-util "6.1.14"]]
-  :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]])
+  :dev-dependencies [[org.clojars.mmcgrana/lein-clojars "0.5.0"]])
