@@ -41,7 +41,7 @@
         server    (doto (Server.)
                     (.addConnector connector)
                     (.setSendDateHeader true))]
-    (when (or (options :ssl) (options :ssl-port))
+    (when (or (options :ssl?) (options :ssl-port))
       (add-ssl-connector! server options))
     server))
 
@@ -52,7 +52,7 @@
     :port
     :host
     :join?          - Block the caller: defaults to true.
-    :ssl            - Use SSL.
+    :ssl?           - Use SSL.
     :ssl-port       - SSL port: defaults to 443, implies :ssl?
     :keystore
     :key-password
