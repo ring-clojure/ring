@@ -1,4 +1,4 @@
-=== Ring Spec (0.1)
+=== Ring Spec (0.2)
 Ring is defined in terms of handlers, middleware, adapters, requests maps, and 
 response maps, each of which are described below.
 
@@ -85,10 +85,6 @@ corresponding values:
   (Optional, InputStream)
   An InputStream for the request body, if present.
 
-If a component invokes another component with a request map containing 
-additional keys, these keys must be namespaced using the Clojure 
-:name.space/key-name convention. The ring.* namespaces are reserved.
-
 
 == Response Map
 A response map is a Clojure map containing at least the following keys and corresponding values:
@@ -118,6 +114,3 @@ A response map is a Clojure map containing at least the following keys and corre
   InputStream:
     Contents are consumed from the stream and sent to the client. When the
     stream is exhausted, it is .close'd.
-
-As with request maps, keys in response maps other than those listed above should 
-be appropriately namespaced.

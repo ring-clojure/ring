@@ -19,15 +19,6 @@
           message (pr-str val) (.getMessage e))
         (throw e)))))
 
-(defn- lint-namespacing
-  "Asserts that all keys are namespaces other than those included in a 
-  specified set of permitted unnamspaced keys"
-  [map map-name no-namespace-needed]
-  (let [must-namespace (set/difference (set (keys map)) no-namespace-needed)]
-    (doseq [k must-namespace]
-      (lint k namespace
-        (format "user keys in the %s map must be namespaced" map-name)))))
-
 (defn- check-req
   "Validates the request, throwing an exception on violations of the spec"
   [req]
@@ -67,12 +58,7 @@
         "header values must be strings")))
 
   (lint (:body req) #(or (nil? %) (instance? InputStream %))
-    ":body must be nil or an InputStream")
-
-  (lint-namespacing req "request"
-    #{:server-port :server-name :remote-addr :uri :query-string :scheme
-      :request-method :content-type :content-length :character-encoding
-      :headers :body}))
+    ":body must be nil or an InputStream"))
 
 (defn- check-resp
   "Validates the response, throwing an exception on violations of the spec"
@@ -94,10 +80,7 @@
 
   (lint (:body resp) #(or (nil? %) (string? %) (instance? File %)
                           (instance? InputStream %))
-    ":body must a String, File, or InputStream")
-
-  (lint-namespacing resp "response"
-    #{:status :headers :body}))
+    ":body must a String, File, or InputStream"))
 
 (defn wrap-lint
   "Wrap an app to validate incoming requests and outgoing responses
