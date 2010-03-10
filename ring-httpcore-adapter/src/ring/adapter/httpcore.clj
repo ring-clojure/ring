@@ -1,4 +1,5 @@
 (ns ring.adapter.httpcore
+  "Adapter for the Apache HttpCore webserver."
   (:import (org.apache.http
              HttpRequest Header HttpEntityEnclosingRequest HttpResponse
              ConnectionClosedException HttpException HttpServerConnection)

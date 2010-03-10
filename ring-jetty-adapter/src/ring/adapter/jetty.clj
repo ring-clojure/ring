@@ -1,4 +1,5 @@
 (ns ring.adapter.jetty
+  "Adapter for the Jetty webserver."
   (:import (org.mortbay.jetty.handler AbstractHandler)
            (org.mortbay.jetty Server Request Response)
            (org.mortbay.jetty.bio SocketConnector)
