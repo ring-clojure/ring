@@ -106,14 +106,6 @@ To run the Ring unit tests, first navigate to the appropriate project and then:
 
 This project borrows heavily from Ruby's Rack and Python's WSGI; thanks to those communities for their work.
 
-Thanks also to the following Ring contributors:
-
-* James Reeves
-* Christophe Grand
-* Richard Newman
-* Seth Buntin
-* David Santiago
-
 ## License
 
 Copyright (c) 2009-2010 Mark McGranaghan and released under an MIT license.
