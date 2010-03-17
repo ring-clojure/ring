@@ -5,7 +5,8 @@
 * Test with `clojure.test`
 * Depend only on stable point-released libraries
 * Introduce new middlewares for params, cookies, sessions
-* Intro new utils for encoding/decoding, forming responses, and unit testing.
+* Intro new utils for encoding/decoding, forming responses, and unit testing
+* No longer require namespacing of request and response keys
 * More documentation, including autodocs
 * Various bugfixes
 
