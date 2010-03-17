@@ -6,7 +6,7 @@ The `SPEC` file at the root of this distribution for provides a complete descrip
 
 ## Synopsis
 
-A "Hello World" Ring handler:
+"Hello World" in Ring:
 
     (use 'ring.adapter.jetty)
     
@@ -36,15 +36,13 @@ To see some working examples, first pull in Ring's dependencies using [Leiningen
 
 To see a live "Hello World" Ring app, run:
 
-    $ clj example/hello_world.clj
+    $ java -cp "lib/*" clojure.main example/hello_world.clj
 
 Now visit `http://localhost:8080/` in your browser; the Ring app will respond to your request with a simple HTML page indicating the time of day.
 
-Note that your `clj` script needs to add the `src` directory and the jars in `lib` to your classpath.
-
 To see a more sophisticated Ring app, run:
 
-    $ clj example/wrapping.clj
+    $ java -cp "lib/*" clojure.main example/wrapping.clj
 
 * If you request `http://localhost:8080/` in your browser the `ring.handler.dump` handler will respond with an HTML page representing the request map that it received (see the `SPEC` for details on the request map).
 * If you request `http://localhost:8080/clojure.png`, the `ring.middleware.file` middleware will detect that there is a `clojure.png` file in the app's `public` directory and return that image as a response.
