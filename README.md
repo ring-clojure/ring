@@ -47,7 +47,12 @@ To see a more sophisticated Ring app, run:
 * If you request `http://localhost:8080/` in your browser the `ring.handler.dump` handler will respond with an HTML page representing the request map that it received (see the `SPEC` for details on the request map).
 * If you request `http://localhost:8080/clojure.png`, the `ring.middleware.file` middleware will detect that there is a `clojure.png` file in the app's `public` directory and return that image as a response.
 * If you request `http://localhost:8080/error`, the app will produce an error that will be caught by the `ring.middleware.stacktrace` middleware, which will in turn return a readable stacktrace as the HTML response.
- 
+
+
+## Documentation
+
+* [Ring namespace and function docs](http://mmcgrana.github.com/ring/)
+
 ## Available Libraries
 
 ### ring-core
