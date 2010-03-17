@@ -1,0 +1,299 @@
+<html>
+  <head>
+    <title>Ring - Overview</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <!-- TODO: are we using these (from clojure.org)? If so, add the files -->
+    <script src="file/view/code_highlighter.js" type="text/javascript"></script>
+    <script src="file/view/clojure.js" type="text/javascript"></script>
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">Ring</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <a class="wiki_link" href="index.html">Overview</a><br />
+    <a class="wiki_link" href="api-index.html">API Index</a><br />
+    <a class="wiki_link" href="#">Namespaces:</a>
+    <ul id="left-sidebar-list">
+      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+    </ul>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#adapter.httpcore">adapter.httpcore</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#adapter.jetty">adapter.jetty</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#handler.dump">handler.dump</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.cookies">middleware.cookies</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.file">middleware.file</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.file-info">middleware.file-info</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.keyword-params">middleware.keyword-params</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.lint">middleware.lint</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.multipart-params">middleware.multipart-params</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.params">middleware.params</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.reload">middleware.reload</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.session">middleware.session</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.stacktrace">middleware.stacktrace</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.static">middleware.static</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#util.codec">util.codec</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#util.response">util.response</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#util.servlet">util.servlet</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#util.test">util.test</a>
+    
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="toc0">Overview of the <span id="header-project">Ring</span> API</h1>
+<br />
+<div id="project-description">A Clojure web applications library</div>
+<br />
+<div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="adapter.httpcore">adapter.httpcore</h2>
+  <a href="adapter.httpcore-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Adapter for the Apache HttpCore webserver.</pre>
+  <span id="var-link"><a href="adapter.httpcore-api.html#ring.adapter.httpcore/executor-execute" id="var-tag">executor-execute</a> </span><span id="var-link"><a href="adapter.httpcore-api.html#ring.adapter.httpcore/run-httpcore" id="var-tag">run-httpcore</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="adapter.jetty">adapter.jetty</h2>
+  <a href="adapter.jetty-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Adapter for the Jetty webserver.</pre>
+  <span id="var-link"><a href="adapter.jetty-api.html#ring.adapter.jetty/run-jetty" id="var-tag">run-jetty</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="handler.dump">handler.dump</h2>
+  <a href="handler.dump-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Reflect Ring requests into responses for debugging.</pre>
+  <span id="var-link"><a href="handler.dump-api.html#ring.handler.dump/handle-dump" id="var-tag">handle-dump</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.cookies">middleware.cookies</h2>
+  <a href="middleware.cookies-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Cookie manipulation.</pre>
+  <span id="var-link"><a href="middleware.cookies-api.html#ring.middleware.cookies/wrap-cookies" id="var-tag">wrap-cookies</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.file">middleware.file</h2>
+  <a href="middleware.file-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Static file serving.</pre>
+  <span id="var-link"><a href="middleware.file-api.html#ring.middleware.file/wrap-file" id="var-tag">wrap-file</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.file-info">middleware.file-info</h2>
+  <a href="middleware.file-info-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Augment Ring File responses.</pre>
+  <span id="var-link"><a href="middleware.file-info-api.html#ring.middleware.file-info/wrap-file-info" id="var-tag">wrap-file-info</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.keyword-params">middleware.keyword-params</h2>
+  <a href="middleware.keyword-params-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Convert param keys to keywords.</pre>
+  <span id="var-link"><a href="middleware.keyword-params-api.html#ring.middleware.keyword-params/wrap-keyword-params" id="var-tag">wrap-keyword-params</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.lint">middleware.lint</h2>
+  <a href="middleware.lint-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Lint Ring requests and responses.</pre>
+  <span id="var-link"><a href="middleware.lint-api.html#ring.middleware.lint/wrap-lint" id="var-tag">wrap-lint</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.multipart-params">middleware.multipart-params</h2>
+  <a href="middleware.multipart-params-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Parse multipart upload into params.</pre>
+  <span id="var-link"><a href="middleware.multipart-params-api.html#ring.middleware.multipart-params/parse-multipart-params" id="var-tag">parse-multipart-params</a> </span><span id="var-link"><a href="middleware.multipart-params-api.html#ring.middleware.multipart-params/wrap-multipart-params" id="var-tag">wrap-multipart-params</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.params">middleware.params</h2>
+  <a href="middleware.params-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Parse form and query params.</pre>
+  <span id="var-link"><a href="middleware.params-api.html#ring.middleware.params/assoc-param" id="var-tag">assoc-param</a> </span><span id="var-link"><a href="middleware.params-api.html#ring.middleware.params/wrap-params" id="var-tag">wrap-params</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.reload">middleware.reload</h2>
+  <a href="middleware.reload-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Reload namespaces before requests.</pre>
+  <span id="var-link"><a href="middleware.reload-api.html#ring.middleware.reload/wrap-reload" id="var-tag">wrap-reload</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.session">middleware.session</h2>
+  <a href="middleware.session-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Session manipulation.</pre>
+  <span id="var-link"><a href="middleware.session-api.html#ring.middleware.session/wrap-session" id="var-tag">wrap-session</a> </span><br />
+  <span id="subspace"><br />Variables and functions in
+    <span id="name">middleware.session.cookie</span>:
+    <span id="sub-var-link">
+      <a href="middleware.session-api.html#ring.middleware.session.cookie/cookie-store">cookie-store</a>
+    </span>
+    <br />
+  </span><span id="subspace"><br />Variables and functions in
+    <span id="name">middleware.session.memory</span>:
+    <span id="sub-var-link">
+      <a href="middleware.session-api.html#ring.middleware.session.memory/memory-store">memory-store</a>
+    </span>
+    <br />
+  </span>
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.stacktrace">middleware.stacktrace</h2>
+  <a href="middleware.stacktrace-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Catch exceptions and render a stacktrace for debugging.</pre>
+  <span id="var-link"><a href="middleware.stacktrace-api.html#ring.middleware.stacktrace/wrap-stacktrace" id="var-tag">wrap-stacktrace</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.static">middleware.static</h2>
+  <a href="middleware.static-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Static file serving, more selective than ring.middleware.file.</pre>
+  <span id="var-link"><a href="middleware.static-api.html#ring.middleware.static/wrap-static" id="var-tag">wrap-static</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="util.codec">util.codec</h2>
+  <a href="util.codec-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Encoding and decoding utilities.</pre>
+  <span id="var-link"><a href="util.codec-api.html#ring.util.codec/base64-decode" id="var-tag">base64-decode</a> </span><span id="var-link"><a href="util.codec-api.html#ring.util.codec/base64-encode" id="var-tag">base64-encode</a> </span><span id="var-link"><a href="util.codec-api.html#ring.util.codec/url-decode" id="var-tag">url-decode</a> </span><span id="var-link"><a href="util.codec-api.html#ring.util.codec/url-encode" id="var-tag">url-encode</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="util.response">util.response</h2>
+  <a href="util.response-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Generate and augment Ring responses.</pre>
+  <span id="var-link"><a href="util.response-api.html#ring.util.response/content-type" id="var-tag">content-type</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/file-response" id="var-tag">file-response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/redirect" id="var-tag">redirect</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/response" id="var-tag">response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/status" id="var-tag">status</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="util.servlet">util.servlet</h2>
+  <a href="util.servlet-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Compatibility functions for turning a ring handler into a Java servlet.</pre>
+  <span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/build-request-map" id="var-tag">build-request-map</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/defservice" id="var-tag">defservice</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/make-service-method" id="var-tag">make-service-method</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/merge-servlet-keys" id="var-tag">merge-servlet-keys</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/servlet" id="var-tag">servlet</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/update-servlet-response" id="var-tag">update-servlet-response</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="util.test">util.test</h2>
+  <a href="util.test-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">Utilities for testing Ring components.</pre>
+  <br />
+  
+</div>
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">Copyright 2009-2010 Mark McGranaghan</div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>
