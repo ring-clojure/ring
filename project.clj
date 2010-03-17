@@ -1,12 +1,12 @@
-(defproject ring "0.2.0-RC1"
+(defproject ring "0.2.0-RC2"
   :description "A Clojure web applications library."
   :url "http://github.com/mmcgrana/ring"
   :dependencies
-    [[ring/ring-core "0.2.0-RC1"]
-     [ring/ring-devel "0.2.0-RC1"]
-     [ring/ring-httpcore-adapter "0.2.0-RC1"]
-     [ring/ring-jetty-adapter "0.2.0-RC1"]
-     [ring/ring-servlet "0.2.0-RC1"]]
+    [[ring/ring-core "0.2.0-RC2"]
+     [ring/ring-devel "0.2.0-RC2"]
+     [ring/ring-httpcore-adapter "0.2.0-RC2"]
+     [ring/ring-jetty-adapter "0.2.0-RC2"]
+     [ring/ring-servlet "0.2.0-RC2"]]
   :dev-dependencies [[autodoc "0.7.0"]]
   :autodoc
     {:name "Ring"
