@@ -4,4 +4,4 @@ ring-*.jar
 ring.jar
 ring-standalone.jar
 pom.xml
-autodoc-output
+autodoc
