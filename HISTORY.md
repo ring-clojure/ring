@@ -1,4 +1,4 @@
-## 0.2.0 (2010-03-??)
+## 0.2.0 (2010-03-16)
 
 * Distribute Ring as separate Maven artifacts: `ring-core`, `ring-servlet`, `ring-devel`, `ring-jetty-adapter`, and `ring-http-core-adapter`
 * Build with Leiningen
