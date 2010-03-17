@@ -1,6 +1,7 @@
-## 0.2.0 (2010-03-16)
+## 0.2.0 (2010-03-17)
 
 * Distribute Ring as separate Maven artifacts: `ring-core`, `ring-servlet`, `ring-devel`, `ring-jetty-adapter`, and `ring-http-core-adapter`
+* The `ring` artifact now just depends on all of these granular artifacts
 * Build with Leiningen
 * Test with `clojure.test`
 * Depend only on stable point-released libraries

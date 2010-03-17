@@ -89,7 +89,7 @@ To include one of the above libraries in your Leiningen project, for example `ri
 
     [ring/ring-core "0.2.0-RC1"]
 
-or to depend on all of the available Ring libraries, add:
+To include all of them, add:
 
     [ring/ring "0.2.0-RC1"]
 
