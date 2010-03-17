@@ -13,9 +13,7 @@
      :copyright "Copyright 2009-2010 Mark McGranaghan"
      :root "."
      :source-path ""
-     :web-src-dir "http://github.com/mmcgrana/ring/blob/"
-     :web-home "http://mmcgrana.github.com/ring/"
-     :output-path "/Users/mmcgrana/Desktop/ring-autodoc"
+     :output-path "autodoc-output"
      :namespaces-to-document ["ring"]
      :trim-prefix "ring."
      :load-except-list [#"/example/" #"/test/" #"project\.clj"]})
