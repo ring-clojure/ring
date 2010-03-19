@@ -4,4 +4,4 @@
   :dependencies [[ring/ring-core "0.2.0-RC2"]
                  [clj-html "0.1.0"]
                  [clj-stacktrace "0.1.0"]]
-  :dev-dependencies [[org.clojars.mmcgrana/lein-clojars "0.5.0"]])
+  :dev-dependencies [[lein-clojars "0.5.0"]])

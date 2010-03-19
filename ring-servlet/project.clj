@@ -3,4 +3,4 @@
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[ring/ring-core "0.2.0-RC2"]
                  [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]]
-  :dev-dependencies [[org.clojars.mmcgrana/lein-clojars "0.5.0"]])
+  :dev-dependencies [[lein-clojars "0.5.0"]])

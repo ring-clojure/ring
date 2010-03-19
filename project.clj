@@ -7,7 +7,9 @@
      [ring/ring-httpcore-adapter "0.2.0-RC2"]
      [ring/ring-jetty-adapter "0.2.0-RC2"]
      [ring/ring-servlet "0.2.0-RC2"]]
-  :dev-dependencies [[autodoc "0.7.0"]]
+  :dev-dependencies
+    [[autodoc "0.7.0"]
+     [lein-clojars "0.5.0"]]
   :autodoc
     {:name "Ring"
      :description "A Clojure web applications library"
