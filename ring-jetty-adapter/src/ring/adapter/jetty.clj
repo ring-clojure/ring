@@ -66,6 +66,6 @@
     (doto s
       (.setHandler (proxy-handler handler))
       (.start))
-    (when (:join options true)
+    (when (:join? options true)
       (.join s))
     s))
