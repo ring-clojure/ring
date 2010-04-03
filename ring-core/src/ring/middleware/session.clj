@@ -24,8 +24,8 @@
     (wrap-session handler {}))
   ([handler options]
      (let [store        (options :store (memory-store))
-	   cookie       (options :cookie-name "ring-session")
-	   cookie-attrs (options :cookie-attrs {})]
+           cookie       (options :cookie-name "ring-session")
+           cookie-attrs (options :cookie-attrs {})]
       (wrap-cookies
         (fn [request]
           (let [sess-key (get-in request [:cookies cookie :value])
@@ -38,9 +38,9 @@
                               (if sess-key
                                 ((store :delete) sess-key))))
                 response (dissoc response :session)]
-              (if (and sess-key* (not= sess-key sess-key*))
-                (assoc response
-		  :cookies (merge (response :cookies)
-				  {cookie (merge cookie-attrs
-						 {:value sess-key*})}))
-                response)))))))
+            (if (and sess-key* (not= sess-key sess-key*))
+              (assoc response
+                :cookies (merge (response :cookies)
+                                {cookie (merge cookie-attrs
+                                               {:value sess-key*})}))
+              response)))))))
