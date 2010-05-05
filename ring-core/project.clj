@@ -6,5 +6,5 @@
                  [commons-codec "1.4"]
                  [commons-io "1.4"]
                  [commons-fileupload "1.2.1"]
-                 [org.mortbay.jetty/servlet-api-2.5 "6.1.14"]]
+                 [javax.servlet/servlet-api "2.5"]]
   :dev-dependencies [[lein-clojars "0.5.0"]])
