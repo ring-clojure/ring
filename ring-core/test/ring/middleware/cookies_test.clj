@@ -34,29 +34,40 @@
 (deftest wrap-cookies-set-basic-cookie
   (let [handler (constantly {:cookies {"a" "b"}})
         resp    ((wrap-cookies handler) {})]
-    (is (= {"Set-Cookie" (list "a=\"b\"")}
+    (is (= {"Set-Cookie" (list "a=b")}
            (:headers resp)))))
 
 (deftest wrap-cookies-set-multiple-cookies
   (let [handler (constantly {:cookies {"a" "b", "c" "d"}})
         resp    ((wrap-cookies handler) {})]
-    (is (= {"Set-Cookie" (list "a=\"b\"" "c=\"d\"")}
+    (is (= {"Set-Cookie" (list "a=b" "c=d")}
            (:headers resp)))))
 
 (deftest wrap-cookies-set-keyword-cookie
   (let [handler (constantly {:cookies {:a "b"}})
         resp    ((wrap-cookies handler) {})]
-    (is (= {"Set-Cookie" (list "a=\"b\"")}
+    (is (= {"Set-Cookie" (list "a=b")}
            (:headers resp)))))
 
 (deftest wrap-cookies-set-extra-attrs
   (let [cookies {"a" {:value "b", :path "/", :secure true}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})]
-    (is (= {"Set-Cookie" (list "a=\"b\";Path=\"/\";Secure")}
+    (is (= {"Set-Cookie" (list "a=b;Path=/;Secure")}
            (:headers resp)))))
 
 (deftest wrap-cookies-always-assocs-map
   (let [req  {:headers {}}
         resp ((wrap-cookies :cookies) req)]
     (is (= {} resp))))
+
+(deftest wrap-cookies-read-urlencoded
+  (let [req  {:headers {"cookie" "a=hello+world"}}
+        resp ((wrap-cookies :cookies) req)]
+    (is (= {"a" {:value "hello world"}} resp))))
+
+(deftest wrap-cookies-set-urlencoded-cookie
+  (let [handler (constantly {:cookies {"a" "hello world"}})
+        resp    ((wrap-cookies handler) {})]
+    (is (= {"Set-Cookie" (list "a=hello+world")}
+           (:headers resp)))))

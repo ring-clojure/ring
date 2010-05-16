@@ -1,7 +1,8 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
-  (:use [clojure.contrib.def :only (defvar-)])
-  (:require [clojure.contrib.java-utils :as ju]))
+  (:use [clojure.contrib.def :only (defvar-)]
+        [clojure.contrib.java-utils :only (as-str)]
+        ring.util.codec))
 
 (defvar- re-token #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+"
   "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068")
@@ -38,9 +39,10 @@
   "Turn quoted strings into normal Clojure strings using read-string."
   [cookies]
   (for [[name value] cookies]
-    (if (.startsWith #^String value "\"")
-      [name (read-string value)]
-      [name value])))
+    (let [value (url-decode value)]
+      (if (.startsWith #^String value "\"")
+        [name (read-string value)]
+        [name value]))))
 
 (defn- get-cookie
   "Get a single cookie from a sequence of cookie-values"
@@ -72,29 +74,35 @@
       (dissoc "$Version"))
     {}))
 
-(defn- write-attr
-  "Turn a name-value pair into a cookie attr string."
+(defn- write-value
+  "Write the main cookie value."
   [name value]
-  (str (ju/as-str name) "=" (pr-str value)))
+  (str (as-str name) "=" (url-encode value)))
+
+(defn- valid-attr?
+  "Is the attribute valid?"
+  [[_ value]]
+  (not (.contains (str value) ";")))
 
 (defn- write-attr-map
   "Write a map of cookie attributes to a string."
   [attrs]
+  {:pre [(every? valid-attr? attrs)]}
   (for [[key value] attrs]
     (let [name (set-cookie-attrs key)]
       (cond
-        (true? value)  (str ";" name)
+        (true? value)  (str ";" (as-str name))
         (false? value) ""
-        :else          (str ";" (write-attr name value))))))
+        :else          (str ";" (as-str name) "=" value)))))
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
   [cookies]
   (for [[name value] cookies]
     (if (map? value)
-      (apply str (write-attr name (:value value))
+      (apply str (write-value name (:value value))
                  (write-attr-map (dissoc value :value)))
-      (write-attr name value))))
+      (write-value name value))))
 
 (defn- set-cookies
   "Add a Set-Cookie header to a response if there is a :cookies key."
