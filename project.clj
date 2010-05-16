@@ -1,8 +1,8 @@
-(defproject ring "0.2.1"
+(defproject ring "0.2.2"
   :description "A Clojure web applications library."
   :url "http://github.com/mmcgrana/ring"
   :dependencies
-    [[ring/ring-core "0.2.1"]
+    [[ring/ring-core "0.2.2"]
      [ring/ring-devel "0.2.0"]
      [ring/ring-httpcore-adapter "0.2.0"]
      [ring/ring-jetty-adapter "0.2.0"]

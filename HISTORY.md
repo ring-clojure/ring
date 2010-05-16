@@ -1,6 +1,11 @@
+## 0.2.2 (2010-05-16)
+
+* Introduce middleware for session flash
+* Cookie middleware made to work for browsers that don't follow cookie RFC (which is most of them)
+
 ## 0.2.1 (2010-05-05)
 
-* Depends on javax.servlet instead of org.mortbay.jetty for Servlet API artifact
+* Depend on javax.servlet instead of org.mortbay.jetty for Servlet API artifact
 
 ## 0.2.0 (2010-03-28)
 
