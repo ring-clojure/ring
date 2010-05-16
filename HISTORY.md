@@ -1,3 +1,7 @@
+## 0.2.1 (2010-05-05)
+
+* Depends on javax.servlet instead of org.mortbay.jetty for Servlet API artifact
+
 ## 0.2.0 (2010-03-28)
 
 * Distribute Ring as separate Maven artifacts: `ring-core`, `ring-servlet`, `ring-devel`, `ring-jetty-adapter`, and `ring-http-core-adapter`
