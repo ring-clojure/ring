@@ -1,7 +1,7 @@
 (ns ring.middleware.params-test
   (:use clojure.test
         ring.middleware.params)
-  (:require [ring.util.test :as test :as tu]))
+  (:require [ring.util.test :as tu]))
 
 (def wrapped-echo (wrap-params identity))
 

@@ -1,7 +1,7 @@
 (ns ring.handler.dump-test
   (:use clojure.test
         ring.handler.dump)
-  (:require [ring.util.test :as test :as tu]))
+  (:require [ring.util.test :as tu]))
 
 (def post-req
   {:uri            "/foo/bar"

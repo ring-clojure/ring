@@ -1,7 +1,7 @@
 (ns ring.middleware.lint-test
   (:use clojure.test
         ring.middleware.lint)
-  (:require [ring.util.test :as test :as tu])
+  (:require [ring.util.test :as tu])
   (:import (java.io File InputStream)))
 
 (def valid-request

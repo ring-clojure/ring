@@ -3,7 +3,7 @@
         ring.middleware.multipart-params
         [clojure.contrib.def :only (defvar-)])
   (:require [clojure.contrib.duck-streams :as du]
-            [ring.util.test :as test :as tu])
+            [ring.util.test :as tu])
   (:import java.io.File))
 
 (defvar- upload-content-type
