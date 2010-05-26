@@ -15,5 +15,6 @@
                      :flash flash)
           response (handler request)
           session  (if-let [flash (response :flash)]
-                     (assoc (response :session) :_flash flash))]
+                     (assoc (response :session) :_flash flash)
+                     session)]
       (assoc response :session session))))
