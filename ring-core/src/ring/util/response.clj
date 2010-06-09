@@ -59,8 +59,13 @@
   [resp status]
   (assoc resp :status status))
 
+(defn header
+  "Returns an updated Ring response with the specified header added."
+  [resp name value]
+  (assoc-in resp [:headers name] (str value)))
+
 (defn content-type
   "Returns an updated Ring response with the a Content-Type header corresponding
   to the given content-type."
   [resp content-type]
-  (assoc-in resp [:headers "Content-Type"] content-type))
+  (header resp "Content-Type" content-type))
