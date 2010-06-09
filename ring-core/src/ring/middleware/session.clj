@@ -14,6 +14,10 @@
       An implementation map containing :read, :write, and :delete
       keys. This determines how the session is stored. Defaults to
       in-memory storage.
+    :root
+      The root path of the session. Anything path above this will not
+      be able to see this session. Equivalent to setting the cookie's
+      path attribute. Defaults to \"/\".
     :cookie-name
       The name of the cookie that holds the session key. Defaults to
       \"ring-session\"
@@ -25,7 +29,8 @@
   ([handler options]
      (let [store        (options :store (memory-store))
            cookie       (options :cookie-name "ring-session")
-           cookie-attrs (options :cookie-attrs {})]
+           session-root (options :root "/")
+           cookie-attrs (merge (options :cookie-attrs) {:path session-root})]
       (wrap-cookies
         (fn [request]
           (let [sess-key (get-in request [:cookies cookie :value])

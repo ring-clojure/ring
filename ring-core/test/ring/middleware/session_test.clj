@@ -43,7 +43,7 @@
         handler (wrap-session handler {:store store})
         response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-           ["ring-session=foo%3Abar"]))))
+           ["ring-session=foo%3Abar;Path=/"]))))
 
 (deftest session-delete-outputs-cookie
   (let [store {:read   (constantly {:foo "bar"})
@@ -52,7 +52,7 @@
         handler (wrap-session handler {:store store})
         response (handler {:cookies {"ring-session" {:value "foo:bar"}}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-           ["ring-session=deleted"]))))
+           ["ring-session=deleted;Path=/"]))))
 
 (deftest session-cookie-has-attributes
   (let [store {:read (constantly {})
@@ -61,7 +61,7 @@
 	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Max-Age=5"]))))
+	   ["ring-session=foo%3Abar;Path=/;Max-Age=5"]))))
 
 (deftest session-does-not-clobber-response-cookies
   (let [store {:read (constantly {})
@@ -71,4 +71,13 @@
 	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Max-Age=5" "cookie2=value2"]))))
+	   ["ring-session=foo%3Abar;Path=/;Max-Age=5" "cookie2=value2"]))))
+
+(deftest session-root-can-be-set
+  (let [store {:read (constantly {})
+	       :write (constantly "foo:bar")}
+	handler (constantly {:session {:foo "bar"}})
+	handler (wrap-session handler {:store store, :root "/foo"})
+	response (handler {:cookies {}})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+	   ["ring-session=foo%3Abar;Path=/foo"]))))
