@@ -1,9 +1,11 @@
 (ns ring.middleware.file-info
   "Augment Ring File responses."
-  (:use [clojure.contrib.def :only (defvar-)])
-  (:import java.io.File)
-  (:import java.text.SimpleDateFormat)
-  (:import java.util.SimpleTimeZone))
+  (:use [clojure.contrib.def :only (defvar-)]
+        ring.util.response)
+  (:import java.io.File
+           java.util.Date
+           java.util.TimeZone
+           java.text.SimpleDateFormat))
 
 (defvar- base-mime-types
   {"ai"    "application/postscript"
@@ -72,47 +74,40 @@
   [#^File file mime-types]
   (get mime-types (get-extension file) "application/octet-stream"))
 
-(defvar- http-date-formatter
-  ;"A SimpleDateFormat instance, set to format using RFC 822/1123"
-  (let [formatter (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ")]
-    (do 
-      ; We use GMT because it makes testing much easier
-      (.setTimeZone formatter (SimpleTimeZone. 0 "GMT"))
-      formatter)))
+(defvar- http-format
+  (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ")
+    (.setTimeZone (TimeZone/getTimeZone "UTC")))
+  "Formats or parses dates into HTTP date format (RFC 822/1123).")
 
-(defn- http-date
-  "Takes a Date or Long, returns a String in HTTP Date (RFC 822/1123) format"
-  [date]
-  (.format http-date-formatter date))
+(defn- not-modified-since?
+  "Has the file been modified since the last request from the client?"
+  [{headers :headers :as req} last-modified]
+  (if-let [modified-since (headers "if-modified-since")]
+    (= last-modified (.parse http-format modified-since))))
 
 (defn wrap-file-info
-  "Wrap an app such that responses with a file a body will have 
-  corresponding Content-Type, Content-Length, and Last Modified headers added 
-  if they can be determined from the file.
+  "Wrap an app such that responses with a file a body will have corresponding
+  Content-Type, Content-Length, and Last Modified headers added if they can be
+  determined from the file.
+  If the request specifies a If-Modified-Since header that matches the last
+  modification date of the file, a 304 Not Modified response is returned.
   If two arguments are given, the second is taken to be a map of file extensions
-  to content types that will supplement the default, built-in map.
-  If the request specifies If-Modified-Since in its header, and it is a literal 
-  match of the string returned as Last-Modified, a 304 with no body will be 
-  sent instead."
+  to content types that will supplement the default, built-in map."
   [app & [custom-mime-types]]
   (let [mime-types (merge base-mime-types custom-mime-types)]
     (fn [req]
       (let [{:keys [headers body] :as response} (app req)]
         (if (instance? File body)
-          (let [
-                 file-size        (str (.length #^File body))
-                 content-type     (guess-mime-type body mime-types)
-                 server-lmodified (http-date (.lastModified body))
-                 client-lmodified (get (:headers req) "if-modified-since")
-                 ;it'd be nice to have a real date comparison at some point
-                 not-modified     (= client-lmodified server-lmodified)]
-            (if not-modified
-              (assoc response :status 304 :body "" :headers 
-                (assoc headers "Content-Length" "0"
-                               "Content-Type"   content-type
-                               "Last-Modified"  server-lmodified))
-              (assoc response :headers
-                (assoc headers "Content-Length" file-size
-                               "Content-Type"   content-type
-                               "Last-Modified"  server-lmodified))))
+          (let [file-type   (guess-mime-type body mime-types)
+                file-length (.length #^File body)
+                lmodified   (Date. (.lastModified #^File body))
+                response    (-> response
+                              (content-type file-type)
+                              (header "Last-Modified"
+                                      (.format http-format lmodified)))]
+            (if (not-modified-since? req lmodified)
+              (-> response (status 304)
+                           (header "Content-Length" 0)
+                           (assoc :body ""))
+              (-> response (header "Content-Length" file-length))))
           response)))))
