@@ -1,6 +1,6 @@
 (ns ring.middleware.stacktrace
   "Catch exceptions and render a stacktrace for debugging."
-  (:use (clj-html core helpers)
+  (:use (hiccup core page-helpers)
         (clj-stacktrace core repl)
         (clojure.contrib [def :only (defvar-)])
         ring.util.response))
