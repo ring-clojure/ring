@@ -1,6 +1,6 @@
 (ns ring.handler.dump
   "Reflect Ring requests into responses for debugging."
-  (:use (clj-html core helpers)
+  (:use (hiccup core page-helpers)
         [clojure.contrib.def :only (defvar-)]
         ring.util.response)
   (:require (clojure [set :as set])))
