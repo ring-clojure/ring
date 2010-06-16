@@ -9,12 +9,12 @@ The `SPEC` file at the root of this distribution for provides a complete descrip
 "Hello World" in Ring:
 
     (use 'ring.adapter.jetty)
-    
+
     (defn app [req]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :body    "Hello World from Ring"})
-    
+
     (run-jetty app {:port 8080})
 
 Adding simple middleware:
@@ -23,9 +23,9 @@ Adding simple middleware:
       (fn [req]
         (let [orig-resp (app req)]
           (assoc orig-resp :body (.toUpperCase (:body orig-resp))))))
-    
+
     (def upcase-app (wrap-upcase app))
-    
+
     (run-jetty upcase-app {:port 8080})
 
 ## Quick Start
@@ -62,9 +62,10 @@ To see a more sophisticated Ring app, run:
 * `ring.middleware.file-info`: Augment response headers with info about File responses.
 * `ring.middleware.params`: Parse query and form params.
 * `ring.middleware.multipart-params`: Parse multipart params.
-* 'ring.middleware.keyword-params`: Convert string param keys to keywords.
+* `ring.middleware.keyword-params`: Convert string param keys to keywords.
 * `ring.middleware.cookies`: Manage browser cookies.
 * `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
+* `ring.middleware.flash`: Adds flash message support to sessions.
 * `ring.util.response`: Generate Ring responses.
 
 ### ring-devel
@@ -90,11 +91,11 @@ To see a more sophisticated Ring app, run:
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependences`:
 
-    [ring/ring-core "0.2.0"]
+    [ring/ring-core "0.2.3"]
 
 To include all of them, add:
 
-    [ring/ring "0.2.0"]
+    [ring/ring "0.2.3"]
 
 ## Development
 

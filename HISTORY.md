@@ -1,3 +1,13 @@
+## 0.2.3 (2010-06-17)
+
+* Code updated to be more Clojure 1.2 compatible
+* Fixed bug in r.m.flash that was wiping out the session
+* Added If-Modified-Since support to r.m.file-info
+* Added ring.util.response/header
+* Added :root key to r.m.session as a shortcut to cookie path attribute
+* Updated ring-devel to use Hiccup instead of clj-html
+* Session cookie attributes can now be set by adding a :session-cookie-attrs key to the response.
+
 ## 0.2.2 (2010-05-16)
 
 * Introduce middleware for session flash
