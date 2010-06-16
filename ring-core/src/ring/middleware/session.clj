@@ -28,12 +28,12 @@
     (wrap-session handler {}))
   ([handler options]
      (let [store        (options :store (memory-store))
-           cookie       (options :cookie-name "ring-session")
+           cookie-name  (options :cookie-name "ring-session")
            session-root (options :root "/")
            cookie-attrs (merge (options :cookie-attrs) {:path session-root})]
       (wrap-cookies
         (fn [request]
-          (let [sess-key (get-in request [:cookies cookie :value])
+          (let [sess-key (get-in request [:cookies cookie-name :value])
                 session  ((store :read) sess-key)
                 request  (assoc request :session session)
                 response (handler request)
@@ -42,10 +42,10 @@
                               ((store :write) sess-key (response :session))
                               (if sess-key
                                 ((store :delete) sess-key))))
-                response (dissoc response :session)]
+                response (dissoc response :session)
+                cookie   {cookie-name (merge cookie-attrs
+                                             (response :session-cookie-attrs)
+                                             {:value sess-key*})}]
             (if (and sess-key* (not= sess-key sess-key*))
-              (assoc response
-                :cookies (merge (response :cookies)
-                                {cookie (merge cookie-attrs
-                                               {:value sess-key*})}))
+              (assoc response :cookies (merge (response :cookies) cookie))
               response)))))))

@@ -81,3 +81,13 @@
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
 	   ["ring-session=foo%3Abar;Path=/foo"]))))
+
+(deftest session-attrs-can-be-set-per-request
+  (let [store {:read (constantly {})
+	       :write (constantly "foo:bar")}
+	handler (constantly {:session {:foo "bar"}
+                             :session-cookie-attrs {:max-age 5}})
+	handler (wrap-session handler {:store store})
+	response (handler {:cookies {}})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+	   ["ring-session=foo%3Abar;Max-Age=5;Path=/"]))))
