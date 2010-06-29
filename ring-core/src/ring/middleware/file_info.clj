@@ -74,16 +74,18 @@
   [#^File file mime-types]
   (get mime-types (get-extension file) "application/octet-stream"))
 
-(defvar- http-format
+(defn make-http-format
+  "Formats or parses dates into HTTP date format (RFC 822/1123)."
+  []
+  ;; SimpleDateFormat is not threadsafe, so return a new instance each time
   (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ")
-    (.setTimeZone (TimeZone/getTimeZone "UTC")))
-  "Formats or parses dates into HTTP date format (RFC 822/1123).")
+    (.setTimeZone (TimeZone/getTimeZone "UTC"))))
 
 (defn- not-modified-since?
   "Has the file been modified since the last request from the client?"
   [{headers :headers :as req} last-modified]
   (if-let [modified-since (headers "if-modified-since")]
-    (= last-modified (.parse http-format modified-since))))
+    (= last-modified (.parse (make-http-format) modified-since))))
 
 (defn wrap-file-info
   "Wrap an app such that responses with a file a body will have corresponding
@@ -104,7 +106,7 @@
                 response    (-> response
                               (content-type file-type)
                               (header "Last-Modified"
-                                      (.format http-format lmodified)))]
+                                      (.format (make-http-format) lmodified)))]
             (if (not-modified-since? req lmodified)
               (-> response (status 304)
                            (header "Content-Length" 0)
