@@ -3,8 +3,7 @@
   (:use [clojure.contrib.def :only (defvar-)]
         ring.util.response)
   (:import java.io.File
-           java.util.Date
-           java.util.TimeZone
+           [java.util Date Locale TimeZone]
            java.text.SimpleDateFormat))
 
 (defvar- base-mime-types
@@ -78,7 +77,7 @@
   "Formats or parses dates into HTTP date format (RFC 822/1123)."
   []
   ;; SimpleDateFormat is not threadsafe, so return a new instance each time
-  (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ")
+  (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ" Locale/US)
     (.setTimeZone (TimeZone/getTimeZone "UTC"))))
 
 (defn- not-modified-since?
