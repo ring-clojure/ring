@@ -1,3 +1,10 @@
+## 0.2.4 (2010-07-04)
+
+* Fixed race condition in file-info middleware date parsing
+* Forced US locale for file-info middleware date parsing
+* Fixed NPE in multipart-params middleware when field is nil
+* Fixed another flash middleware bug that was wiping out session data
+
 ## 0.2.3 (2010-06-17)
 
 * Code updated to be more Clojure 1.2 compatible
