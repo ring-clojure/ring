@@ -8,7 +8,7 @@
      [ring/ring-jetty-adapter "0.2.5"]
      [ring/ring-servlet "0.2.5"]]
   :dev-dependencies
-    [[autodoc "0.7.0"]
+    [[autodoc "0.7.1"]
      [lein-clojars "0.5.0"]]
   :autodoc
     {:name "Ring"
