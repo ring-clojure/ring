@@ -18,10 +18,10 @@
 
 (deftest flash-is-removed-after-read
   (let [message  {:error "Could not save"}
-        handler  (wrap-flash (constantly {}))
+        handler  (wrap-flash (constantly {:session {:foo "bar"}}))
         response (handler {:session {:_flash message}})]
     (is (nil? (:flash response)))
-    (is (nil? (-> response :session :_flash)))))
+    (is (= (:session response) {:foo "bar"}))))
 
 (deftest flash-doesnt-wipe-session
   (let [message  {:error "Could not save"}
