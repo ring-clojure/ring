@@ -1,3 +1,8 @@
+## 0.2.5 (2010-07-06)
+
+* Hopefully the last flash middleware fix we'll need
+* Added ring.util.response/resource-response function
+
 ## 0.2.4 (2010-07-04)
 
 * Fixed race condition in file-info middleware date parsing
