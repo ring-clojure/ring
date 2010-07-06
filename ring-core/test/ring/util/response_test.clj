@@ -1,6 +1,7 @@
 (ns ring.util.response-test
   (:use clojure.test
-        ring.util.response))
+        ring.util.response
+        [clojure.contrib.duck-streams :only (slurp*)]))
 
 (deftest test-redirect
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
@@ -16,3 +17,13 @@
 (deftest test-content-type
   (is (= {:status 200 :headers {"Content-Type" "text/html" "Content-Length" "10"}}
          (content-type {:status 200 :headers {"Content-Length" "10"}} "text/html"))))
+
+(deftest test-resource-response
+  (let [resp (resource-response "/ring/util/response_test.clj")]
+    (is (= (resp :status) 200))
+    (is (= (resp :headers) {}))
+    (is (.startsWith (slurp* (resp :body))
+                     "(ns ring.util.response-test"))))
+
+(deftest test-missing-resource
+  (is (nil? (resource-response "/missing/resource.clj"))))
