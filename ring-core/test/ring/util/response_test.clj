@@ -25,5 +25,10 @@
     (is (.startsWith (slurp* (resp :body))
                      "(ns ring.util.response-test"))))
 
+(deftest test-resource-with-root
+  (let [resp (resource-response "response_test.clj" {:root "/ring/util"})]
+    (is (.startsWith (slurp* (resp :body))
+                     "(ns ring.util.response-test"))))
+
 (deftest test-missing-resource
   (is (nil? (resource-response "/missing/resource.clj"))))
