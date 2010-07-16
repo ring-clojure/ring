@@ -1,7 +1,6 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
   (:use [clojure.contrib.def :only (defvar-)]
-        [clojure.contrib.java-utils :only (as-str)]
         ring.util.codec))
 
 (defvar- re-token #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+"
@@ -76,8 +75,8 @@
 
 (defn- write-value
   "Write the main cookie value."
-  [name value]
-  (str (as-str name) "=" (url-encode value)))
+  [key value]
+  (str (name key) "=" (url-encode value)))
 
 (defn- valid-attr?
   "Is the attribute valid?"
@@ -89,20 +88,20 @@
   [attrs]
   {:pre [(every? valid-attr? attrs)]}
   (for [[key value] attrs]
-    (let [name (set-cookie-attrs key)]
+    (let [attr-name (name (set-cookie-attrs key))]
       (cond
-        (true? value)  (str ";" (as-str name))
+        (true? value)  (str ";" attr-name)
         (false? value) ""
-        :else          (str ";" (as-str name) "=" value)))))
+        :else          (str ";" attr-name "=" value)))))
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
   [cookies]
-  (for [[name value] cookies]
+  (for [[key value] cookies]
     (if (map? value)
-      (apply str (write-value name (:value value))
+      (apply str (write-value key (:value value))
                  (write-attr-map (dissoc value :value)))
-      (write-value name value))))
+      (write-value key value))))
 
 (defn- set-cookies
   "Add a Set-Cookie header to a response if there is a :cookies key."
