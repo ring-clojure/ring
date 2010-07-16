@@ -39,7 +39,7 @@
   [cookies]
   (for [[name value] cookies]
     (let [value (url-decode value)]
-      (if (.startsWith #^String value "\"")
+      (if (.startsWith ^String value "\"")
         [name (read-string value)]
         [name value]))))
 

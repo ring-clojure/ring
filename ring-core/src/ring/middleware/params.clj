@@ -16,7 +16,7 @@
 
 (defn- parse-params
   "Parse parameters from a string into a map."
-  [#^String param-string encoding]
+  [^String param-string encoding]
   (reduce
     (fn [param-map encoded-param]
       (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
@@ -39,7 +39,7 @@
 (defn- urlencoded-form?
   "Does a request have a urlencoded form?"
   [request]
-  (if-let [#^String type (:content-type request)]
+  (if-let [^String type (:content-type request)]
     (.startsWith type "application/x-www-form-urlencoded")))
 
 (defn- assoc-form-params

@@ -23,5 +23,5 @@
 
 (defn base64-decode
   "Decode a base64 encoded string into an array of bytes."
-  [#^String encoded]
+  [^String encoded]
   (Base64/decodeBase64 (.getBytes encoded)))
