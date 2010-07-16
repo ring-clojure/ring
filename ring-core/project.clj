@@ -1,8 +1,8 @@
-(defproject ring/ring-core "0.2.5"
+(defproject ring/ring-core "0.3.0-beta1"
   :description "Ring core libraries."
   :url "http://github.com/mmcgrana/ring"
-  :dependencies [[org.clojure/clojure "1.1.0"]
-                 [org.clojure/clojure-contrib "1.1.0"]
+  :dependencies [[org.clojure/clojure "1.2.0-beta1"]
+                 [org.clojure/clojure-contrib "1.2.0-beta1"]
                  [commons-codec "1.4"]
                  [commons-io "1.4"]
                  [commons-fileupload "1.2.1"]
