@@ -1,7 +1,8 @@
 (ns ring.middleware.params
   "Parse form and query params."
-  (:require (clojure.contrib [str-utils :as str] [duck-streams :as duck])
-            (ring.util [codec :as codec])))
+  (:require [ring.util.codec :as codec]
+            [clojure.string :as string]
+            [clojure.contrib.io :as io]))
 
 (defn assoc-param
   "Associate a key with a value. If the key already exists in the map,
@@ -25,7 +26,7 @@
           (codec/url-decode (or val "") encoding))
          param-map))
     {}
-    (str/re-split #"&" param-string)))
+    (string/split param-string #"&")))
 
 (defn- assoc-query-params
   "Parse and assoc parameters from the query string with the request."
@@ -47,7 +48,7 @@
   [request encoding]
   (merge-with merge request
     (if-let [body (and (urlencoded-form? request) (:body request))]
-      (let [params (parse-params (duck/slurp* body) encoding)]
+      (let [params (parse-params (io/slurp* body) encoding)]
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
 
