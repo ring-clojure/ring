@@ -99,7 +99,9 @@ To include all of them, add:
 
 ## Development
 
-Ring is being actively developed; you can track its progress and contribute at the project's [GitHub page](http://github.com/mmcgrana/ring) and [Google Group](http://groups.google.com/group/ring-clojure).
+Ring is being actively developed; you can track its progress on the [GitHub page](http://github.com/mmcgrana/ring) page and on the [Google Group](http://groups.google.com/group/ring-clojure).
+
+To submit a patch, please post your corresponding GitHub branch to the Ring Google Group. This allows your changes to be seen and discussed by all Ring developers. If you are attempting something substantial, consider posting to the Google Group first with your idea.
 
 To run the Ring unit tests, first navigate to the appropriate project and then:
 

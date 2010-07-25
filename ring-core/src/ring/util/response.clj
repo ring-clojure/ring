@@ -61,9 +61,8 @@
     :root - take the resource relative to this root"
   [path & [opts]]
   (let [path   (str (:root opts "") "/" path)
-        path   (.replace path "//" "/")
-        loader (clojure.lang.RT/baseLoader)]
-    (if-let [resource (.getResourceAsStream loader path)]
+        path   (.replace path "//" "/")]
+    (if-let [resource (.getResourceAsStream (class file-response) path)] ; any Ring fn will do here
       (response resource))))
 
 (defn status
