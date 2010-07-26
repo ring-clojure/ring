@@ -2,8 +2,8 @@
   "Static file serving."
   (:use (clojure.contrib [def :only (defvar-)]
                          [except :only (throw-if-not)]))
-  (:require (ring.util [codec :as codec] [response :as response])
-            [clojure.contrib.java-utils :as ju])
+  (:require (ring.util [codec :as codec]
+                       [response :as response]))
   (:import java.io.File))
 
 (defn- ensure-dir
