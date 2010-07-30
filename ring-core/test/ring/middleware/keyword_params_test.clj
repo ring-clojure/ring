@@ -9,4 +9,6 @@
     {"foo" "bar" "biz" "bat"}
     {:foo  "bar" :biz  "bat"}
     {"foo" "bar" "biz" [{"bat" "one"} {"bat" "two"}]}
-    {:foo  "bar" :biz  [{:bat "one"}  {:bat  "two"}]}))
+    {:foo  "bar" :biz  [{:bat "one"}  {:bat  "two"}]}
+    {"foo" 1}
+    {:foo  1}))
