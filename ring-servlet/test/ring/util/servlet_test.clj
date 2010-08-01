@@ -39,7 +39,8 @@
 
 (deftest servlet-test
   (testing "request"
-    (let [req  {:server-port    8080
+    (let [body (proxy [javax.servlet.ServletInputStream] [])
+          req  {:server-port    8080
                 :server-name    "foobar"
                 :remote-addr    "127.0.0.1"
                 :uri            "/foo"
@@ -50,7 +51,7 @@
                 :content-type   "text/plain"
                 :content-length 10
                 :character-encoding "UTF-8"
-                :body           nil}
+                :body           body}
           resp (atom {})
           svlt (servlet (fn [r]
                           (are [k v] (= (r k) v)
@@ -65,7 +66,7 @@
                             :content-type   "text/plain"
                             :content-length 10
                             :character-encoding "UTF-8"
-                            :body           nil)
+                            :body           body)
                           {:status 200, :headers {}}))]
       (doto svlt
         (.init (servlet-config))
