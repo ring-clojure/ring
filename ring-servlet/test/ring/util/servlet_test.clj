@@ -31,44 +31,59 @@
     (setHeader [name value]
       (swap! response assoc-in [:headers name] value))
     (setCharacterEncoding [value]
-      (swap! response assoc-in [:headers "Content-Type"] value))))
+      (swap! response assoc :character-encoding value))
+    (setContentType [value]
+      (swap! response assoc :content-type value))))
 
 (defn- servlet-config []
   (proxy [javax.servlet.ServletConfig] []
     (getServletContext [] nil)))
 
+(defn- run-servlet [handler request response]
+  (doto (servlet handler)
+          (.init (servlet-config))
+          (.service (servlet-request request)
+                    (servlet-response response))))
+
 (deftest servlet-test
-  (testing "request"
-    (let [body (proxy [javax.servlet.ServletInputStream] [])
-          req  {:server-port    8080
-                :server-name    "foobar"
-                :remote-addr    "127.0.0.1"
-                :uri            "/foo"
-                :query-string   "a=b"
-                :scheme         :http
-                :request-method :get
-                :headers        {"X-Server" "Foo"}
-                :content-type   "text/plain"
-                :content-length 10
-                :character-encoding "UTF-8"
-                :body           body}
-          resp (atom {})
-          svlt (servlet (fn [r]
-                          (are [k v] (= (r k) v)
-                            :server-port    8080
-                            :server-name    "foobar"
-                            :remote-addr    "127.0.0.1"
-                            :uri            "/foo"
-                            :query-string   "a=b"
-                            :scheme         :http
-                            :request-method :get
-                            :headers        {"x-server" "Foo"}
-                            :content-type   "text/plain"
-                            :content-length 10
-                            :character-encoding "UTF-8"
-                            :body           body)
-                          {:status 200, :headers {}}))]
-      (doto svlt
-        (.init (servlet-config))
-        (.service (servlet-request req)
-                  (servlet-response resp))))))
+  (let [body (proxy [javax.servlet.ServletInputStream] [])
+        request {:server-port    8080
+                 :server-name    "foobar"
+                 :remote-addr    "127.0.0.1"
+                 :uri            "/foo"
+                 :query-string   "a=b"
+                 :scheme         :http
+                 :request-method :get
+                 :headers        {"X-Client" "Foo"}
+                 :content-type   "text/plain"
+                 :content-length 10
+                 :character-encoding "UTF-8"
+                 :body           body}
+          response (atom {})]
+    (testing "request"
+      (letfn [(handler [r]
+               (are [k v] (= (r k) v)
+                 :server-port    8080
+                 :server-name    "foobar"
+                 :remote-addr    "127.0.0.1"
+                 :uri            "/foo"
+                 :query-string   "a=b"
+                 :scheme         :http
+                 :request-method :get
+                 :headers        {"x-client" "Foo"}
+                 :content-type   "text/plain"
+                 :content-length 10
+                 :character-encoding "UTF-8"
+                 :body           body)
+               {:status 200, :headers {}})]
+        (run-servlet handler request response)))
+    (testing "response"
+      (letfn [(handler [r]
+               {:status  200
+                :headers {"Content-Type" "text/plain"
+                          "X-Server" "Bar"}
+                :body    nil})]
+        (run-servlet handler request response)
+        (is (= (@response :status) 200))
+        (is (= (@response :content-type) "text/plain"))
+        (is (= (get-in @response [:headers "X-Server"]) "Bar"))))))
