@@ -15,8 +15,8 @@
     (getRemoteAddr [] (request :remote-addr))
     (getRequestURI [] (request :uri))
     (getQueryString [] (request :query-string))
-    (getScheme [] (str (request :scheme)))
-    (getMethod [] (-> request :request-method str .toUpperCase))
+    (getScheme [] (name (request :scheme)))
+    (getMethod [] (-> request :request-method name .toUpperCase))
     (getHeaderNames [] (enumeration (keys (request :headers))))
     (getHeader [name] (get-in request [:headers name]))
     (getContentType [] (request :content-type))
@@ -53,7 +53,19 @@
                 :body           nil}
           resp (atom {})
           svlt (servlet (fn [r]
-                          (is (= (:uri r) (:uri req)))
+                          (are [k v] (= (r k) v)
+                            :server-port    8080
+                            :server-name    "foobar"
+                            :remote-addr    "127.0.0.1"
+                            :uri            "/foo"
+                            :query-string   "a=b"
+                            :scheme         :http
+                            :request-method :get
+                            :headers        {"x-server" "Foo"}
+                            :content-type   "text/plain"
+                            :content-length 10
+                            :character-encoding "UTF-8"
+                            :body           nil)
                           {:status 200, :headers {}}))]
       (doto svlt
         (.init (servlet-config))
