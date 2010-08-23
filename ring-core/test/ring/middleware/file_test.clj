@@ -8,8 +8,8 @@
     (wrap-file (constantly :response) "not_here"))))
 
 (def public-dir "test/ring/assets")
-(def index-html (File. #^String public-dir "index.html"))
-(def foo-html   (File. #^String public-dir "foo.html"))
+(def index-html (File. ^String public-dir "index.html"))
+(def foo-html   (File. ^String public-dir "foo.html"))
 
 (def app (wrap-file (constantly :response) public-dir))
 
