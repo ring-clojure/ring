@@ -25,11 +25,11 @@
   "Create a RequestContext object from a request map."
   {:tag RequestContext}
   [request encoding]
-  (proxy [RequestContext] []
-    (getContentType []       (:content-type request))
-    (getContentLength []     (:content-length request))
-    (getCharacterEncoding [] encoding)
-    (getInputStream []       (:body request))))
+  (reify RequestContext
+    (getContentType [this]       (:content-type request))
+    (getContentLength [this]     (:content-length request))
+    (getCharacterEncoding [this] encoding)
+    (getInputStream [this]       (:body request))))
 
 (defn- file-map
   "Create a file map from a DiskFileItem."
