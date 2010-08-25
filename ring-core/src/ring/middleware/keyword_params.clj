@@ -3,8 +3,6 @@
 
 (defn- keyify-params [target]
   (cond
-    (string? target)
-      target
     (map? target)
       (reduce
         (fn [m [k v]]
@@ -12,7 +10,9 @@
         {}
         target)
     (vector? target)
-      (vec (map keyify-params target))))
+      (vec (map keyify-params target))
+    :else
+      target))
 
 (defn wrap-keyword-params
   "Middleware that converts the string-keyed :params map to one with keyword
