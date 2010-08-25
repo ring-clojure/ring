@@ -26,28 +26,28 @@
              Executors Executor ThreadFactory))
   (:use [clojure.contrib.except :only (throwf)]))
 
-(defmacro #^{:private true} -?>
+(defmacro ^{:private true} -?>
  ([form] form)
  ([form next-form & forms]
    `(when-let [x# ~form] (-?> (-> x# ~next-form) ~@forms))))
 
-(defmacro #^{:private true} instance?-> [type x & forms]
+(defmacro ^{:private true} instance?-> [type x & forms]
   `(when (instance? ~type ~x) (-> ~(vary-meta x assoc :tag type) ~@forms)))
 
-(defn- charset [#^BasicHeader content-type-header]
+(defn- charset [^BasicHeader content-type-header]
   (-?> content-type-header .getElements
-    #^BasicHeaderElement first (.getParameterByName "charset") .getValue))
+    ^BasicHeaderElement first (.getParameterByName "charset") .getValue))
 
-(defn- lower-case [#^String s]
+(defn- lower-case [^String s]
   (.toLowerCase s java.util.Locale/ENGLISH))
 
 (defn- build-req-map
   "Augments the given request-prototype (a map) to represent the given HTTP
   request, to be passed as the Ring request to a handler."
-  [#^HttpRequest request request-prototype]
+  [^HttpRequest request request-prototype]
   (let [request-line (.getRequestLine request)
         headers (reduce
-                  (fn [header-map #^Header header]
+                  (fn [header-map ^Header header]
                     (assoc header-map
                       (-> header .getName lower-case)
                       (.getValue header)))
@@ -74,7 +74,7 @@
 (defn- apply-resp-map
   "Apply the given response map to the servlet response, therby completing
   the HTTP response."
-  [#^HttpResponse response {:keys [status headers body]}]
+  [^HttpResponse response {:keys [status headers body]}]
   ; Apply the status.
   (.setStatusCode response status)
   ; Apply the headers.
@@ -95,14 +95,14 @@
                (StringEntity. body)
              (seq? body)
                (EntityTemplate.
-                 (proxy [ContentProducer] []
-                   (writeTo [#^OutputStream s]
-                     (let [w (if charset
-                                (OutputStreamWriter. s #^String charset)
-                                (OutputStreamWriter. s))]
-                       (doseq [#^String chunk body]
-                         (.write w chunk))
-                       (.flush w)))))
+                 (reify ContentProducer 
+                        (writeTo [this ^OutputStream s]
+                                 (let [w (if charset
+                                           (OutputStreamWriter. s ^String charset)
+                                           (OutputStreamWriter. s))]
+                                   (doseq [^String chunk body]
+                                     (.write w chunk))
+                                   (.flush w)))))
              (instance? InputStream body)
                (InputStreamEntity. body
                  (let [l (or content-length -1)]
@@ -111,24 +111,24 @@
                (FileEntity. body content-type)
              :else
                (throwf "Unrecognized body: %s" body))]
-      (when-let [#^String type (headers "Content-Type")]
-        (.setContentType #^AbstractHttpEntity entity type))
+      (when-let [^String type (headers "Content-Type")]
+        (.setContentType ^AbstractHttpEntity entity type))
       (.setEntity response entity))))
 
 (defn- ring-handler
   "Returns an Handler implementation for the given Ring handler.
    The HttpContext must contains a map associated to \"ring.request-prototype\"."
   [handler]
-  (proxy [HttpRequestHandler] []
-    (handle [request response #^HttpContext context]
-      (let [req (build-req-map request
-                  (.getAttribute context "ring.request-prototype"))
-            resp (handler req)]
-        (apply-resp-map response resp)))))
+  (reify HttpRequestHandler 
+      (handle [this request response ^HttpContext context]
+        (let [req (build-req-map request
+                                 (.getAttribute context "ring.request-prototype"))
+              resp (handler req)]
+          (apply-resp-map response resp)))))
 
 (defn- handle-request
  "Handle the request, usually called from a worker thread."
- [#^HttpService httpservice #^HttpServerConnection conn request-prototype]
+ [^HttpService httpservice ^HttpServerConnection conn request-prototype]
   (let [context (doto (BasicHttpContext. nil)
                   (.setAttribute "ring.request-prototype" request-prototype))]
     (try
@@ -161,7 +161,7 @@
 
 (defn executor-execute
  "Executes (apply f args) using the specified Executor."
- [#^java.util.concurrent.Executor executor f & args]
+ [^java.util.concurrent.Executor executor f & args]
   (.execute executor #(apply f args)))
 
 (defn run-httpcore
@@ -176,10 +176,10 @@
  [handler {:keys [port server-name server-port execute]}]
   (let [execute (or execute (partial executor-execute
                               (Executors/newCachedThreadPool
-                                (proxy [ThreadFactory] []
-                                  (newThread [r]
-                                    (doto (Thread. #^Runnable r)
-                                      (.setDaemon true)))))))
+                                (reify ThreadFactory 
+                                       (newThread [this r]
+                                                  (doto (Thread. ^Runnable r)
+                                                    (.setDaemon true)))))))
         params (doto (BasicHttpParams.)
                  (.setIntParameter CoreConnectionPNames/SO_TIMEOUT 5000)
                  (.setIntParameter CoreConnectionPNames/SOCKET_BUFFER_SIZE (* 8 1024))
