@@ -4,4 +4,4 @@
   :dependencies [[ring/ring-core "0.2.5"]
                  [hiccup "0.2.6"]
                  [clj-stacktrace "0.1.0"]]
-  :dev-dependencies [[lein-clojars "0.5.0"]])
+  :dev-dependencies [[lein-clojars "0.6.0"]])
