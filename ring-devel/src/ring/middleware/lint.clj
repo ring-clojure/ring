@@ -31,7 +31,7 @@
     ":server-name must be a String")
   (lint (:remote-addr req) string?
     ":remote-addr must be a String")
-  (lint (:uri req) #(and (string? %) (.startsWith #^String % "/"))
+  (lint (:uri req) #(and (string? %) (.startsWith ^String % "/"))
     ":uri must be a String starting with \"/\"")
   (lint (:query-string req) #(or (nil? %) (string? %))
     ":query-string must be nil or a non-blank String")
@@ -52,7 +52,7 @@
     (doseq [[hname hval] headers]
       (lint hname string?
          "header names must be Strings")
-      (lint hname #(= % (.toLowerCase #^String %))
+      (lint hname #(= % (.toLowerCase ^String %))
         "header names must be in lower case")
       (lint hval string?
         "header values must be strings")))

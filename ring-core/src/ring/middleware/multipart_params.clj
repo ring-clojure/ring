@@ -11,10 +11,10 @@
 (defn- multipart-form?
   "Does a request have a multipart form?"
   [request]
-  (if-let [#^String content-type (:content-type request)]
+  (if-let [^String content-type (:content-type request)]
     (.startsWith content-type "multipart/form-data")))
 
-(defvar- #^FileUpload file-upload
+(defvar- ^FileUpload file-upload
   (FileUpload.
     (doto (DiskFileItemFactory.)
       (.setSizeThreshold -1)
@@ -25,15 +25,15 @@
   "Create a RequestContext object from a request map."
   {:tag RequestContext}
   [request encoding]
-  (proxy [RequestContext] []
-    (getContentType []       (:content-type request))
-    (getContentLength []     (:content-length request))
-    (getCharacterEncoding [] encoding)
-    (getInputStream []       (:body request))))
+  (reify RequestContext
+    (getContentType [this]       (:content-type request))
+    (getContentLength [this]     (:content-length request))
+    (getCharacterEncoding [this] encoding)
+    (getInputStream [this]       (:body request))))
 
 (defn- file-map
   "Create a file map from a DiskFileItem."
-  [#^DiskFileItem item]
+  [^DiskFileItem item]
   (with-meta
     {:filename     (.getName item)
      :size         (.getSize item)
@@ -45,7 +45,7 @@
   "Parse a map of multipart parameters from the request."
   [request encoding]
   (reduce
-    (fn [param-map, #^DiskFileItem item]
+    (fn [param-map, ^DiskFileItem item]
       (assoc-param param-map
         (.getFieldName item)
         (if (.isFormField item)

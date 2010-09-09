@@ -64,13 +64,13 @@
 
 (defn- get-extension
   "Returns the file extension of a file."
-  [#^File file]
+  [^File file]
   (second (re-find #"\.([^./\\]+)$" (.getPath file))))
 
 (defn- guess-mime-type
   "Returns a String corresponding to the guessed mime type for the given file,
   or application/octet-stream if a type cannot be guessed."
-  [#^File file mime-types]
+  [^File file mime-types]
   (get mime-types (get-extension file) "application/octet-stream"))
 
 (defn make-http-format
@@ -100,8 +100,8 @@
       (let [{:keys [headers body] :as response} (app req)]
         (if (instance? File body)
           (let [file-type   (guess-mime-type body mime-types)
-                file-length (.length #^File body)
-                lmodified   (Date. (.lastModified #^File body))
+                file-length (.length ^File body)
+                lmodified   (Date. (.lastModified ^File body))
                 response    (-> response
                               (content-type file-type)
                               (header "Last-Modified"

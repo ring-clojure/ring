@@ -8,20 +8,20 @@
   (:use (ring.util servlet)
         (clojure.contrib except)))
 
-(defn- proxy-handler
+(defn- reify-handler
   "Returns an Jetty Handler implementation for the given Ring handler."
   [handler]
-  (proxy [AbstractHandler] []
-    (handle [target #^Request request response dispatch]
-      (let [request-map  (build-request-map request)
-            response-map (handler request-map)]
-        (when response-map
-          (update-servlet-response response response-map)
-          (.setHandled request true))))))
+  (reify AbstractHandler 
+         (handle [this target ^Request request response dispatch]
+           (let [request-map  (build-request-map request)
+                 response-map (handler request-map)]
+             (when response-map
+               (update-servlet-response response response-map)
+               (.setHandled request true))))))
 
 (defn- add-ssl-connector!
   "Add an SslSocketConnector to a Jetty Server instance."
-  [#^Server server options]
+  [^Server server options]
   (let [ssl-connector (SslSocketConnector.)]
     (doto ssl-connector
       (.setPort        (options :ssl-port 443))
@@ -46,7 +46,7 @@
       (add-ssl-connector! server options))
     server))
 
-(defn #^Server run-jetty
+(defn ^Server run-jetty
   "Serve the given handler according to the options.
   Options:
     :configurator   - A function called with the Server instance.
@@ -60,12 +60,13 @@
     :truststore
     :trust-password"
   [handler options]
-  (let [#^Server s (create-server (dissoc options :configurator))]
+  (let [^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
       (configurator s))
     (doto s
-      (.setHandler (proxy-handler handler))
+      (.setHandler (reify-handler handler))
       (.start))
     (when (:join? options true)
       (.join s))
     s))
+

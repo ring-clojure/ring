@@ -9,9 +9,9 @@
 
 (defn- get-headers
   "Creates a name/value map of all the request headers."
-  [#^HttpServletRequest request]
+  [^HttpServletRequest request]
   (reduce
-    (fn [headers, #^String name]
+    (fn [headers, ^String name]
       (assoc headers
         (.toLowerCase name)
         (.getHeader request name)))
@@ -20,13 +20,13 @@
 
 (defn- get-content-length
   "Returns the content length, or nil if there is no content."
-  [#^HttpServletRequest request]
+  [^HttpServletRequest request]
   (let [length (.getContentLength request)]
     (if (>= length 0) length)))
 
 (defn build-request-map
   "Create the request map from the HttpServletRequest object."
-  [#^HttpServletRequest request]
+  [^HttpServletRequest request]
   {:server-port        (.getServerPort request)
    :server-name        (.getServerName request)
    :remote-addr        (.getRemoteAddr request)
@@ -44,9 +44,9 @@
   "Associate servlet-specific keys with the request map for use with legacy
   systems."
   [request-map
-   #^HttpServlet servlet
-   #^HttpServletRequest request
-   #^HttpServletResponse response]
+   ^HttpServlet servlet
+   ^HttpServletRequest request
+   ^HttpServletResponse response]
   (merge request-map
     {:servlet          servlet
      :servlet-request  request
@@ -55,7 +55,7 @@
 
 (defn- set-headers
   "Update a HttpServletResponse with a map of headers."
-  [#^HttpServletResponse response, headers]
+  [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
@@ -67,7 +67,7 @@
 
 (defn- set-body
   "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
-  [#^HttpServletResponse response, body]
+  [^HttpServletResponse response, body]
   (cond
     (string? body)
       (with-open [writer (.getWriter response)]
@@ -78,13 +78,13 @@
           (.print writer (str chunk))
           (.flush writer)))
     (instance? InputStream body)
-    (let [#^InputStream b body]
+    (let [^InputStream b body]
       (with-open [out (.getOutputStream response)]
         (copy b out)
         (.close b)
         (.flush out)))
     (instance? File body)
-    (let [#^File f body]
+    (let [^File f body]
       (with-open [stream (FileInputStream. f)]
         (set-body response stream)))
     (nil? body)
@@ -94,7 +94,7 @@
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
-  [#^HttpServletResponse response, {:keys [status headers body]}]
+  [^HttpServletResponse response, {:keys [status headers body]}]
   (when-not response
     (throw (Exception. "Null response given.")))
   (when status
@@ -107,9 +107,9 @@
   "Turns a handler into a function that takes the same arguments and has the
   same return value as the service method in the HttpServlet class."
   [handler]
-  (fn [#^HttpServlet servlet
-       #^HttpServletRequest request
-       #^HttpServletResponse response]
+  (fn [^HttpServlet servlet
+       ^HttpServletRequest request
+       ^HttpServletResponse response]
     (.setCharacterEncoding response "UTF-8")
     (let [request-map (-> request
                         (build-request-map)

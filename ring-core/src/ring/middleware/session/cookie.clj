@@ -1,6 +1,7 @@
 (ns ring.middleware.session.cookie
   "Encrypted cookie session storage."
-  (:use [clojure.contrib.def :only (defvar-)])
+  (:use [clojure.contrib.def :only (defvar-)]
+        ring.middleware.session.store)
   (:require (ring.util [codec :as codec]))
   (:import java.security.SecureRandom
            (javax.crypto Cipher Mac)
@@ -59,7 +60,7 @@
   [options]
   (if-let [secret-key (:key options)]
     (if (string? secret-key)
-      (.getBytes #^String secret-key)
+      (.getBytes ^String secret-key)
       secret-key)
     (secure-random-bytes 16)))
 
@@ -71,23 +72,23 @@
 
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
-  [key #^String string]
+  [key ^String string]
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
     (if (= mac (hmac key data))
       (read-string (decrypt key data)))))
 
+(deftype CookieStore [secret-key]
+  SessionStore
+  (read-session [_ data]
+    (or (if data (unseal secret-key data)) {}))
+  (write-session [_ _ data]
+    (seal secret-key data))
+  (delete-session [_ _]
+    (seal secret-key {})))
+
 (defn cookie-store
   "Creates an encrypted cookie storage engine."
-  ([]
-    (cookie-store {}))
+  ([] (cookie-store {}))
   ([options]
-    (let [secret-key (get-secret-key options)]
-      {:read (fn [session-data]
-               (if session-data
-                 (or (unseal secret-key session-data) {})
-                 {}))
-       :write (fn [_ session]
-                (seal secret-key session))
-       :delete (fn [_]
-                 (seal secret-key {}))})))
+    (CookieStore. (get-secret-key options))))
