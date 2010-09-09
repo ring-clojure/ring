@@ -1,3 +1,7 @@
+## 0.2.6 (2010-09-09)
+
+* Fixed non-string param values in keyword params middleware
+
 ## 0.2.5 (2010-07-06)
 
 * Hopefully the last flash middleware fix we'll need
