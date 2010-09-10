@@ -5,19 +5,18 @@
            (org.mortbay.jetty.bio SocketConnector)
            (org.mortbay.jetty.security SslSocketConnector)
            (javax.servlet.http HttpServletRequest HttpServletResponse))
-  (:use (ring.util servlet)
-        (clojure.contrib except)))
+  (:use ring.util.servlet))
 
-(defn- reify-handler
+(defn- proxy-handler
   "Returns an Jetty Handler implementation for the given Ring handler."
   [handler]
-  (reify AbstractHandler 
-         (handle [this target ^Request request response dispatch]
-           (let [request-map  (build-request-map request)
-                 response-map (handler request-map)]
-             (when response-map
-               (update-servlet-response response response-map)
-               (.setHandled request true))))))
+  (proxy [AbstractHandler] []
+    (handle [target ^Request request response dispatch]
+      (let [request-map  (build-request-map request)
+            response-map (handler request-map)]
+        (when response-map
+          (update-servlet-response response response-map)
+          (.setHandled request true))))))
 
 (defn- add-ssl-connector!
   "Add an SslSocketConnector to a Jetty Server instance."
@@ -64,9 +63,8 @@
     (when-let [configurator (:configurator options)]
       (configurator s))
     (doto s
-      (.setHandler (reify-handler handler))
+      (.setHandler (proxy-handler handler))
       (.start))
     (when (:join? options true)
       (.join s))
     s))
-
