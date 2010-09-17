@@ -63,7 +63,7 @@
     (when-let [configurator (:configurator options)]
       (configurator s))
     (doto s
-      (.setHandler (proxy-handler handler))
+      (.addHandler (proxy-handler handler))
       (.start))
     (when (:join? options true)
       (.join s))
