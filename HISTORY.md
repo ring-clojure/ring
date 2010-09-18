@@ -1,3 +1,7 @@
+## 0.3.0 (2010-09-19)
+
+* Updated Clojure and Clojure-Contrib version to 1.2.0
+
 ## 0.2.6 (2010-09-09)
 
 * Fixed non-string param values in keyword params middleware
