@@ -1,9 +1,20 @@
 (ns ring.middleware.stacktrace
-  "Catch exceptions and render a stacktrace for debugging."
+  "Catch exceptions and render web and log stacktraces for debugging."
   (:use (hiccup core page-helpers)
         (clj-stacktrace core repl)
         (clojure.contrib [def :only (defvar-)])
         ring.util.response))
+
+(defn wrap-stacktrace-log
+  "Wrap an app such that exceptions are logged to *err* and then rethrown."
+  [app]
+  (fn [req]
+    (try
+      (app req)
+      (catch Exception e
+        (let [msg (str "Exception: " (pst-str e))]
+          (.println *err* msg)
+          (throw e))))))
 
 (declare css)
 
@@ -50,15 +61,23 @@
       (js-ex-response e)
       (html-ex-response e))))
 
-(defn wrap-stacktrace
-  "Wrap an app such that exceptions thrown within the wrapped app are caught 
-  and a helpful debugging response is returned."
+(defn wrap-stacktrace-web
+  "Wrap an app such that exceptions are caught and a helpful debugging response
+   is returned."
   [app]
   (fn [req]
     (try
       (app req)
       (catch Exception e
         (ex-response req e)))))
+
+(defn wrap-stacktrace
+  "Wrap an app such that exceptions are caught, a corresponding stacktrace is
+  logged to *err*, and a helpful debugging web response is returned."
+  [app]
+  (-> app
+    wrap-stacktrace-log
+    wrap-stacktrace-web))
 
 (defvar- css "
 /*
