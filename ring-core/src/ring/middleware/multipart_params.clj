@@ -49,7 +49,7 @@
       (assoc-param param-map
         (.getFieldName item)
         (if (.isFormField item)
-          (if (.get item) (.getString item))
+          (if (.get item) (.getString item encoding))
           (file-map item))))
     {}
     (.parseRequest
