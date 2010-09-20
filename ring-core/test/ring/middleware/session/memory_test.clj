@@ -28,3 +28,12 @@
     (is (nil? (delete-session store sess-key)))
     (is (= (read-session store sess-key)
            {}))))
+
+(deftest memory-session-custom-atom
+  (let [session  (atom {})
+        store    (memory-store session)
+        sess-key (write-session store nil {:foo "bar"})]
+    (is (= (@session sess-key) {:foo "bar"}))
+    (swap! session assoc sess-key {:foo "baz"})
+    (is (= (read-session store sess-key)
+           {:foo "baz"}))))

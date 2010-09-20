@@ -17,5 +17,5 @@
 
 (defn memory-store
   "Creates an in-memory session storage engine."
-  []
-  (MemoryStore. (atom {})))
+  ([] (memory-store (atom {})))
+  ([session-atom] (MemoryStore. session-atom)))
