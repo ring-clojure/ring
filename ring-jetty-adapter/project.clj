@@ -5,4 +5,6 @@
                  [ring/ring-servlet "0.3.0"]
                  [org.mortbay.jetty/jetty "6.1.14"]
                  [org.mortbay.jetty/jetty-util "6.1.14"]]
-  :dev-dependencies [[lein-clojars "0.6.0"]])
+  :dev-dependencies [[lein-clojars "0.6.0"]
+                     [swank-clojure "1.2.1"]
+                     [clj-http "0.1.1"]])
