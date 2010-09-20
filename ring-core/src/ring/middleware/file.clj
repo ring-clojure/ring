@@ -15,14 +15,16 @@
 (defn wrap-file
   "Wrap an app such that the directory at the given root-path is checked for a
   static file with which to respond to the request, proxying the request to the
-  wrapped app if such a file does not exist."
-  [app ^String root-path]
+  wrapped app if such a file does not exist.
+
+  An map of options may be optionally specified. These options will be passed
+  to the ring.util.response/file-response function."
+  [app ^String root-path & [opts]]
   (ensure-dir root-path)
-  (fn [req]
-    (if-not (= :get (:request-method req))
-      (app req)
-      (let [path (.substring (codec/url-decode (:uri req)) 1)]
-        (or
-          (response/file-response path
-            {:root root-path :index-files? true :html-files? true})
-          (app req))))))
+  (let [opts (merge {:root root-path, :index-files? true} opts)]
+    (fn [req]
+      (if-not (= :get (:request-method req))
+        (app req)
+        (let [path (.substring (codec/url-decode (:uri req)) 1)]
+          (or (response/file-response path opts)
+              (app req)))))))

@@ -34,3 +34,7 @@
     (is (= {} headers))
     (is (= foo-html body))))
 
+(deftest test-wrap-file-no-index
+  (let [app  (wrap-file (constantly :response) public-dir {:index-files? false})
+        resp (app {:request-method :get :uri "/"})]
+    (is (= :response resp))))
