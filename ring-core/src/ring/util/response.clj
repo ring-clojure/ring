@@ -60,9 +60,9 @@
   Options:
     :root - take the resource relative to this root"
   [path & [opts]]
-  (let [path   (str (:root opts "") "/" path)
-        path   (.replace path "//" "/")]
-    (if-let [resource (.getResourceAsStream (class file-response) path)] ; any Ring fn will do here
+  (let [path (str (:root opts "") "/" path)
+        path (.replace path "//" "/")]
+    (if-let [resource (.getResourceAsStream System path)]
       (response resource))))
 
 (defn status
