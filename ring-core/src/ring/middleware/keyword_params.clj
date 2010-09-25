@@ -4,11 +4,9 @@
 (defn- keyify-params [target]
   (cond
     (map? target)
-      (reduce
-        (fn [m [k v]]
-          (assoc m (keyword k) (keyify-params v)))
-        {}
-        target)
+      (into {}
+        (for [[k v] target]
+          [(keyword k) (keyify-params v)]))
     (vector? target)
       (vec (map keyify-params target))
     :else
