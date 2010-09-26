@@ -1,3 +1,11 @@
+## 0.3.1 (2010-09-26)
+
+* Fixed multipart string encoding bug
+* Memory sessions can now take a user-defined atom as an argument
+* file-info middleware date checking improved
+* Added option map to file middleware
+* Jetty adapter :configurator option can now set Jetty handlers
+
 ## 0.3.0 (2010-09-19)
 
 * Updated Clojure and Clojure-Contrib version to 1.2.0
