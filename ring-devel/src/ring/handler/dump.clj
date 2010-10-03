@@ -3,7 +3,8 @@
   (:use (hiccup core page-helpers)
         [clojure.contrib.def :only (defvar-)]
         ring.util.response)
-  (:require (clojure [set :as set])))
+  (:require (clojure [set :as set]))
+  (:require [clojure.pprint :as pprint]))
 
 (declare css)
 
@@ -44,6 +45,8 @@
   "Returns a response tuple corresponding to an HTML dump of the request
   req as it was recieved by this app."
   [req]
+  (pprint/pprint req)
+  (println)
   (-> (response (template req))
     (status 200)
     (content-type "text/html")))
