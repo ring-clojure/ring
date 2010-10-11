@@ -63,6 +63,7 @@ To see a more sophisticated Ring app, run:
 * `ring.middleware.params`: Parse query and form params.
 * `ring.middleware.multipart-params`: Parse multipart params.
 * `ring.middleware.keyword-params`: Convert string param keys to keywords.
+* `ring.middleware.nested-params`: Convert a flat map of parameters into a nested map of parameters.
 * `ring.middleware.cookies`: Manage browser cookies.
 * `ring.middleware.session`: Manage user sessions. Memory and cookie session stores are available by default.
 * `ring.middleware.flash`: Adds flash message support to sessions.
@@ -91,11 +92,11 @@ To see a more sophisticated Ring app, run:
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependences`:
 
-    [ring/ring-core "0.3.1"]
+    [ring/ring-core "0.3.2"]
 
 To include all of them, add:
 
-    [ring "0.3.1"]
+    [ring "0.3.2"]
 
 ## Development
 

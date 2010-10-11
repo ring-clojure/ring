@@ -1,3 +1,7 @@
+## 0.3.2 (2010-10-11)
+
+* Added nested-params middleware
+
 ## 0.3.1 (2010-09-26)
 
 * Fixed multipart string encoding bug
