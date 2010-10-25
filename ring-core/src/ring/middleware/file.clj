@@ -1,9 +1,9 @@
 (ns ring.middleware.file
   "Static file serving."
-  (:use (clojure.contrib [def :only (defvar-)]
-                         [except :only (throw-if-not)]))
-  (:require (ring.util [codec :as codec]
-                       [response :as response]))
+  (:use [clojure.contrib.def :only (defvar-)]
+        [clojure.contrib.except :only (throw-if-not)])
+  (:require [ring.util.codec :as codec]
+            [ring.util.response :as response])
   (:import java.io.File))
 
 (defn- ensure-dir
