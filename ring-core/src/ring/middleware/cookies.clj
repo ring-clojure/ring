@@ -1,7 +1,7 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
-  (:use [clojure.contrib.def :only (defvar-)]
-        ring.util.codec))
+  (:use [clojure.contrib.def :only (defvar-)])
+  (:require [ring.util.codec :as codec]))
 
 (defvar- re-token #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+"
   "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068")
@@ -38,7 +38,7 @@
   "Turn quoted strings into normal Clojure strings using read-string."
   [cookies]
   (for [[name value] cookies]
-    (let [value (url-decode value)]
+    (let [value (codec/url-decode value)]
       (if (.startsWith ^String value "\"")
         [name (read-string value)]
         [name value]))))
@@ -76,7 +76,7 @@
 (defn- write-value
   "Write the main cookie value."
   [key value]
-  (str (name key) "=" (url-encode value)))
+  (str (name key) "=" (codec/url-encode value)))
 
 (defn- valid-attr?
   "Is the attribute valid?"
