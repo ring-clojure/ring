@@ -1,7 +1,5 @@
 (ns ring.middleware.file
   "Static file serving."
-  (:use [clojure.contrib.def :only (defvar-)]
-        [clojure.contrib.except :only (throw-if-not)])
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response])
   (:import java.io.File))
@@ -10,7 +8,8 @@
   "Ensures that a directory exists at the given path, throwing if one does not."
   [^String dir-path]
   (let [dir (File. dir-path)]
-    (throw-if-not (.exists dir) "Directory does not exist: %s" dir-path)))
+    (if-not (.exists dir)
+      (throw (Exception. (format "Directory does not exist: %s" dir-path))))))
 
 (defn wrap-file
   "Wrap an app such that the directory at the given root-path is checked for a
