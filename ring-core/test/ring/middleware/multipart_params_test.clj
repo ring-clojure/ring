@@ -6,15 +6,22 @@
             [ring.util.test :as tu])
   (:import java.io.File))
 
-(defvar- upload-content-type
+(def ^{:private true}
+  upload-content-type
   "multipart/form-data; boundary=----WebKitFormBoundaryAyGUY6aMxOI6UF5s")
 
-(defvar- upload-content-length 188)
+(def ^{:private true}
+  upload-content-length
+  188)
 
-(defvar- upload-body (tu/string-input-stream
-  "------WebKitFormBoundaryAyGUY6aMxOI6UF5s\r\nContent-Disposition: form-data; name=\"upload\"; filename=\"test.txt\"\r\nContent-Type: text/plain\r\n\r\nfoo\r\n\r\n------WebKitFormBoundaryAyGUY6aMxOI6UF5s--"))
+(def ^{:private true}
+  upload-body
+  (tu/string-input-stream
+    "------WebKitFormBoundaryAyGUY6aMxOI6UF5s\r\nContent-Disposition: form-data; name=\"upload\"; filename=\"test.txt\"\r\nContent-Type: text/plain\r\n\r\nfoo\r\n\r\n------WebKitFormBoundaryAyGUY6aMxOI6UF5s--"))
 
-(defvar- wrapped-echo (wrap-multipart-params identity))
+(def ^{:private true}
+  wrapped-echo
+  (wrap-multipart-params identity))
 
 (deftest test-wrap-multipart-params
   (let [req {:content-type   upload-content-type

@@ -1,7 +1,6 @@
 (ns ring.middleware.multipart-params
   "Parse multipart upload into params."
-  (:use [clojure.contrib.def :only (defvar-)]
-        [ring.middleware.params :only (assoc-param)])
+  (:use [ring.middleware.params :only (assoc-param)])
   (:import (org.apache.commons.fileupload
              FileUpload RequestContext)
            (org.apache.commons.fileupload.disk
@@ -14,12 +13,14 @@
   (if-let [^String content-type (:content-type request)]
     (.startsWith content-type "multipart/form-data")))
 
-(defvar- ^FileUpload file-upload
+(def ^{:private true
+       :type FileUpload
+       :doc "Uploader class to save multipart form values to temporary files."}
+  file-upload
   (FileUpload.
     (doto (DiskFileItemFactory.)
       (.setSizeThreshold -1)
-      (.setFileCleaningTracker nil)))
-  "Uploader class to save multipart form values to temporary files.")
+      (.setFileCleaningTracker nil))))
 
 (defn- request-context
   "Create a RequestContext object from a request map."
