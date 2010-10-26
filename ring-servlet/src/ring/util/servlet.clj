@@ -1,7 +1,6 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
-  (:use [clojure.contrib.except :only (throwf)]
-        [clojure.contrib.duck-streams :only (copy)])
+  (:require [clojure.java.io :as io])
   (:import (java.io File InputStream FileInputStream)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
@@ -80,7 +79,7 @@
     (instance? InputStream body)
     (let [^InputStream b body]
       (with-open [out (.getOutputStream response)]
-        (copy b out)
+        (io/copy b out)
         (.close b)
         (.flush out)))
     (instance? File body)
@@ -90,7 +89,7 @@
     (nil? body)
       nil
     :else
-      (throwf "Unrecognized body: %s" body)))
+      (throw (Exception. (format "Unrecognized body: %s" body)))))
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
