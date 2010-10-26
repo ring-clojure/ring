@@ -95,7 +95,7 @@
                (StringEntity. body)
              (seq? body)
                (EntityTemplate.
-                 (reify ContentProducer 
+                 (reify ContentProducer
                         (writeTo [this ^OutputStream s]
                                  (let [w (if charset
                                            (OutputStreamWriter. s ^String charset)
@@ -119,7 +119,7 @@
   "Returns an Handler implementation for the given Ring handler.
    The HttpContext must contains a map associated to \"ring.request-prototype\"."
   [handler]
-  (reify HttpRequestHandler 
+  (reify HttpRequestHandler
       (handle [this request response ^HttpContext context]
         (let [req (build-req-map request
                                  (.getAttribute context "ring.request-prototype"))
@@ -167,7 +167,7 @@
 (defn run-httpcore
  "Serve the given handler according to the options.
  Options:
-   :port      
+   :port
    :server-name - For old HTTP/1.0 clients
    :server-port - For old HTTP/1.0 clients, when public facing port is different
                   from :port
@@ -176,7 +176,7 @@
  [handler {:keys [port server-name server-port execute]}]
   (let [execute (or execute (partial executor-execute
                               (Executors/newCachedThreadPool
-                                (reify ThreadFactory 
+                                (reify ThreadFactory
                                        (newThread [this r]
                                                   (doto (Thread. ^Runnable r)
                                                     (.setDaemon true)))))))
