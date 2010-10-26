@@ -1,15 +1,16 @@
 ; A example of modular construction of Ring apps.
 
 (ns ring.example.wrapping
-  (:use (ring.handler dump)
-        (ring.middleware stacktrace file-info file)
-        (ring.adapter jetty)
-        (clojure.contrib except)))
+  (:use ring.handler.dump
+        ring.middleware.stacktrace
+        ring.middleware.file-info
+        ring.middleware.file
+        ring.adapter.jetty))
 
 (defn wrap-error [app]
   (fn [req]
     (if (= "/error" (:uri req))
-      (throwf "Demonstrating ring.middleware.stacktrace")
+      (throw (Exception. "Demonstrating ring.middleware.stacktrace"))
       (app req))))
 
 (def app
