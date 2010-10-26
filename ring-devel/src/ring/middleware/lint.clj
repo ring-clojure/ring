@@ -1,6 +1,5 @@
 (ns ring.middleware.lint
   "Lint Ring requests and responses."
-  (:use [clojure.contrib.except :only (throwf)])
   (:require [clojure.set :as set])
   (:import (java.io File InputStream)))
 
@@ -11,12 +10,12 @@
   [val spec message]
   (try
     (if-not (spec val)
-      (throwf "Ring lint error: specified %s, but %s was not" message (pr-str val)))
+      (throw (Exception. (format "Ring lint error: specified %s, but %s was not" message (pr-str val)))))
     (catch Exception e
       (if-not (re-find #"^Ring lint error: " (.getMessage e))
-        (throwf
+        (throw (Exception. (format
           "Ring lint error: exception occured when checking that %s on %s: %s"
-          message (pr-str val) (.getMessage e))
+          message (pr-str val) (.getMessage e))))
         (throw e)))))
 
 (defn- check-req
