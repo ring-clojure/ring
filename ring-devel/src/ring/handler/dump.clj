@@ -1,10 +1,11 @@
 (ns ring.handler.dump
   "Reflect Ring requests into responses for debugging."
-  (:use (hiccup core page-helpers)
+  (:use hiccup.core
+        hiccup.page-helpers
         [clojure.contrib.def :only (defvar-)]
         ring.util.response)
-  (:require (clojure [set :as set]))
-  (:require [clojure.pprint :as pprint]))
+  (:require [clojure.set :as set]
+            [clojure.pprint :as pprint]))
 
 (declare css)
 
