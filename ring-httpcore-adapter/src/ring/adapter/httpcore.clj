@@ -23,8 +23,7 @@
            (java.net URI
              ServerSocket)
            (java.util.concurrent
-             Executors Executor ThreadFactory))
-  (:use [clojure.contrib.except :only (throwf)]))
+             Executors Executor ThreadFactory)))
 
 (defmacro ^{:private true} -?>
  ([form] form)
@@ -110,7 +109,7 @@
              (instance? File body)
                (FileEntity. body content-type)
              :else
-               (throwf "Unrecognized body: %s" body))]
+               (throw (Exception. (format "Unrecognized body: %s" body))))]
       (when-let [^String type (headers "Content-Type")]
         (.setContentType ^AbstractHttpEntity entity type))
       (.setEntity response entity))))
