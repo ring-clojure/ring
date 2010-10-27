@@ -2,7 +2,7 @@
   (:use clojure.test
         ring.middleware.stacktrace))
 
-(def app (wrap-stacktrace #(throw (Exception. "fail"))))
+(def app (wrap-stacktrace (fn [_] (throw (Exception. "fail")))))
 
 (def html-req {})
 (def js-req   {:headers {"accept" "text/javascript"}})
