@@ -8,9 +8,10 @@
 (def js-req   {:headers {"accept" "text/javascript"}})
 
 (deftest wrap-stacktrace-smoke
-  (let [{:keys [status headers] :as response} (app html-req)]
-    (is (= 500 status))
-    (is (= {"Content-Type" "text/html"} headers)))
-  (let [{:keys [status headers]} (app js-req)]
-    (is (= 500 status))
-    (is (= {"Content-Type" "text/javascript"} headers))))
+  (binding [*err* (java.io.StringWriter.)]
+    (let [{:keys [status headers] :as response} (app html-req)]
+      (is (= 500 status))
+      (is (= {"Content-Type" "text/html"} headers)))
+    (let [{:keys [status headers]} (app js-req)]
+      (is (= 500 status))
+      (is (= {"Content-Type" "text/javascript"} headers)))))
