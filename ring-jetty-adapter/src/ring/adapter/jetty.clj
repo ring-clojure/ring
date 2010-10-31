@@ -5,17 +5,17 @@
            (org.mortbay.jetty.bio SocketConnector)
            (org.mortbay.jetty.security SslSocketConnector)
            (javax.servlet.http HttpServletRequest HttpServletResponse))
-  (:use ring.util.servlet))
+  (:require [ring.util.servlet :as servlet]))
 
 (defn- proxy-handler
   "Returns an Jetty Handler implementation for the given Ring handler."
   [handler]
   (proxy [AbstractHandler] []
     (handle [target ^Request request response dispatch]
-      (let [request-map  (build-request-map request)
+      (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (when response-map
-          (update-servlet-response response response-map)
+          (servlet/update-servlet-response response response-map)
           (.setHandled request true))))))
 
 (defn- add-ssl-connector!
