@@ -92,7 +92,7 @@
     (nil? body)
       nil
     :else
-      (throw (Exception. (format "Unrecognized body: %s" body)))))
+      (throw (Exception. ^String (format "Unrecognized body: %s" body)))))
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
