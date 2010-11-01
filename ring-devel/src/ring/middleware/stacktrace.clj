@@ -4,7 +4,6 @@
         hiccup.page-helpers
         clj-stacktrace.core
         clj-stacktrace.repl
-        (clojure.contrib [def :only (defvar-)])
         ring.util.response))
 
 (defn wrap-stacktrace-log
@@ -81,7 +80,7 @@
     wrap-stacktrace-log
     wrap-stacktrace-web))
 
-(defvar- css "
+(def ^{:private true} css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
