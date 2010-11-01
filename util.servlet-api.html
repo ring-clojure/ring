@@ -60,6 +60,8 @@ namespace.
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.util.servlet/set-headers">set-headers</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.util.servlet/set-status">set-status</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.util.servlet/update-servlet-response">update-servlet-response</a>
     </div>
     <br />
@@ -76,7 +78,7 @@ namespace.
   <pre id="var-usage">Usage: (build-request-map request)
 </pre>
   <pre id="var-docstr">Create the request map from the HttpServletRequest object.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L26" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L26" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -89,7 +91,7 @@ namespace.
 genclass to compile a HttpServlet class.
 e.g. (defservice my-handler)
      (defservice "my-prefix-" my-handler)</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L131" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L133" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -99,7 +101,7 @@ e.g. (defservice my-handler)
 </pre>
   <pre id="var-docstr">Turns a handler into a function that takes the same arguments and has the
 same return value as the service method in the HttpServlet class.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L108" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L110" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -109,7 +111,7 @@ same return value as the service method in the HttpServlet class.</pre>
 </pre>
   <pre id="var-docstr">Associate servlet-specific keys with the request map for use with legacy
 systems.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L42" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L42" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -118,7 +120,7 @@ systems.</pre>
   <pre id="var-usage">Usage: (servlet handler)
 </pre>
   <pre id="var-docstr">Create a servlet from a Ring handler..</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L123" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L125" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -127,7 +129,16 @@ systems.</pre>
   <pre id="var-usage">Usage: (set-headers response headers)
 </pre>
   <pre id="var-docstr">Update a HttpServletResponse with a map of headers.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L58" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L60" id="var-source">Source</a>
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="ring.util.servlet/set-status">set-status</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (set-status response status)
+</pre>
+  <pre id="var-docstr">Update a HttpServletResponse with a status code.</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L55" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -136,7 +147,7 @@ systems.</pre>
   <pre id="var-usage">Usage: (update-servlet-response response {:keys [status headers body]})
 </pre>
   <pre id="var-docstr">Update the HttpServletResponse using a response map.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/404f6a1a3d20628db3c029a579ab790cb2f1d4dd/ring-servlet/src/ring/util/servlet.clj#L97" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob/160b8b08abb2d91978ac88366164b516790cdcad/ring-servlet/src/ring/util/servlet.clj#L99" id="var-source">Source</a>
 </div>
 
 
