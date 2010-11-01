@@ -1,12 +1,11 @@
 (ns ring.middleware.file-info
   "Augment Ring File responses."
-  (:use [clojure.contrib.def :only (defvar-)]
-        ring.util.response)
+  (:use ring.util.response)
   (:import java.io.File
            [java.util Date Locale TimeZone]
            java.text.SimpleDateFormat))
 
-(defvar- base-mime-types
+(def ^{:private true} base-mime-types
   {"ai"    "application/postscript"
    "asc"   "text/plain"
    "avi"   "video/x-msvideo"
