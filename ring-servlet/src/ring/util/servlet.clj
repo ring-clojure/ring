@@ -52,7 +52,10 @@
      :servlet-response response
      :servlet-context  (.getServletContext servlet)}))
 
-(defn- set-headers
+(defn set-status [^HttpServletResponse response, status]
+  (.setStatus response status))
+
+(defn set-headers
   "Update a HttpServletResponse with a map of headers."
   [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
@@ -97,7 +100,7 @@
   (when-not response
     (throw (Exception. "Null response given.")))
   (when status
-    (.setStatus response status))
+    (set-status response status))
   (doto response
     (set-headers headers)
     (set-body body)))
