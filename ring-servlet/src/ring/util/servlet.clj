@@ -52,7 +52,9 @@
      :servlet-response response
      :servlet-context  (.getServletContext servlet)}))
 
-(defn set-status [^HttpServletResponse response, status]
+(defn set-status
+  "Update a HttpServletResponse with a status code."
+  [^HttpServletResponse response, status]
   (.setStatus response status))
 
 (defn set-headers
