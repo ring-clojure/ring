@@ -1,3 +1,8 @@
+## 0.3.3 (2010-10-31)
+
+* Added console logging for ring.handler.dump and ring.middleware.stacktrace
+* Removed runtime dependency on clojure.contrib
+
 ## 0.3.2 (2010-10-11)
 
 * Added nested-params middleware
