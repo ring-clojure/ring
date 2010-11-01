@@ -1,8 +1,8 @@
 (ns ring.middleware.file-info
   "Augment Ring File responses."
-  (:use ring.util.response)
+  (:require [ring.util.response :as res])
   (:import java.io.File
-           [java.util Date Locale TimeZone]
+           (java.util Date Locale TimeZone)
            java.text.SimpleDateFormat))
 
 (def ^{:private true} base-mime-types
@@ -103,12 +103,12 @@
                 file-length (.length ^File body)
                 lmodified   (Date. (.lastModified ^File body))
                 response    (-> response
-                              (content-type file-type)
-                              (header "Last-Modified"
+                              (res/content-type file-type)
+                              (res/header "Last-Modified"
                                       (.format (make-http-format) lmodified)))]
             (if (not-modified-since? req lmodified)
-              (-> response (status 304)
-                           (header "Content-Length" 0)
+              (-> response (res/status 304)
+                           (res/header "Content-Length" 0)
                            (assoc :body ""))
-              (-> response (header "Content-Length" file-length))))
+              (-> response (res/header "Content-Length" file-length))))
           response)))))
