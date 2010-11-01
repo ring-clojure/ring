@@ -7,17 +7,25 @@
            (javax.crypto Cipher Mac)
            (javax.crypto.spec SecretKeySpec IvParameterSpec)))
 
-(defvar- seed-algorithm "SHA1PRNG"
-  "Algorithm to seed random numbers.")
+(def ^{:private true
+       :doc "Algorithm to seed random numbers."}
+  seed-algorithm
+  "SHA1PRNG")
 
-(defvar- hmac-algorithm "HmacSHA256"
-  "Algorithm to generate a HMAC.")
+(def ^{:private true
+       :doc "Algorithm to generate a HMAC."}
+  hmac-algorithm
+  "HmacSHA256")
 
-(defvar- crypt-type "AES"
-  "Type of encryption to use.")
+(def ^{:private true
+       :doc "Type of encryption to use."}
+  crypt-type
+  "AES")
 
-(defvar- crypt-algorithm "AES/CBC/PKCS5Padding"
-  "Full algorithm to encrypt data with.")
+(def ^{:private true
+       :doc "Full algorithm to encrypt data with."}
+  crypt-algorithm
+  "AES/CBC/PKCS5Padding")
 
 (defn- secure-random-bytes
   "Returns a random byte array of the specified size."

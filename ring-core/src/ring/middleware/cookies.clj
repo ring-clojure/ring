@@ -1,32 +1,40 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
-  (:use [clojure.contrib.def :only (defvar-)])
   (:require [ring.util.codec :as codec]))
 
-(defvar- re-token #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+"
-  "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068")
+(def ^{:private true
+       :doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"}
+  re-token
+  #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+")
 
-(defvar- re-quoted #"\"(\\\"|[^\"])*\""
-  "HTTP quoted-string: <\"> *<any TEXT except \"> <\">. See RFC2068.")
+(def ^{:private true
+       :doc "HTTP quoted-string: <\"> *<any TEXT except \"> <\">. See RFC2068."}
+  re-quoted
+  #"\"(\\\"|[^\"])*\"")
 
-(defvar- re-value (str re-token "|" re-quoted)
-  "HTTP value: token | quoted-string. See RFC2109")
+(def ^{:private true
+       :doc "HTTP value: token | quoted-string. See RFC2109"}
+  re-value
+  (str re-token "|" re-quoted))
 
-(defvar- re-cookie
-  (re-pattern (str "\\s*(" re-token ")=(" re-value ")\\s*[;,]?"))
-  "HTTP cookie-value: NAME \"=\" VALUE")
+(def ^{:private true
+       :doc "HTTP cookie-value: NAME \"=\" VALUE"}
+  re-cookie
+  (re-pattern (str "\\s*(" re-token ")=(" re-value ")\\s*[;,]?")))
 
-(defvar- cookie-attrs
-  {"$Path" :path, "$Domain" :domain, "$Port" :port}
-  "Special attributes defined by RFC2109 and RFC2965 that apply to the
-  Cookie header.")
+(def ^{:private true
+       :doc "Special attributes defined by RFC2109 and RFC2965 that apply to the
+             Cookie header."}
+  cookie-attrs
+  {"$Path" :path, "$Domain" :domain, "$Port" :port})
 
-(defvar- set-cookie-attrs
+(def ^{:private true
+       :doc "Attributes defined by RFC2109 and RFC2965 that apply to the
+             Set-Cookie header."}
+  set-cookie-attrs
   {:comment "Comment", :comment-url "CommentURL", :discard "Discard",
    :domain "Domain", :max-age "Max-Age", :path "Path", :port "Port",
-   :secure "Secure", :version "Version", :expires "Expires"}
-  "Attributes defined by RFC2109 and RFC2965 that apply to the Set-Cookie
-  header.")
+   :secure "Secure", :version "Version", :expires "Expires"})
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
