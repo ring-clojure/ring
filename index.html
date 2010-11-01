@@ -34,7 +34,7 @@ namespace.
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.flash-api.html" class="wiki_link">middleware.flash</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.nested-params-api.html" class="wiki_link">middleware.nested-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
     </ul>
   </div>
 </div>
@@ -70,6 +70,10 @@ namespace.
     
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.flash">middleware.flash</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
     <a href="#middleware.keyword-params">middleware.keyword-params</a>
     
     <br />
@@ -79,6 +83,10 @@ namespace.
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
     <a href="#middleware.multipart-params">middleware.multipart-params</a>
+    
+    <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.nested-params">middleware.nested-params</a>
     
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
@@ -130,7 +138,7 @@ namespace.
   <h2 id="adapter.httpcore">adapter.httpcore</h2>
   <a href="adapter.httpcore-api.html" id="api-link">Detailed API documentation</a><br />
   <pre id="namespace-docstr">Adapter for the Apache HttpCore webserver.</pre>
-  <span id="var-link"><a href="adapter.httpcore-api.html#ring.adapter.httpcore/executor-execute" id="var-tag">executor-execute</a> </span><span id="var-link"><a href="adapter.httpcore-api.html#ring.adapter.httpcore/run-httpcore" id="var-tag">run-httpcore</a> </span><br />
+  <br />
   
 </div><div id="namespace-entry">
   <br />
@@ -170,7 +178,15 @@ namespace.
   <h2 id="middleware.file-info">middleware.file-info</h2>
   <a href="middleware.file-info-api.html" id="api-link">Detailed API documentation</a><br />
   <pre id="namespace-docstr">Augment Ring File responses.</pre>
-  <span id="var-link"><a href="middleware.file-info-api.html#ring.middleware.file-info/wrap-file-info" id="var-tag">wrap-file-info</a> </span><br />
+  <span id="var-link"><a href="middleware.file-info-api.html#ring.middleware.file-info/make-http-format" id="var-tag">make-http-format</a> </span><span id="var-link"><a href="middleware.file-info-api.html#ring.middleware.file-info/wrap-file-info" id="var-tag">wrap-file-info</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.flash">middleware.flash</h2>
+  <a href="middleware.flash-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr">A session-based flash store that persists to the next request.</pre>
+  <span id="var-link"><a href="middleware.flash-api.html#ring.middleware.flash/wrap-flash" id="var-tag">wrap-flash</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />
@@ -195,6 +211,14 @@ namespace.
   <a href="middleware.multipart-params-api.html" id="api-link">Detailed API documentation</a><br />
   <pre id="namespace-docstr">Parse multipart upload into params.</pre>
   <span id="var-link"><a href="middleware.multipart-params-api.html#ring.middleware.multipart-params/parse-multipart-params" id="var-tag">parse-multipart-params</a> </span><span id="var-link"><a href="middleware.multipart-params-api.html#ring.middleware.multipart-params/wrap-multipart-params" id="var-tag">wrap-multipart-params</a> </span><br />
+  
+</div><div id="namespace-entry">
+  <br />
+  <hr />
+  <h2 id="middleware.nested-params">middleware.nested-params</h2>
+  <a href="middleware.nested-params-api.html" id="api-link">Detailed API documentation</a><br />
+  <pre id="namespace-docstr"></pre>
+  <span id="var-link"><a href="middleware.nested-params-api.html#ring.middleware.nested-params/parse-nested-keys" id="var-tag">parse-nested-keys</a> </span><span id="var-link"><a href="middleware.nested-params-api.html#ring.middleware.nested-params/wrap-nested-params" id="var-tag">wrap-nested-params</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />
@@ -231,14 +255,24 @@ namespace.
       <a href="middleware.session-api.html#ring.middleware.session.memory/memory-store">memory-store</a>
     </span>
     <br />
+  </span><span id="subspace"><br />Variables and functions in
+    <span id="name">middleware.session.store</span>:
+    <span id="sub-var-link">
+      <a href="middleware.session-api.html#ring.middleware.session.store/delete-session">delete-session</a>
+    </span><span id="sub-var-link">
+      <a href="middleware.session-api.html#ring.middleware.session.store/read-session">read-session</a>
+    </span><span id="sub-var-link">
+      <a href="middleware.session-api.html#ring.middleware.session.store/write-session">write-session</a>
+    </span>
+    <br />
   </span>
 </div><div id="namespace-entry">
   <br />
   <hr />
   <h2 id="middleware.stacktrace">middleware.stacktrace</h2>
   <a href="middleware.stacktrace-api.html" id="api-link">Detailed API documentation</a><br />
-  <pre id="namespace-docstr">Catch exceptions and render a stacktrace for debugging.</pre>
-  <span id="var-link"><a href="middleware.stacktrace-api.html#ring.middleware.stacktrace/wrap-stacktrace" id="var-tag">wrap-stacktrace</a> </span><br />
+  <pre id="namespace-docstr">Catch exceptions and render web and log stacktraces for debugging.</pre>
+  <span id="var-link"><a href="middleware.stacktrace-api.html#ring.middleware.stacktrace/wrap-stacktrace" id="var-tag">wrap-stacktrace</a> </span><span id="var-link"><a href="middleware.stacktrace-api.html#ring.middleware.stacktrace/wrap-stacktrace-log" id="var-tag">wrap-stacktrace-log</a> </span><span id="var-link"><a href="middleware.stacktrace-api.html#ring.middleware.stacktrace/wrap-stacktrace-web" id="var-tag">wrap-stacktrace-web</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />
@@ -262,7 +296,7 @@ namespace.
   <h2 id="util.response">util.response</h2>
   <a href="util.response-api.html" id="api-link">Detailed API documentation</a><br />
   <pre id="namespace-docstr">Generate and augment Ring responses.</pre>
-  <span id="var-link"><a href="util.response-api.html#ring.util.response/content-type" id="var-tag">content-type</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/file-response" id="var-tag">file-response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/redirect" id="var-tag">redirect</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/response" id="var-tag">response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/status" id="var-tag">status</a> </span><br />
+  <span id="var-link"><a href="util.response-api.html#ring.util.response/content-type" id="var-tag">content-type</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/file-response" id="var-tag">file-response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/header" id="var-tag">header</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/redirect" id="var-tag">redirect</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/resource-response" id="var-tag">resource-response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/response" id="var-tag">response</a> </span><span id="var-link"><a href="util.response-api.html#ring.util.response/status" id="var-tag">status</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />
@@ -270,7 +304,7 @@ namespace.
   <h2 id="util.servlet">util.servlet</h2>
   <a href="util.servlet-api.html" id="api-link">Detailed API documentation</a><br />
   <pre id="namespace-docstr">Compatibility functions for turning a ring handler into a Java servlet.</pre>
-  <span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/build-request-map" id="var-tag">build-request-map</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/defservice" id="var-tag">defservice</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/make-service-method" id="var-tag">make-service-method</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/merge-servlet-keys" id="var-tag">merge-servlet-keys</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/servlet" id="var-tag">servlet</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/update-servlet-response" id="var-tag">update-servlet-response</a> </span><br />
+  <span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/build-request-map" id="var-tag">build-request-map</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/defservice" id="var-tag">defservice</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/make-service-method" id="var-tag">make-service-method</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/merge-servlet-keys" id="var-tag">merge-servlet-keys</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/servlet" id="var-tag">servlet</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/set-headers" id="var-tag">set-headers</a> </span><span id="var-link"><a href="util.servlet-api.html#ring.util.servlet/update-servlet-response" id="var-tag">update-servlet-response</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />

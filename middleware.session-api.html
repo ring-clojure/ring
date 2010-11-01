@@ -34,7 +34,7 @@ namespace.
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.flash-api.html" class="wiki_link">middleware.flash</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.nested-params-api.html" class="wiki_link">middleware.nested-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
     </ul>
   </div>
 </div>
@@ -63,6 +63,16 @@ namespace.
       <a href="#ring.middleware.session.memory/memory-store">memory-store</a>
     </div>
     <br />
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#middleware.session.store">middleware.session.store</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.session.store/delete-session">delete-session</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.session.store/read-session">read-session</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.session.store/write-session">write-session</a>
+    </div>
+    <br />
   </div>
 </div>
 </div>
@@ -86,13 +96,17 @@ The following options are available:
     An implementation map containing :read, :write, and :delete
     keys. This determines how the session is stored. Defaults to
     in-memory storage.
+  :root
+    The root path of the session. Anything path above this will not
+    be able to see this session. Equivalent to setting the cookie's
+    path attribute. Defaults to "/".
   :cookie-name
     The name of the cookie that holds the session key. Defaults to
     "ring-session"
   :cookie-attrs
     A map of attributes to associate with the session cookie. Defaults
     to {}.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/30e2e900b76d113c3e7879280ee89dd434457752/ring-core/src/ring/middleware/session.clj#L6" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob//ring-servlet/checkouts/ring-core/src/ring/middleware/session.clj#L6" id="var-source">Source</a>
 </div>
 <h2 id="namespace-name">middleware.session.cookie</h2>
 <pre id="namespace-docstr">Encrypted cookie session storage.</pre>
@@ -104,7 +118,7 @@ The following options are available:
        (cookie-store options)
 </pre>
   <pre id="var-docstr">Creates an encrypted cookie storage engine.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/fa8c6f139714c67b98843405ef9a3ab39292ad55/ring-core/src/ring/middleware/session/cookie.clj#L80" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob//ring-servlet/checkouts/ring-core/src/ring/middleware/session/cookie.clj#L97" id="var-source">Source</a>
 </div>
 <h2 id="namespace-name">middleware.session.memory</h2>
 <pre id="namespace-docstr">In-memory session storage.</pre>
@@ -113,9 +127,37 @@ The following options are available:
   <h2 id="ring.middleware.session.memory/memory-store">memory-store</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (memory-store)
+       (memory-store session-atom)
 </pre>
   <pre id="var-docstr">Creates an in-memory session storage engine.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/995ab0d024175cb7a3827a8017cae2dd218359fc/ring-core/src/ring/middleware/session/memory.clj#L5" id="var-source">Source</a>
+  <a href="http://github.com/mmcgrana/ring/blob//ring-servlet/checkouts/ring-core/src/ring/middleware/session/memory.clj#L18" id="var-source">Source</a>
+</div>
+<h2 id="namespace-name">middleware.session.store</h2>
+<pre id="namespace-docstr">Common session store objects and functions.</pre>
+<div id="var-entry">
+  <hr />
+  <h2 id="ring.middleware.session.store/delete-session">delete-session</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (delete-session store key)
+</pre>
+  <pre id="var-docstr">Delete a session map from the store.</pre>
+  
+</div><div id="var-entry">
+  <hr />
+  <h2 id="ring.middleware.session.store/read-session">read-session</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (read-session store key)
+</pre>
+  <pre id="var-docstr">Read a session map from the store.</pre>
+  
+</div><div id="var-entry">
+  <hr />
+  <h2 id="ring.middleware.session.store/write-session">write-session</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (write-session store key data)
+</pre>
+  <pre id="var-docstr">Write a session map to the store.</pre>
+  
 </div>
 
 

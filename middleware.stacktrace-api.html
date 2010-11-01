@@ -34,7 +34,7 @@ namespace.
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.flash-api.html" class="wiki_link">middleware.flash</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.nested-params-api.html" class="wiki_link">middleware.nested-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
     </ul>
   </div>
 </div>
@@ -49,13 +49,17 @@ namespace.
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.middleware.stacktrace/wrap-stacktrace">wrap-stacktrace</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.stacktrace/wrap-stacktrace-log">wrap-stacktrace-log</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.stacktrace/wrap-stacktrace-web">wrap-stacktrace-web</a>
     </div>
     <br />
   </div>
 </div>
 </div>
                 <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">middleware.stacktrace</span></h1>
-<pre id="namespace-docstr">Catch exceptions and render a stacktrace for debugging.</pre>
+<pre id="namespace-docstr">Catch exceptions and render web and log stacktraces for debugging.</pre>
 <div id="var-entry">
   <br />
   <hr />
@@ -63,9 +67,28 @@ namespace.
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (wrap-stacktrace app)
 </pre>
-  <pre id="var-docstr">Wrap an app such that exceptions thrown within the wrapped app are caught 
-and a helpful debugging response is returned.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/edbf825f3caf065873e0be263ef3c80796ab9ef5/ring-devel/src/ring/middleware/stacktrace.clj#L53" id="var-source">Source</a>
+  <pre id="var-docstr">Wrap an app such that exceptions are caught, a corresponding stacktrace is
+logged to *err*, and a helpful debugging web response is returned.</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/12a20108c6efecb52876d3d1ca9c6d43de19cc12/ring-devel/src/ring/middleware/stacktrace.clj#L75" id="var-source">Source</a>
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="ring.middleware.stacktrace/wrap-stacktrace-log">wrap-stacktrace-log</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (wrap-stacktrace-log app)
+</pre>
+  <pre id="var-docstr">Wrap an app such that exceptions are logged to *err* and then rethrown.</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/12a20108c6efecb52876d3d1ca9c6d43de19cc12/ring-devel/src/ring/middleware/stacktrace.clj#L9" id="var-source">Source</a>
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="ring.middleware.stacktrace/wrap-stacktrace-web">wrap-stacktrace-web</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (wrap-stacktrace-web app)
+</pre>
+  <pre id="var-docstr">Wrap an app such that exceptions are caught and a helpful debugging response
+is returned.</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/12a20108c6efecb52876d3d1ca9c6d43de19cc12/ring-devel/src/ring/middleware/stacktrace.clj#L65" id="var-source">Source</a>
 </div>
 
 

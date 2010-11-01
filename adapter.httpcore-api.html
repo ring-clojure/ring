@@ -34,7 +34,7 @@ namespace.
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.flash-api.html" class="wiki_link">middleware.flash</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.nested-params-api.html" class="wiki_link">middleware.nested-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
     </ul>
   </div>
 </div>
@@ -47,43 +47,14 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#ring.adapter.httpcore/executor-execute">executor-execute</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#ring.adapter.httpcore/run-httpcore">run-httpcore</a>
-    </div>
+    
     <br />
   </div>
 </div>
 </div>
                 <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">adapter.httpcore</span></h1>
 <pre id="namespace-docstr">Adapter for the Apache HttpCore webserver.</pre>
-<div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="ring.adapter.httpcore/executor-execute">executor-execute</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (executor-execute executor f &amp; args)
-</pre>
-  <pre id="var-docstr">Executes (apply f args) using the specified Executor.</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/08e0f2578b018e5d94ebc585c41366859bbd8634/ring-httpcore-adapter/src/ring/adapter/httpcore.clj#L162" id="var-source">Source</a>
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="ring.adapter.httpcore/run-httpcore">run-httpcore</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (run-httpcore handler {:keys [port server-name server-port execute]})
-</pre>
-  <pre id="var-docstr">Serve the given handler according to the options.
-Options:
-  :port      
-  :server-name - For old HTTP/1.0 clients
-  :server-port - For old HTTP/1.0 clients, when public facing port is different
-                 from :port
-  :execute     - Function with signature [f &amp; args] that applies f to args,
-                 usually in another thread</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/08e0f2578b018e5d94ebc585c41366859bbd8634/ring-httpcore-adapter/src/ring/adapter/httpcore.clj#L167" id="var-source">Source</a>
-</div>
+
 
 
 </div>
