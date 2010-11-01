@@ -2,7 +2,6 @@
   "Reflect Ring requests into responses for debugging."
   (:use hiccup.core
         hiccup.page-helpers
-        [clojure.contrib.def :only (defvar-)]
         ring.util.response)
   (:require [clojure.set :as set]
             [clojure.pprint :as pprint]))
@@ -52,7 +51,7 @@
     (status 200)
     (content-type "text/html")))
 
-(defvar- css "
+(def ^{:private true} css "
 /*
 Copyright (c) 2008, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
