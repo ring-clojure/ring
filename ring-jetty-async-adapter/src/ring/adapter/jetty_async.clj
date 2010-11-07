@@ -67,8 +67,9 @@
                                  (.println writer data)
                                  (.flush writer))
                              :close
-                              (.complete ac)))]
-                (reactor send))
+                              (.complete ac)))
+                    recv (reactor send)]
+                (recv {:type :init}))
             :websocket
               (let [reactor (:reactor response-map)
                     websocket (proxy-websocket reactor)
