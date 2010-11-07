@@ -56,7 +56,7 @@
             :http
               (let [reactor (:reactor response-map)
                     ac (.startAsync request)
-                    send (fn [{:keys [type data]}]
+                    emit (fn [{:keys [type data]}]
                            (case type
                              :status
                                (servlet/set-status (.getResponse ac) data)
@@ -68,7 +68,7 @@
                                  (.flush writer))
                              :close
                               (.complete ac)))
-                    recv (reactor send)]
+                    recv (reactor emit)]
                 (recv {:type :init}))
             :websocket
               (let [reactor (:reactor response-map)
