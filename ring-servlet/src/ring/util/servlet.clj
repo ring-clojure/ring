@@ -75,7 +75,7 @@
   (cond
     (string? body)
       (with-open [writer (.getWriter response)]
-        (.println writer body))
+        (.print writer body))
     (seq? body)
       (with-open [writer (.getWriter response)]
         (doseq [chunk body]
