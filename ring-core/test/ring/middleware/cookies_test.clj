@@ -71,3 +71,10 @@
         resp    ((wrap-cookies handler) {})]
     (is (= {"Set-Cookie" (list "a=hello+world")}
            (:headers resp)))))
+
+(deftest wrap-cookies-keep-set-cookies-intact
+  (let [handler (constantly {:headers {"Set-Cookie" (list "a=b")}
+                             :cookies {:c "d"}})
+        resp    ((wrap-cookies handler) {})]
+    (is (= {"Set-Cookie" (list "a=b" "c=d")}
+           (:headers resp)))))

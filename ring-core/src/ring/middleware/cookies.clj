@@ -115,9 +115,10 @@
   "Add a Set-Cookie header to a response if there is a :cookies key."
   [response]
   (if-let [cookies (:cookies response)]
-    (assoc-in response
-              [:headers "Set-Cookie"]
-              (write-cookies cookies))
+    (update-in response
+               [:headers "Set-Cookie"]
+               concat
+               (write-cookies cookies))
     response))
 
 (defn wrap-cookies
