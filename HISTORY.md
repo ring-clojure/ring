@@ -1,3 +1,8 @@
+## 0.3.4 (2010-11-16)
+
+* wrap-cookies no longer overwrites existing Set-Cookie header
+* String response bodies no longer have extra newline
+
 ## 0.3.3 (2010-10-31)
 
 * Added console logging for ring.handler.dump and ring.middleware.stacktrace
