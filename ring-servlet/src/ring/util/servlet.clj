@@ -82,11 +82,10 @@
           (.print writer (str chunk))
           (.flush writer)))
     (instance? InputStream body)
-      (let [^InputStream b body]
-        (with-open [out (.getOutputStream response)]
-          (io/copy b out)
-          (.close b)
-          (.flush out)))
+      (with-open [out (.getOutputStream response)
+                  ^InputStream b body]
+        (io/copy b out)
+        (.flush out))
     (instance? File body)
       (let [^File f body]
         (with-open [stream (FileInputStream. f)]
