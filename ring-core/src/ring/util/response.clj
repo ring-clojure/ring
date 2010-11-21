@@ -61,8 +61,9 @@
     :root - take the resource relative to this root"
   [path & [opts]]
   (let [path (str (:root opts "") "/" path)
-        path (.replace path "//" "/")]
-    (if-let [resource (.getResourceAsStream System path)]
+        path (.replace path "//" "/")
+        path (.replaceAll path "^/" "")]
+    (if-let [resource (.. Thread currentThread getContextClassLoader (getResourceAsStream path))]
       (response resource))))
 
 (defn status
