@@ -84,10 +84,6 @@ To see a more sophisticated Ring app, run:
 
 * `ring.adapter.jetty`: Adapter for the Jetty webserver.
 
-### ring-httpcore-adapter
-
-* `ring.adapter.httpcore`: Adapter for the Apache HttpCore webserver. 
-
 ## Leiningen Usage
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependences`:

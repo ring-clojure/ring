@@ -4,7 +4,6 @@
   :dependencies
     [[ring/ring-core "0.3.4"]
      [ring/ring-devel "0.3.4"]
-     [ring/ring-httpcore-adapter "0.3.4"]
      [ring/ring-jetty-adapter "0.3.4"]
      [ring/ring-servlet "0.3.4"]]
   :dev-dependencies
