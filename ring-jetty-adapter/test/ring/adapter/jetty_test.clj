@@ -16,5 +16,5 @@
         (is (= (:status response) 200))
         (is (.startsWith (get-in response [:headers "content-type"])
                          "text/plain"))
-        (is (= (:body response) "Hello World\n")))
+        (is (= (:body response) "Hello World")))
       (finally (.stop server)))))
