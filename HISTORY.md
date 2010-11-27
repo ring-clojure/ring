@@ -1,3 +1,10 @@
+## 0.3.5 (2010-11-27)
+
+* Context classloader now used for resource responses
+* Removed HttpCore adapter from repository
+* InputStream response body guaranteed to close
+* Updated Jetty dependencies to 6.1.26
+
 ## 0.3.4 (2010-11-16)
 
 * wrap-cookies no longer overwrites existing Set-Cookie header
