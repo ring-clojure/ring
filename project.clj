@@ -7,7 +7,8 @@
      [ring/ring-jetty-adapter "0.3.4"]
      [ring/ring-servlet "0.3.4"]]
   :dev-dependencies
-    [[autodoc "0.7.1"]]
+    [[autodoc "0.7.1" :exclusions [org.clojure/clojure
+                                   org.clojure/clojure-contrib]]]
   :autodoc
     {:name "Ring"
      :description "A Clojure web applications library"
