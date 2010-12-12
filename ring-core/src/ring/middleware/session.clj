@@ -11,9 +11,10 @@
 
   The following options are available:
     :store
-      An implementation map containing :read, :write, and :delete
-      keys. This determines how the session is stored. Defaults to
-      in-memory storage.
+      An implementation of the SessionStore protocol in the
+      ring.middleware.session.store namespace. This determines how the
+      session is stored. Defaults to in-memory storage
+      (ring.middleware.session.store.MemoryStore).
     :root
       The root path of the session. Anything path above this will not
       be able to see this session. Equivalent to setting the cookie's
