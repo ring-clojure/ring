@@ -77,13 +77,22 @@
   (let [data (encrypt key (.getBytes (pr-str data)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
+(defn- secure-compare [a b]
+  (if (and a b (= (.length a) (.length b)))
+      (= 0
+         (reduce bit-or
+                 (map bit-xor
+                      (.getBytes a)
+                      (.getBytes b))))
+      false))
+
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
   [key ^String string]
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
-    (if (= mac (hmac key data))
-      (read-string (decrypt key data)))))
+    (if (secure-compare mac (hmac key data))
+        (read-string (decrypt key data)))))
 
 (deftype CookieStore [secret-key]
   SessionStore
