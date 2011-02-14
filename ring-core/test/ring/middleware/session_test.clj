@@ -104,3 +104,7 @@
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
 	   ["ring-session=foo%3Abar;Max-Age=5;Path=/"]))))
+
+(deftest session-response-is-nil
+  (let [handler (wrap-session (constantly nil))]
+    (is (nil? (handler {})))))

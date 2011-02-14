@@ -36,17 +36,18 @@
         (fn [request]
           (let [sess-key (get-in request [:cookies cookie-name :value])
                 session  (read-session store sess-key)
-                request  (assoc request :session session)
-                response (handler request)
-                sess-key* (if (contains? response :session)
-                            (if (response :session)
-                              (write-session store sess-key (response :session))
-                              (if sess-key
-                                (delete-session store sess-key))))
-                response (dissoc response :session)
-                cookie   {cookie-name (merge cookie-attrs
-                                             (response :session-cookie-attrs)
-                                             {:value sess-key*})}]
-            (if (and sess-key* (not= sess-key sess-key*))
-              (assoc response :cookies (merge (response :cookies) cookie))
-              response)))))))
+                request  (assoc request :session session)]
+            (if-let [response (handler request)]
+              (let [sess-key* (if (contains? response :session)
+                                (if-let [session (response :session)]
+                                  (write-session store sess-key session)
+                                  (if sess-key
+                                    (delete-session store sess-key))))
+                    response (dissoc response :session)
+                    cookie   {cookie-name
+                              (merge cookie-attrs
+                                     (response :session-cookie-attrs)
+                                     {:value sess-key*})}]
+                (if (and sess-key* (not= sess-key sess-key*))
+                  (assoc response :cookies (merge (response :cookies) cookie))
+                  response)))))))))
