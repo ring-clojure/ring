@@ -7,19 +7,17 @@
   This is useful for small messages that persist across redirects."
   [handler]
   (fn [request]
-    (let [session  (request :session)
-          flash    (session :_flash)
-          session  (dissoc session :_flash)
-          request  (assoc request
-                     :session session
-                     :flash flash)
-          response (handler request)
-          session  (if (contains? response :session)
-                     (response :session)
-                     session)
-          session  (if-let [flash (response :flash)]
-                     (assoc (response :session session) :_flash flash)
-                     session)]
-      (if (or flash (response :flash) (contains? response :session))
-        (assoc response :session session)
-        response))))
+    (let [session (:session request)
+          flash   (:_flash session)
+          session (dissoc session :_flash)
+          request (assoc request :session session, :flash flash)]
+      (if-let [response (handler request)]
+        (let [session (if (contains? response :session)
+                        (response :session)
+                        session)
+              session (if-let [flash (response :flash)]
+                        (assoc (response :session session) :_flash flash)
+                        session)]
+          (if (or flash (response :flash) (contains? response :session))
+            (assoc response :session session)
+            response))))))

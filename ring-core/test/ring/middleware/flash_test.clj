@@ -34,3 +34,7 @@
         handler  (wrap-flash (constantly {:flash message, :session nil}))
         response (handler {:session {:foo "bar"}})]
     (is (= (:session response) {:_flash message}))))
+
+(deftest flash-not-except-on-nil-response
+  (let [handler (wrap-flash (constantly nil))]
+    (is (nil? (handler {})))))
