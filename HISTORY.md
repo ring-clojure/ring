@@ -1,3 +1,8 @@
+## 0.3.6 (2011-02-16)
+
+* Session and flash middleware handle nils without excepting
+* Cookie session store compares HMAC with constant-time function
+
 ## 0.3.5 (2010-11-27)
 
 * Context classloader now used for resource responses
