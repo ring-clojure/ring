@@ -56,6 +56,16 @@
       [(.getFieldName item)
        (parse-file-item item store)])))
 
+(defn- load-var
+  "Returns the var named by the supplied symbol, or nil if not found. Attempts
+  to load the var namespace on the fly if not already loaded."
+  [sym]
+  (require (symbol (namespace sym)))
+  (find-var sym))
+
+(def default-store
+  'ring.middleware.multipart-params.temp-file/temp-file-store)
+
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
   following keys to the request map:
@@ -71,7 +81,8 @@
     (let [encoding (or (:encoding opts)
                        (:character-encoding request)
                        "UTF-8")
-          store    (:store opts byte-array-store)
+          store    (or (:store opts)
+                       (load-var default-store))
           params   (if (multipart-form? request)
                      (parse-multipart-params request encoding store)
                      {})
