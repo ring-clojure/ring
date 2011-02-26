@@ -71,11 +71,18 @@
   following keys to the request map:
     :multipart-params - a map of multipart parameters
     :params           - a merged map of all types of parameter
-  Takes an optional configuration map. Recognized keys are:
+
+  This middleware takes an optional configuration map. Recognized keys are:
+
     :encoding - character encoding to use for multipart parsing. If not
                 specified, uses the request character encoding, or \"UTF-8\"
                 if no request character encoding is set.
-    :store    - a function that stores a file upload. xxxx"
+
+    :store    - a function that stores a file upload. The function should
+                expect a map with :filename, content-type and :stream keys,
+                and its return value will be used as the value for the
+                parameter in the multipart parameter map. The default storage
+                function is the temp-file-store."
   [handler & [opts]]
   (fn [request]
     (let [encoding (or (:encoding opts)
