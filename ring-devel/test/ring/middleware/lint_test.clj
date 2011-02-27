@@ -123,5 +123,5 @@
   [nil {:foo "bar"} {"foo" :bar} {"dir" 123}])
 
 (lints-resp :body
-  [nil "thebody" (tu/string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
+  [nil "thebody" (list "foo" "bar") (tu/string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
   [123 :thebody])

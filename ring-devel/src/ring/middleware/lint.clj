@@ -77,9 +77,9 @@
       (lint hval #(or (string? %) (every? string? %))
         "header values must be Strings or colls of Strings")))
 
-  (lint (:body resp) #(or (nil? %) (string? %) (instance? File %)
+  (lint (:body resp) #(or (nil? %) (string? %) (seq? %) (instance? File %)
                           (instance? InputStream %))
-    ":body must a String, File, or InputStream"))
+    ":body must a String, ISeq, File, or InputStream"))
 
 (defn wrap-lint
   "Wrap an app to validate incoming requests and outgoing responses
