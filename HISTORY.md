@@ -1,3 +1,9 @@
+## 0.3.7 (2011-03-05)
+
+* Lint middleware recognises ISeq as valid response body
+* Added ring.util.mime-types namespace
+* Added content-type middleware
+
 ## 0.3.6 (2011-02-16)
 
 * Session and flash middleware handle nils without excepting
