@@ -23,4 +23,8 @@
       (is (= (handler {:uri "/foo/bar.xxxaaa"})
              {:headers {"Content-Type" "application/octet-stream"}}))
       (is (= (handler {:uri "/foo/bar"})
-             {:headers {"Content-Type" "application/octet-stream"}})))))
+             {:headers {"Content-Type" "application/octet-stream"}}))))
+
+  (testing "nil response"
+    (let [handler (wrap-content-type (constantly nil))]
+      (is (nil? (handler {:uri "/foo/bar.txt"}))))))

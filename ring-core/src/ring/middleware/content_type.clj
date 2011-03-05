@@ -15,7 +15,7 @@
                   ring.util.mime-types/default-mime-types"
   [handler & [opts]]
   (fn [req]
-    (let [resp (handler req)]
+    (if-let [resp (handler req)]
       (if (get-in resp [:headers "Content-Type"])
         resp
         (let [mime-type (ext-mime-type (:uri req) (:mime-types opts))]
