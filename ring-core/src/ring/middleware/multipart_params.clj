@@ -43,7 +43,7 @@
   supplied store function is used to save it."
   [^FileItemStream item store]
   (if (.isFormField item)
-    (Streams/asString item)
+    (Streams/asString (.openStream item))
     (store {:filename     (.getName item)
             :content-type (.getContentType item)
             :stream       (.openStream item)})))
