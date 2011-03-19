@@ -1,6 +1,7 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
-  (:import java.io.File))
+  (:import java.io.File)
+  (:require [clojure.java.io :as io]))
 
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
@@ -60,11 +61,11 @@
   Options:
     :root - take the resource relative to this root"
   [path & [opts]]
-  (let [path (str (:root opts "") "/" path)
-        path (.replace path "//" "/")
-        path (.replaceAll path "^/" "")]
-    (if-let [resource (.. Thread currentThread getContextClassLoader (getResourceAsStream path))]
-      (response resource))))
+  (let [path (-> (str (:root opts "") "/" path)
+                 (.replace "//" "/")
+                 (.replaceAll "^/" ""))]
+    (if-let [resource (io/resource path)]
+      (response (io/input-stream resource)))))
 
 (defn status
   "Returns an updated Ring response with the given status."
