@@ -65,7 +65,10 @@
                  (.replace "//" "/")
                  (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
-      (response (io/input-stream resource)))))
+      (response
+       (if (= "file" (.getProtocol resource))
+         (io/as-file resource)
+         (io/input-stream resource))))))
 
 (defn status
   "Returns an updated Ring response with the given status."

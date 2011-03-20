@@ -1,6 +1,24 @@
 (ns ring.util.response-test
   (:use clojure.test
-        ring.util.response))
+        ring.util.response)
+  (:import [java.io File InputStream]
+           org.apache.commons.io.FileUtils))
+
+(deftest test-redirect
+  (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
+         (redirect "http://google.com"))))
+
+(deftest test-response
+  (is (= {:status 200 :headers {} :body "foobar"}
+         (response "foobar"))))
+
+(deftest test-status
+  (is (= {:status 200 :body ""} (status {:status nil :body ""} 200))))
+
+(deftest test-content-type
+  (is (= {:status 200 :headers {"Content-Type" "text/html" "Content-Length" "10"}}
+         (content-type {:status 200 :headers {"Content-Length" "10"}}
+                       "text/html"))))
 
 (defmacro with-classloader
   "Temporarily replaces the current context classloader with one that
@@ -16,40 +34,32 @@
         (finally
           (.setContextClassLoader current-thread# original-loader#)))))
 
-(deftest test-redirect
-  (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
-         (redirect "http://google.com"))))
-
-(deftest test-response
-  (is (= {:status 200 :headers {} :body "foobar"}
-         (response "foobar"))))
-
-(deftest test-status
-  (is (= {:status 200 :body ""} (status {:status nil :body ""} 200))))
-
-(deftest test-content-type
-  (is (= {:status 200 :headers {"Content-Type" "text/html" "Content-Length" "10"}}
-         (content-type {:status 200 :headers {"Content-Length" "10"}} "text/html"))))
-
 (deftest test-resource-response
-  (let [resp (resource-response "/ring/util/response_test.clj")]
-    (is (= (resp :status) 200))
-    (is (= (resp :headers) {}))
-    (is (.startsWith (slurp (resp :body))
-                     "(ns ring.util.response-test"))))
+  (testing "response map"
+    (let [resp (resource-response "/ring/assets/foo.html")]
+      (is (= (resp :status) 200))
+      (is (= (resp :headers) {}))
+      (is (= (slurp (resp :body)) "foo"))))
 
-(deftest test-resource-with-root
-  (let [resp (resource-response "response_test.clj" {:root "/ring/util"})]
-    (is (.startsWith (slurp (resp :body))
-                     "(ns ring.util.response-test"))))
+  (testing "with root option"
+    (let [resp (resource-response "/foo.html" {:root "/ring/assets"})]
+      (is (= (slurp (resp :body)) "foo"))))
 
-(deftest test-resource-with-child-classloader
-  (let [resource (java.io.File/createTempFile "response_test" nil)]
-    (org.apache.commons.io.FileUtils/writeStringToFile resource "just testing")
-    (with-classloader [(.getParentFile resource)]
-      (let [resp (resource-response (.getName resource))]
-        (is (= (slurp (resp :body))
-              "just testing"))))))
+  (testing "with child class-loader"
+    (let [resource (File/createTempFile "response_test" nil)]
+      (FileUtils/writeStringToFile resource "just testing")
+      (with-classloader [(.getParentFile resource)]
+        (let [resp (resource-response (.getName resource))]
+          (is (= (slurp (resp :body))
+                 "just testing"))))))
 
-(deftest test-missing-resource
-  (is (nil? (resource-response "/missing/resource.clj"))))
+  (testing "missing resource"
+    (is (nil? (resource-response "/missing/resource.clj"))))
+
+  (testing "response body type"
+    (let [body (:body (resource-response "ring/util/response.clj"))]
+      (is (instance? File body))
+      (is (.startsWith (slurp body) "(ns ring.util.response")))
+    (let [body (:body (resource-response "clojure/java/io.clj"))]
+      (is (instance? InputStream body))
+      (is (.contains (slurp body) "clojure.java.io")))))
