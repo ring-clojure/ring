@@ -9,4 +9,5 @@
     (with-open [out (io/output-stream temp-file)]
       (io/copy (:stream item) out))
     (-> (select-keys item [:filename :content-type])
-        (assoc :temp-file temp-file))))
+        (assoc :tempfile temp-file
+               :size (.length temp-file)))))
