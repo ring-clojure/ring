@@ -5,7 +5,8 @@
 (defn temp-file-store
   "Stores multipart file parameters as a temporary file."
   [item]
-  (let [temp-file (File/createTempFile "ring-multipart-" "")]
+  (let [temp-file (File/createTempFile "ring-multipart-" nil)]
+    (.deleteOnExit temp-file)
     (with-open [out (io/output-stream temp-file)]
       (io/copy (:stream item) out))
     (-> (select-keys item [:filename :content-type])
