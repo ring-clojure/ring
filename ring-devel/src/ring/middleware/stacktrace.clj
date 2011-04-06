@@ -33,20 +33,30 @@
       [:td.source (h (source-str      elem))]
       [:td.method (h (java-method-str elem))]]))
 
-(defn- html-ex-view [e]
-  (let [e-parsed (parse-exception e)]
-    (html
-      (doctype :xhtml-transitional)
-      [:html {:xmlns "http://www.w3.org/1999/xhtml"}
-        [:head
-          [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
-          [:title "Ring: Stacktrace"]
-          [:style {:type "text/css"} css]]
-        [:body
-          [:div#content
+(defn- exception-partial [e]
+  (let [e-seq    (iterate :cause (parse-exception e))
+        e-parsed (first e-seq)
+        causes   (rest e-seq)]
+    (cons [:div#content
             [:h3.info (h (str e))]
             [:table.trace [:tbody
-              (map elem-partial (:trace-elems e-parsed))]]]]])))
+              (map elem-partial (:trace-elems e-parsed))]]]
+          (for [cause (take-while #(not (nil? %)) causes)]
+            [:div
+              [:h3.info (h (str "Caused by: " (.getName (:class cause)) " " (:message cause)))]
+              [:table.trace [:tbody
+                (map elem-partial (:trimmed-elems cause))]]]))))
+
+(defn- html-ex-view [e]
+  (html
+    (doctype :xhtml-transitional)
+    [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+      [:head
+        [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
+        [:title "Ring: Stacktrace"]
+        [:style {:type "text/css"} css]]
+      [:body
+        (exception-partial e)]]))
 
 (defn- html-ex-response [e]
   (-> (response (html-ex-view e))
