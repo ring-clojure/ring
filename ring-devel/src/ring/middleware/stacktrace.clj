@@ -41,12 +41,12 @@
         [:head
           [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
           [:title "Ring: Stacktrace"]
-          [:style {:type "text/css"} css]
-          [:body
-            [:div#content
-              [:h3.info (h (str e))]
-              [:table.trace [:tbody
-                (map elem-partial (:trace-elems e-parsed))]]]]]])))
+          [:style {:type "text/css"} css]]
+        [:body
+          [:div#content
+            [:h3.info (h (str e))]
+            [:table.trace [:tbody
+              (map elem-partial (:trace-elems e-parsed))]]]]])))
 
 (defn- html-ex-response [e]
   (-> (response (html-ex-view e))
