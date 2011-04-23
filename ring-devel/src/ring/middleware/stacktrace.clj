@@ -1,5 +1,6 @@
 (ns ring.middleware.stacktrace
   "Catch exceptions and render web and log stacktraces for debugging."
+  (:require [clojure.java.io :as io])
   (:use hiccup.core
         hiccup.page-helpers
         clj-stacktrace.core
@@ -17,7 +18,8 @@
           (.println *err* msg)
           (throw ex))))))
 
-(declare css)
+(defn- style-resource [path]
+  (html [:style {:type "text/css"} (slurp (io/resource path))]))
 
 (defn- elem-partial [elem]
   (if (:clojure elem)
@@ -35,7 +37,7 @@
     (html5
       [:head
         [:title "Ring: Stacktrace"]
-        [:style {:type "text/css"} css]]
+        (style-resource "css/stacktrace.css")]
       [:body
         [:div#exception
           [:h3.info (h (str ex))]
@@ -87,36 +89,4 @@
       wrap-stacktrace-web))
 
 (def ^{:private true} css "
-/*
-Copyright (c) 2008, Yahoo! Inc. All rights reserved.
-Code licensed under the BSD License:
-http://developer.yahoo.net/yui/license.txt
-version: 2.6.0
-*/
-html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:text-top;}sub{vertical-align:text-bottom;}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;}input,textarea,select{*font-size:100%;}legend{color:#000;}del,ins{text-decoration:none;}
-
-h3.info {
- font-size: 1.6em; 
- margin-left: 1em;
- padding-top: .5em;
- padding-bottom: .5em;
-}
-
-table.trace {
-  font-size: 1.1em;
-  margin-left: 1em;
-  background: lightgrey;
-}
-
-table.trace tr {
-  line-height: 1.4em;
-}
-
-table.trace td.method {
-  padding-left: .5em;
-  text-aligh: left;
-}
-
-table.trace td.source {
-  text-align: right;
-}")
+")
