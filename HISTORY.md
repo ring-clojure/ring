@@ -1,3 +1,10 @@
+## 0.3.8 (2011-04-23)
+
+* resource-response returns File object when possible
+* Added resource middleware
+* Stacktrace middleware displays causes (nested exceptions)
+* Bug fixes and refactor of stacktrace middleware
+
 ## 0.3.7 (2011-03-05)
 
 * Lint middleware recognises ISeq as valid response body

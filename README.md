@@ -58,6 +58,7 @@ To see a more sophisticated Ring app, run:
 ### ring-core
 
 * `ring.middleware.file`: Serve static files out of a public directory.
+* `ring.middleware.resource`: Serve static classpath resources.
 * `ring.middleware.static`: Serve static files with specified prefixes out of a public directory.
 * `ring.middleware.file-info`: Augment response headers with info about File responses.
 * `ring.middleware.content-type`: Augment response headers with a content-type based on the file extension.
@@ -71,7 +72,6 @@ To see a more sophisticated Ring app, run:
 * `ring.util.response`: Generate Ring responses.
 * `ring.util.codec`: Encode and decode string data.
 * `ring.util.mime-type`: Guess the mime-type from a file extension.
-
 
 ### ring-devel
 
@@ -92,11 +92,11 @@ To see a more sophisticated Ring app, run:
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependencies`:
 
-    [ring/ring-core "0.3.7"]
+    [ring/ring-core "0.3.8"]
 
 To include all of them, add:
 
-    [ring "0.3.7"]
+    [ring "0.3.8"]
 
 ## Development
 
@@ -115,6 +115,6 @@ This project borrows heavily from Ruby's Rack and Python's WSGI; thanks to those
 
 ## License
 
-Copyright (c) 2009-2010 Mark McGranaghan and released under an MIT license.
+Copyright (c) 2009-2011 Mark McGranaghan and released under an MIT license.
 
 Clojure logo by Tom Hickey.
