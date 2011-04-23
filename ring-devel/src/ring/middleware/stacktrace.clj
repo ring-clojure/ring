@@ -7,88 +7,84 @@
         ring.util.response))
 
 (defn wrap-stacktrace-log
-  "Wrap an app such that exceptions are logged to *err* and then rethrown."
-  [app]
-  (fn [req]
+  "Wrap a handler such that exceptions are logged to *err* and then rethrown."
+  [handler]
+  (fn [request]
     (try
-      (app req)
-      (catch Exception e
-        (let [msg (str "Exception: " (pst-str e))]
+      (handler request)
+      (catch Exception ex
+        (let [msg (str "Exception: " (pst-str ex))]
           (.println *err* msg)
-          (throw e))))))
+          (throw ex))))))
 
 (declare css)
-
-(defn- js-ex-response [e]
-  (-> (response (pst-str e))
-    (status 500)
-    (content-type "text/javascript")))
 
 (defn- elem-partial [elem]
   (if (:clojure elem)
     [:tr
-      [:td.source (h (source-str         elem))]
+      [:td.source (h (source-str elem))]
       [:td.method (h (clojure-method-str elem))]]
     [:tr
-      [:td.source (h (source-str      elem))]
+      [:td.source (h (source-str elem))]
       [:td.method (h (java-method-str elem))]]))
 
-(defn- exception-partial [e]
-  (let [e-seq    (iterate :cause (parse-exception e))
-        e-parsed (first e-seq)
-        causes   (rest e-seq)]
-    (cons [:div#content
-            [:h3.info (h (str e))]
-            [:table.trace [:tbody
-              (map elem-partial (:trace-elems e-parsed))]]]
-          (for [cause (take-while #(not (nil? %)) causes)]
-            [:div
-              [:h3.info (h (str "Caused by: " (.getName (:class cause)) " " (:message cause)))]
-              [:table.trace [:tbody
-                (map elem-partial (:trimmed-elems cause))]]]))))
-
-(defn- html-ex-view [e]
-  (html
-    (doctype :xhtml-transitional)
-    [:html {:xmlns "http://www.w3.org/1999/xhtml"}
+(defn- html-exception [ex]
+  (let [ex-seq    (iterate :cause (parse-exception ex))
+        exception (first ex-seq)
+        causes    (rest ex-seq)]
+    (html5
       [:head
-        [:meta {:http-equiv "Content-Type" :content "text/html;charset=utf-8"}]
         [:title "Ring: Stacktrace"]
         [:style {:type "text/css"} css]]
       [:body
-        (exception-partial e)]]))
+        [:div#exception
+          [:h3.info (h (str ex))]
+          [:table.trace
+            [:tbody (map elem-partial (:trace-elems exception))]]]
+        (for [cause causes :while cause]
+          [:div#causes
+           [:h3.info "Caused by: "
+                    (h (.getName (:class cause))) " "
+                    (h (:message cause))]
+           [:table.trace
+             [:tbody (map elem-partial (:trimmed-elems cause))]]])])))
 
-(defn- html-ex-response [e]
-  (-> (response (html-ex-view e))
-    (status 500)
-    (content-type "text/html")))
+(defn- js-ex-response [e]
+  (-> (response (pst-str e))
+      (status 500)
+      (content-type "text/javascript")))
+
+(defn- html-ex-response [ex]
+  (-> (response (html-exception ex))
+      (status 500)
+      (content-type "text/html")))
 
 (defn- ex-response
   "Returns a response showing debugging information about the exception.
   Currently supports delegation to either js or html exception views."
-  [req e]
+  [req ex]
   (let [accept (get-in req [:headers "accept"])]
     (if (and accept (re-find #"^text/javascript" accept))
-      (js-ex-response e)
-      (html-ex-response e))))
+      (js-ex-response ex)
+      (html-ex-response ex))))
 
 (defn wrap-stacktrace-web
-  "Wrap an app such that exceptions are caught and a helpful debugging response
-   is returned."
-  [app]
-  (fn [req]
+  "Wrap a handler such that exceptions are caught and a helpful debugging
+   response is returned."
+  [handler]
+  (fn [request]
     (try
-      (app req)
-      (catch Exception e
-        (ex-response req e)))))
+      (handler request)
+      (catch Exception ex
+        (ex-response request ex)))))
 
 (defn wrap-stacktrace
-  "Wrap an app such that exceptions are caught, a corresponding stacktrace is
+  "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
   logged to *err*, and a helpful debugging web response is returned."
-  [app]
-  (-> app
-    wrap-stacktrace-log
-    wrap-stacktrace-web))
+  [handler]
+  (-> handler
+      wrap-stacktrace-log
+      wrap-stacktrace-web))
 
 (def ^{:private true} css "
 /*
