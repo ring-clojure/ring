@@ -70,6 +70,9 @@
         (.addHeader response key val))))
   ; Some headers must be set through specific methods
   (when-let [content-type (get headers "Content-Type")]
+    ; Parse charset and set response encoding from it or set UTF-8 by default
+    (let [encoding (or (second (re-find #"charset=(.+);?" content-type)) "utf-8")]
+      (.setCharacterEncoding response encoding))
     (.setContentType response content-type)))
 
 (defn- set-body
