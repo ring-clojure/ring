@@ -8,8 +8,11 @@
   (is (= "foo%FE%FF%00%2Fbar") (url-encode "foo/bar" "UTF-16")))
 
 (deftest test-url-decode
-  (is (= "foo/bar" (url-decode "foo%2Fbar")))
-  (is (= "foo/bar" (url-decode "foo%FE%FF%00%2Fbar" "UTF-16"))))
+  (testing "standard behavior"
+    (is (= "foo/bar" (url-decode "foo%2Fbar")))
+    (is (= "foo/bar" (url-decode "foo%FE%FF%00%2Fbar" "UTF-16"))))
+  (testing "returns nil when underlying Java methods throw an exception"
+    (is (nil? (url-decode "%")))))
 
 (deftest test-base64-encoding
   (let [str-bytes (.getBytes "foo?/+" "UTF-8")]

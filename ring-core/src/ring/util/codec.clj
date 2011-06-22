@@ -14,7 +14,9 @@
   "Returns the form-url-decoded version of the given string, using either a
   specified encoding or UTF-8 by default."
   [encoded & [encoding]]
-  (URLDecoder/decode encoded (or encoding "UTF-8")))
+  (try
+    (URLDecoder/decode encoded (or encoding "UTF-8"))
+    (catch Exception e nil)))
 
 (defn base64-encode
   "Encode an array of bytes into a base64 encoded string."
