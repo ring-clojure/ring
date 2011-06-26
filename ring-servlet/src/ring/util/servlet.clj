@@ -1,6 +1,7 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string])
   (:import (java.io File InputStream FileInputStream)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
@@ -13,7 +14,9 @@
     (fn [headers, ^String name]
       (assoc headers
         (.toLowerCase name)
-        (.getHeader request name)))
+        (->> (.getHeaders request name)
+             (enumeration-seq)
+             (string/join ","))))
     {}
     (enumeration-seq (.getHeaderNames request))))
 

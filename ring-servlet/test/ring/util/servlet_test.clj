@@ -18,7 +18,7 @@
     (getScheme [] (name (request :scheme)))
     (getMethod [] (-> request :request-method name .toUpperCase))
     (getHeaderNames [] (enumeration (keys (request :headers))))
-    (getHeader [name] (get-in request [:headers name]))
+    (getHeaders [name] (enumeration (get-in request [:headers name])))
     (getContentType [] (request :content-type))
     (getContentLength [] (or (request :content-length) -1))
     (getCharacterEncoding [] (request :character-encoding))
@@ -54,7 +54,8 @@
                  :query-string   "a=b"
                  :scheme         :http
                  :request-method :get
-                 :headers        {"X-Client" "Foo"}
+                 :headers        {"X-Client" ["Foo", "Bar"]
+                                  "X-Server" ["Baz"]}
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
@@ -70,7 +71,8 @@
                  :query-string   "a=b"
                  :scheme         :http
                  :request-method :get
-                 :headers        {"x-client" "Foo"}
+                 :headers        {"x-client" "Foo,Bar"
+                                  "x-server" "Baz"}
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
