@@ -1,3 +1,8 @@
+## 0.3.9 (2011-06-26)
+
+* wrap-params no longer excepts on invalid urlencoded query string
+* ring.util.servlet accepts multiple headers of the same name
+
 ## 0.3.8 (2011-04-23)
 
 * resource-response returns File object when possible
