@@ -92,11 +92,11 @@ To see a more sophisticated Ring app, run:
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependencies`:
 
-    [ring/ring-core "0.3.9"]
+    [ring/ring-core "0.3.10"]
 
 To include all of them, add:
 
-    [ring "0.3.9"]
+    [ring "0.3.10"]
 
 ## Development
 

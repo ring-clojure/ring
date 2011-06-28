@@ -1,3 +1,7 @@
+## 0.3.10 (2011-06-28)
+
+* Updated Hiccup to 0.3.6 for Clojure 1.3.0 compatibility
+
 ## 0.3.9 (2011-06-26)
 
 * wrap-params no longer excepts on invalid urlencoded query string
