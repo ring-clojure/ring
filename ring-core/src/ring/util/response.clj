@@ -10,6 +10,13 @@
    :headers {"Location" url}
    :body    ""})
 
+(defn redirect-after-post
+  "Returns a Ring response for an HTTP 303 redirect."
+  [url]
+  {:status  303
+   :headers {"Location" url}
+   :body    ""})
+
 (defn response
   "Returns a skeletal Ring response with the given body, status of 200, and no
   headers."

@@ -8,6 +8,10 @@
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
          (redirect "http://google.com"))))
 
+(deftest test-redirect-after-post
+  (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
+         (redirect-after-post "http://example.com"))))
+
 (deftest test-response
   (is (= {:status 200 :headers {} :body "foobar"}
          (response "foobar"))))
