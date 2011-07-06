@@ -60,6 +60,21 @@
   [^HttpServletResponse response, status]
   (.setStatus response status))
 
+(defn set-content-type [response content-type]
+  (.setContentType
+   response
+   (-> content-type
+       (string/split #";")
+       first
+       string/trim)))
+
+(defn- set-character-encoding [response content-type]
+  (.setCharacterEncoding
+   response
+   (-> (re-find #"charset=(.+);?" content-type)
+       second
+       (or "utf-8"))))
+
 (defn set-headers
   "Update a HttpServletResponse with a map of headers."
   [^HttpServletResponse response, headers]
@@ -70,10 +85,8 @@
         (.addHeader response key val))))
   ; Some headers must be set through specific methods
   (when-let [content-type (get headers "Content-Type")]
-    ; Parse charset and set response encoding from it or set UTF-8 by default
-    (let [encoding (or (second (re-find #"charset=(.+);?" content-type)) "utf-8")]
-      (.setCharacterEncoding response encoding))
-    (.setContentType response content-type)))
+    (set-character-encoding response content-type)
+    (set-content-type response content-type)))
 
 (defn- set-body
   "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
