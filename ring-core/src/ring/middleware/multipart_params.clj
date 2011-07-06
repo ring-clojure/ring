@@ -62,8 +62,12 @@
   (require (symbol (namespace sym)))
   (find-var sym))
 
-(def default-store
-  'ring.middleware.multipart-params.temp-file/temp-file-store)
+(defn default-store
+  "Loads and returns a temporary file store."
+  []
+  (let [store 'ring.middleware.multipart-params.temp-file/temp-file-store
+        func  (load-var store)]
+    (func)))
 
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
@@ -88,7 +92,7 @@
                        (:character-encoding request)
                        "UTF-8")
           store    (or (:store opts)
-                       (load-var default-store))
+                       (default-store))
           params   (if (multipart-form? request)
                      (parse-multipart-params request encoding store)
                      {})

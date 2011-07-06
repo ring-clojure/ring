@@ -28,7 +28,7 @@
 
 (defn temp-file-store
   "Stores multipart file parameters as a temporary file."
-  ([] (temp-file-store {:expire-in 3600}))
+  ([] (temp-file-store {:expires-in 3600}))
   ([{:keys [expires-in]}]
      (fn [item]
        (let [file-set  (atom #{})
