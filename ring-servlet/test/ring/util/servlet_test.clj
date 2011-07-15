@@ -88,7 +88,7 @@
         (run-servlet handler request response)
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
-        (is (= (@response :character-encoding) "utf-8"))
+        (is (= (@response :character-encoding) "UTF-8"))
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))))
     (testing "response with character encoding"
       (letfn [(handler [r]

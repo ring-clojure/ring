@@ -68,12 +68,14 @@
        first
        string/trim)))
 
+(defn- get-charset [content-type]
+  (->> content-type
+       (re-find #"charset=(.+);?")
+       (second)))
+
 (defn- set-character-encoding [response content-type]
-  (.setCharacterEncoding
-   response
-   (-> (re-find #"charset=(.+);?" content-type)
-       second
-       (or "utf-8"))))
+  (when-let [charset (get-charset content-type)]
+    (.setCharacterEncoding response charset)))
 
 (defn set-headers
   "Update a HttpServletResponse with a map of headers."
