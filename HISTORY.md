@@ -1,3 +1,9 @@
+## 0.3.11 (2011-07-14)
+
+* Multipart parameter storage backends (temp-file and byte-array)
+* Added redirect-after-post utility function
+* Character encoding of response set from content type
+
 ## 0.3.10 (2011-06-28)
 
 * Updated Hiccup to 0.3.6 for Clojure 1.3.0 compatibility
