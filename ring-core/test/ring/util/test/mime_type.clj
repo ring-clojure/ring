@@ -1,4 +1,4 @@
-(ns ring.util.mime-type-test
+(ns ring.util.test.mime-type
   (:use clojure.test
         ring.util.mime-type))
 

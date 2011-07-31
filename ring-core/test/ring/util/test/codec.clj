@@ -1,4 +1,4 @@
-(ns ring.util.codec-test
+(ns ring.util.test.codec
   (:use clojure.test
         ring.util.codec)
   (:import java.util.Arrays))

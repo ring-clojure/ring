@@ -1,4 +1,4 @@
-(ns ring.middleware.reload-test
+(ns ring.middleware.test.reload
   (:use clojure.test
         ring.middleware.reload))
 

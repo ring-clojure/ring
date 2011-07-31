@@ -1,4 +1,4 @@
-(ns ring.handler.dump-test
+(ns ring.handler.test.dump
   (:use clojure.test
         ring.handler.dump)
   (:require [ring.util.test :as tu]))

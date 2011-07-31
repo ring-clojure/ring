@@ -1,4 +1,4 @@
-(ns ring.middleware.content-type-test
+(ns ring.middleware.test.content-type
   (:use clojure.test
         ring.middleware.content-type))
 

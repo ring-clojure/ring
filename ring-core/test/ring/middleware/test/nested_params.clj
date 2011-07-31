@@ -1,4 +1,4 @@
-(ns ring.middleware.nested-params-test
+(ns ring.middleware.test.nested-params
   (:use clojure.test
         ring.middleware.nested-params))
 

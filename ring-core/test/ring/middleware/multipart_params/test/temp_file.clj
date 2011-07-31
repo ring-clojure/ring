@@ -1,4 +1,4 @@
-(ns ring.middleware.multipart-params.temp-file-test
+(ns ring.middleware.multipart-params.test.temp-file
   (:use clojure.test
         ring.util.test
         ring.middleware.multipart-params.temp-file))

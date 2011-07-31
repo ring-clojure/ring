@@ -1,4 +1,4 @@
-(ns ring.middleware.cookies-test
+(ns ring.middleware.test.cookies
   (:use clojure.test
         ring.middleware.cookies))
 

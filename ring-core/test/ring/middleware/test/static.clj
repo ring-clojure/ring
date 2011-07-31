@@ -1,4 +1,4 @@
-(ns ring.middleware.static-test
+(ns ring.middleware.test.static
   (:use clojure.test
         ring.middleware.static)
   (:import java.io.File))

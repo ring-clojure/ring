@@ -1,4 +1,4 @@
-(ns ring.adapter.jetty-test
+(ns ring.adapter.test.jetty
   (:use clojure.test
         ring.adapter.jetty)
   (:require [clj-http.client :as http]))

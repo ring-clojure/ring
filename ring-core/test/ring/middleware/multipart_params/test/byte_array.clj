@@ -1,4 +1,4 @@
-(ns ring.middleware.multipart-params.byte-array-test
+(ns ring.middleware.multipart-params.test.byte-array
   (:use clojure.test
         ring.util.test
         ring.middleware.multipart-params.byte-array))

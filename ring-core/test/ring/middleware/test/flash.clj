@@ -1,4 +1,4 @@
-(ns ring.middleware.flash-test
+(ns ring.middleware.test.flash
   (:use clojure.test
         ring.middleware.flash))
 

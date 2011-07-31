@@ -1,4 +1,4 @@
-(ns ring.util.servlet-test
+(ns ring.util.test.servlet
   (:use clojure.test
         ring.util.servlet))
 

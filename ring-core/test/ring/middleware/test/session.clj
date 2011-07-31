@@ -1,4 +1,4 @@
-(ns ring.middleware.session-test
+(ns ring.middleware.test.session
   (:use clojure.test
         clojure.contrib.mock.test-adapter
         ring.middleware.session

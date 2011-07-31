@@ -1,4 +1,4 @@
-(ns ring.util.response-test
+(ns ring.util.test.response
   (:use clojure.test
         ring.util.response)
   (:import [java.io File InputStream]

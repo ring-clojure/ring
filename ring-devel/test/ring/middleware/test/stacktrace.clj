@@ -1,4 +1,4 @@
-(ns ring.middleware.stacktrace-test
+(ns ring.middleware.test.stacktrace
   (:use clojure.test
         ring.middleware.stacktrace))
 

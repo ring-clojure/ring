@@ -1,4 +1,4 @@
-(ns ring.middleware.params-test
+(ns ring.middleware.test.params
   (:use clojure.test
         ring.middleware.params)
   (:require [ring.util.test :as tu]))

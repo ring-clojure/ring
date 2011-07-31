@@ -1,4 +1,4 @@
-(ns ring.middleware.lint-test
+(ns ring.middleware.test.lint
   (:use clojure.test
         ring.middleware.lint)
   (:require [ring.util.test :as tu])

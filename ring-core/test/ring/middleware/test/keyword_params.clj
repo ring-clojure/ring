@@ -1,4 +1,4 @@
-(ns ring.middleware.keyword-params-test
+(ns ring.middleware.test.keyword-params
   (:use clojure.test
         ring.middleware.keyword-params))
 

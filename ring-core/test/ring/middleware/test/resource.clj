@@ -1,4 +1,4 @@
-(ns ring.middleware.resource-test
+(ns ring.middleware.test.resource
   (:use clojure.test
         ring.util.test
         ring.middleware.resource))

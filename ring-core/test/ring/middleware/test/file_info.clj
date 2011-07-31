@@ -1,4 +1,4 @@
-(ns ring.middleware.file-info-test
+(ns ring.middleware.test.file-info
   (:use clojure.test
         ring.middleware.file-info)
   (:import java.io.File))

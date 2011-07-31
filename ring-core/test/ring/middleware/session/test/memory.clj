@@ -1,4 +1,4 @@
-(ns ring.middleware.session.memory-test
+(ns ring.middleware.session.test.memory
   (:use clojure.test
         [ring.middleware.session store memory]))
 
