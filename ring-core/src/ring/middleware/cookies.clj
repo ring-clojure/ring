@@ -34,7 +34,7 @@
   set-cookie-attrs
   {:comment "Comment", :comment-url "CommentURL", :discard "Discard",
    :domain "Domain", :max-age "Max-Age", :path "Path", :port "Port",
-   :secure "Secure", :version "Version", :expires "Expires"})
+   :secure "Secure", :version "Version", :expires "Expires", :http-only "HttpOnly"})
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
