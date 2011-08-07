@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>middleware.nested-params - Ring nil API documentation</title>
+    <title>middleware.resource - Ring nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -48,48 +48,26 @@ namespace.
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#ring.middleware.nested-params/parse-nested-keys">parse-nested-keys</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#ring.middleware.nested-params/wrap-nested-params">wrap-nested-params</a>
+      <a href="#ring.middleware.resource/wrap-resource">wrap-resource</a>
     </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">middleware.nested-params</span></h1>
-<pre id="namespace-docstr"></pre>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">middleware.resource</span></h1>
+<pre id="namespace-docstr">Middleware for serving static resources.</pre>
 <div id="var-entry">
   <br />
   <hr />
-  <h2 id="ring.middleware.nested-params/parse-nested-keys">parse-nested-keys</h2>
+  <h2 id="ring.middleware.resource/wrap-resource">wrap-resource</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (parse-nested-keys param-name)
+  <pre id="var-usage">Usage: (wrap-resource handler root-path)
 </pre>
-  <pre id="var-docstr">Parse a parameter name into a list of keys using a 'C'-like index
-notation. e.g.
-  "foo[bar][][baz]"
-  =&gt; ["foo" "bar" "" "baz"]</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/8a7620c884b2719355a0db1870054b742dcfd06d/ring-core/src/ring/middleware/nested_params.clj#L3" id="var-source">Source</a>
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="ring.middleware.nested-params/wrap-nested-params">wrap-nested-params</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (wrap-nested-params handler &amp; [opts])
-</pre>
-  <pre id="var-docstr">Middleware to converts a flat map of parameters into a nested map.
-
-Uses the function in the :key-parser option to convert parameter names
-to a list of keys. Values in keys that are empty strings are treated
-as elements in a list. Defaults to using the parse-nested-keys function.
-
-e.g.
-  {"foo[bar]" "baz"}
-  =&gt; {"foo" {"bar" "baz"}}
-
-  {"foo[]" "bar"}
-  =&gt; {"foo" ["bar"]}</pre>
-  <a href="http://github.com/mmcgrana/ring/blob/8a7620c884b2719355a0db1870054b742dcfd06d/ring-core/src/ring/middleware/nested_params.clj#L47" id="var-source">Source</a>
+  <pre id="var-docstr">Middleware that first checks to see whether the request map matches a static
+resource. If it does, the resource is returned in a response map, otherwise
+the request map is passed onto the handler. The root-path argument will be
+added to the beginning of the resource path.</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/e89404c4048bacc07cd5d8306afb3ade5862e02c/ring-core/src/ring/middleware/resource.clj#L6" id="var-source">Source</a>
 </div>
 
 

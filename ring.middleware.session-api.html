@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>middleware.session - Ring nil API documentation</title>
+    <title>ring.middleware.session - Ring nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -29,12 +29,12 @@ namespace.
       </div>
       <div id="leftcolumn"><div style="text-align: center;"></div>
 <div class="menu">
-  <div class="WikiCustomNav WikiElement wiki">
+  <div class="WikiCustomNav WikiElement wiki NamespaceTOC">
     <a class="wiki_link" href="index.html">Overview</a><br />
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="link target" class="wiki_link">Namespace short name</a></li>
+      <li><a href="ring.adapter.jetty-api.html" class="wiki_link">ring.adapter.jetty</a></li><li><a href="ring.handler.dump-api.html" class="wiki_link">ring.handler.dump</a></li><li><a href="ring.middleware.content-type-api.html" class="wiki_link">ring.middleware.content-type</a></li><li><a href="ring.middleware.cookies-api.html" class="wiki_link">ring.middleware.cookies</a></li><li><a href="ring.middleware.file-api.html" class="wiki_link">ring.middleware.file</a></li><li><a href="ring.middleware.file-info-api.html" class="wiki_link">ring.middleware.file-info</a></li><li><a href="ring.middleware.flash-api.html" class="wiki_link">ring.middleware.flash</a></li><li><a href="ring.middleware.keyword-params-api.html" class="wiki_link">ring.middleware.keyword-params</a></li><li><a href="ring.middleware.lint-api.html" class="wiki_link">ring.middleware.lint</a></li><li><a href="ring.middleware.multipart-params-api.html" class="wiki_link">ring.middleware.multipart-params</a></li><li><a href="ring.middleware.nested-params-api.html" class="wiki_link">ring.middleware.nested-params</a></li><li><a href="ring.middleware.params-api.html" class="wiki_link">ring.middleware.params</a></li><li><a href="ring.middleware.reload-api.html" class="wiki_link">ring.middleware.reload</a></li><li><a href="ring.middleware.resource-api.html" class="wiki_link">ring.middleware.resource</a></li><li><a href="ring.middleware.session-api.html" class="wiki_link">ring.middleware.session</a></li><li><a href="ring.middleware.stacktrace-api.html" class="wiki_link">ring.middleware.stacktrace</a></li><li><a href="ring.middleware.static-api.html" class="wiki_link">ring.middleware.static</a></li><li><a href="ring.util.codec-api.html" class="wiki_link">ring.util.codec</a></li><li><a href="ring.util.mime-type-api.html" class="wiki_link">ring.util.mime-type</a></li><li><a href="ring.util.response-api.html" class="wiki_link">ring.util.response</a></li><li><a href="ring.util.servlet-api.html" class="wiki_link">ring.util.servlet</a></li><li><a href="ring.util.test-api.html" class="wiki_link">ring.util.test</a></li>
     </ul>
   </div>
 </div>
@@ -52,19 +52,19 @@ namespace.
     </div>
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#middleware.session.cookie">middleware.session.cookie</a>
+    <a href="#ring.middleware.session.cookie">ring.middleware.session.cookie</a>
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.middleware.session.cookie/cookie-store">cookie-store</a>
     </div>
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#middleware.session.memory">middleware.session.memory</a>
+    <a href="#ring.middleware.session.memory">ring.middleware.session.memory</a>
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.middleware.session.memory/memory-store">memory-store</a>
     </div>
     <br />
   </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#middleware.session.store">middleware.session.store</a>
+    <a href="#ring.middleware.session.store">ring.middleware.session.store</a>
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#ring.middleware.session.store/delete-session">delete-session</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
@@ -76,7 +76,7 @@ namespace.
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">middleware.session</span></h1>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">ring.middleware.session</span></h1>
 <pre id="namespace-docstr">Session manipulation.</pre>
 <div id="var-entry">
   <br />
@@ -109,7 +109,7 @@ The following options are available:
     to {}.</pre>
   <a href="http://github.com/mmcgrana/ring/blob/f782316bdc3a5018be0efed0754f24b540e5925e/ring-core/src/ring/middleware/session.clj#L6" id="var-source">Source</a>
 </div>
-<h2 id="namespace-name">middleware.session.cookie</h2>
+<h2 id="namespace-name">ring.middleware.session.cookie</h2>
 <pre id="namespace-docstr">Encrypted cookie session storage.</pre>
 <div id="var-entry">
   <hr />
@@ -121,7 +121,7 @@ The following options are available:
   <pre id="var-docstr">Creates an encrypted cookie storage engine.</pre>
   <a href="http://github.com/mmcgrana/ring/blob/0e68817324a79eb6bd460ee56b67a3a83efafc81/ring-core/src/ring/middleware/session/cookie.clj#L106" id="var-source">Source</a>
 </div>
-<h2 id="namespace-name">middleware.session.memory</h2>
+<h2 id="namespace-name">ring.middleware.session.memory</h2>
 <pre id="namespace-docstr">In-memory session storage.</pre>
 <div id="var-entry">
   <hr />
@@ -133,7 +133,7 @@ The following options are available:
   <pre id="var-docstr">Creates an in-memory session storage engine.</pre>
   <a href="http://github.com/mmcgrana/ring/blob/4093a695fdfdf9531115b1b29b7009bf21f561e5/ring-core/src/ring/middleware/session/memory.clj#L18" id="var-source">Source</a>
 </div>
-<h2 id="namespace-name">middleware.session.store</h2>
+<h2 id="namespace-name">ring.middleware.session.store</h2>
 <pre id="namespace-docstr">Common session store objects and functions.</pre>
 <div id="var-entry">
   <hr />
@@ -172,7 +172,7 @@ to be new, and a fresh key should be generated.</pre>
           </div>
 	</div>
 	<div id="foot">
-	  <div style="text-align: center;" id="copyright">Copyright 2009-2010 Mark McGranaghan</div>
+	  <div style="text-align: center;" id="copyright">Copyright 2009-2011 Mark McGranaghan</div>
 	</div>
       </div>
       <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />

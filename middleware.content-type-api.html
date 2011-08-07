@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>adapter.httpcore API reference (Ring)</title>
+    <title>middleware.content-type - Ring nil API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -34,7 +34,7 @@ namespace.
     <a class="wiki_link" href="api-index.html">API Index</a><br />
     <a class="wiki_link" href="#">Namespaces:</a>
     <ul id="left-sidebar-list">
-      <li><a href="adapter.httpcore-api.html" class="wiki_link">adapter.httpcore</a></li><li><a href="adapter.jetty-api.html" class="wiki_link">adapter.jetty</a></li><li><a href="handler.dump-api.html" class="wiki_link">handler.dump</a></li><li><a href="middleware.cookies-api.html" class="wiki_link">middleware.cookies</a></li><li><a href="middleware.file-api.html" class="wiki_link">middleware.file</a></li><li><a href="middleware.file-info-api.html" class="wiki_link">middleware.file-info</a></li><li><a href="middleware.flash-api.html" class="wiki_link">middleware.flash</a></li><li><a href="middleware.keyword-params-api.html" class="wiki_link">middleware.keyword-params</a></li><li><a href="middleware.lint-api.html" class="wiki_link">middleware.lint</a></li><li><a href="middleware.multipart-params-api.html" class="wiki_link">middleware.multipart-params</a></li><li><a href="middleware.nested-params-api.html" class="wiki_link">middleware.nested-params</a></li><li><a href="middleware.params-api.html" class="wiki_link">middleware.params</a></li><li><a href="middleware.reload-api.html" class="wiki_link">middleware.reload</a></li><li><a href="middleware.session-api.html" class="wiki_link">middleware.session</a></li><li><a href="middleware.stacktrace-api.html" class="wiki_link">middleware.stacktrace</a></li><li><a href="middleware.static-api.html" class="wiki_link">middleware.static</a></li><li><a href="util.codec-api.html" class="wiki_link">util.codec</a></li><li><a href="util.response-api.html" class="wiki_link">util.response</a></li><li><a href="util.servlet-api.html" class="wiki_link">util.servlet</a></li><li><a href="util.test-api.html" class="wiki_link">util.test</a></li>
+      <li><a href="link target" class="wiki_link">Namespace short name</a></li>
     </ul>
   </div>
 </div>
@@ -47,14 +47,33 @@ namespace.
   <h1 class="nopad">Table of Contents</h1>
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
-    
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#ring.middleware.content-type/wrap-content-type">wrap-content-type</a>
+    </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">adapter.httpcore</span></h1>
-<pre id="namespace-docstr">Adapter for the Apache HttpCore webserver.</pre>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">middleware.content-type</span></h1>
+<pre id="namespace-docstr">Middleware for automatically adding a content type to response maps.</pre>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="ring.middleware.content-type/wrap-content-type">wrap-content-type</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (wrap-content-type handler &amp; [opts])
+</pre>
+  <pre id="var-docstr">Middleware that adds a content-type header to the response if one is not
+set by the handler. Uses the ring.util.mime-type/ext-mime-type function to
+guess the content-type from the file extension in the URI. If no
+content-type can be found, it defaults to 'application/octet-stream'.
 
+Accepts the following options:
+  :mime-types - a map of filename extensions to mime-types that will be
+                used in addition to the ones defined in
+                ring.util.mime-types/default-mime-types</pre>
+  <a href="http://github.com/mmcgrana/ring/blob/929b165f60061505cd0a10fa06aca6799242e5ec/ring-core/src/ring/middleware/content_type.clj#L6" id="var-source">Source</a>
+</div>
 
 
 </div>
