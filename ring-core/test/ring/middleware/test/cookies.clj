@@ -50,10 +50,10 @@
            (:headers resp)))))
 
 (deftest wrap-cookies-set-extra-attrs
-  (let [cookies {"a" {:value "b", :path "/", :secure true}}
+  (let [cookies {"a" {:value "b", :path "/", :secure true, :http-only true }}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})]
-    (is (= {"Set-Cookie" (list "a=b;Path=/;Secure")}
+    (is (= {"Set-Cookie" (list "a=b;Path=/;Secure;HttpOnly")}
            (:headers resp)))))
 
 (deftest wrap-cookies-always-assocs-map
