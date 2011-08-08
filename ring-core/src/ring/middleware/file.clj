@@ -24,6 +24,6 @@
     (fn [req]
       (if-not (= :get (:request-method req))
         (app req)
-        (let [path (.substring (codec/url-decode (:uri req)) 1)]
+        (let [path (.substring ^String (codec/url-decode (:uri req)) 1)]
           (or (response/file-response path opts)
               (app req)))))))

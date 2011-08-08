@@ -51,7 +51,8 @@
   "Parse a map of multipart parameters from the request."
   [request encoding store]
   (into {}
-    (for [item (file-item-seq (request-context request encoding))]
+        (for [^FileItemStream item (file-item-seq
+                                    (request-context request encoding))]
       [(.getFieldName item)
        (parse-file-item item store)])))
 
