@@ -13,7 +13,7 @@
   (or (ext-mime-type (.getPath file) mime-types)
       "application/octet-stream"))
 
-(defn make-http-format
+(defn ^SimpleDateFormat make-http-format
   "Formats or parses dates into HTTP date format (RFC 822/1123)."
   []
   ;; SimpleDateFormat is not threadsafe, so return a new instance each time

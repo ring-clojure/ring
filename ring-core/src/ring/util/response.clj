@@ -43,7 +43,7 @@
   "Safely retrieve the correct file. See file-response for an
   explanation of options."
   [^String path opts]
-  (if-let [file (if-let [^String root (:root opts)]
+  (if-let [^File file (if-let [^String root (:root opts)]
                   (and (safe-path? root path) (File. root path))
                   (File. path))]
     (cond

@@ -9,18 +9,18 @@
        (try ~@body
             (catch Exception ex#)))))
 
-(defn- expired? [file expiry-time]
+(defn- expired? [^File file expiry-time]
   (< (.lastModified file)
      (- (System/currentTimeMillis)
         (* expiry-time 1000))))
 
 (defn- remove-old-files [file-set expiry-time]
-  (doseq [file @file-set]
+  (doseq [^File file @file-set]
     (when (expired? file expiry-time)
       (.delete file)
       (swap! file-set disj file))))
 
-(defn- make-temp-file [file-set]
+(defn- ^File make-temp-file [file-set]
   (let [temp-file (File/createTempFile "ring-multipart-" nil)]
     (swap! file-set conj temp-file)
     (.deleteOnExit temp-file)
