@@ -5,7 +5,7 @@
            org.apache.commons.codec.binary.Base64))
 
 (defn url-encode
-  "Returns the form-url-encoded ersion of the given string, using either a
+  "Returns the form-url-encoded version of the given string, using either a
   specified encoding or UTF-8 by default."
   [unencoded & [encoding]]
   (URLEncoder/encode unencoded (or encoding "UTF-8")))
