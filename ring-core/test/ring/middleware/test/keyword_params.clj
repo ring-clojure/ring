@@ -11,4 +11,6 @@
     {"foo" "bar" "biz" [{"bat" "one"} {"bat" "two"}]}
     {:foo  "bar" :biz  [{:bat "one"}  {:bat  "two"}]}
     {"foo" 1}
-    {:foo  1}))
+    {:foo  1}
+    {"foo" 1 "1bar" 2 "baz*" 3 "quz-buz" 4 "biz.bang" 5}
+    {:foo 1 :baz* 3 :quz-buz 4}))
