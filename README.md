@@ -59,7 +59,6 @@ To see a more sophisticated Ring app, run:
 
 * `ring.middleware.file`: Serve static files out of a public directory.
 * `ring.middleware.resource`: Serve static classpath resources.
-* `ring.middleware.static`: Serve static files with specified prefixes out of a public directory.
 * `ring.middleware.file-info`: Augment response headers with info about File responses.
 * `ring.middleware.content-type`: Augment response headers with a content-type based on the file extension.
 * `ring.middleware.params`: Parse query and form params.
