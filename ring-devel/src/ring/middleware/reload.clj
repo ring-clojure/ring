@@ -1,14 +1,18 @@
 (ns ring.middleware.reload
-  "Reload namespaces before requests.")
+  "Reload modified namespaces on the fly."
+  (:use [ns-tracker.core :only (ns-tracker)]))
 
 (defn wrap-reload
-  "Wrap an app such that before a request is passed to the app, each namespace
-  identified by syms in reloadables is reloaded.
-  Currently this requires that the namespaces in question are being (re)loaded
-  from un-jarred source files, as apposed to source files in jars or compiled
-  classes."
-  [app reloadables]
-  (fn [req]
-    (doseq [ns-sym reloadables]
-      (require ns-sym :reload))
-    (app req)))
+  "Reload namespaces of modified files before the request is passed to the
+  supplied handler.
+
+  Takes the following options:
+    :dirs - A list of directories that contain the source files.
+            Defaults to [\"src\"]."
+  [handler & [options]]
+  (let [source-dirs (:dirs options ["src"])
+        modified-namespaces (ns-tracker source-dirs)]
+    (fn [request]
+      (doseq [ns-sym (modified-namespaces)]
+        (require ns-sym :reload))
+      (handler request))))
