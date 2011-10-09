@@ -76,7 +76,7 @@ To see a more sophisticated Ring app, run:
 
 * `ring.handler.dump`: Dumps request maps as HTML responses for debugging.
 * `ring.middleware.lint`: Lint requests and responses to ensure compliance with the Ring spec.
-* `ring.middleware.reload`: Automatically reload selected libs before each request.
+* `ring.middleware.reload`: Automatically reload modified namespaces before each request.
 * `ring.middleware.stacktrace`: Catch exceptions and displays readable stacktraces for debugging.
 
 ### ring-servlet
@@ -91,11 +91,11 @@ To see a more sophisticated Ring app, run:
 
 To include one of the above libraries in your Leiningen project, for example `ring-core`, add the following to your `:dependencies`:
 
-    [ring/ring-core "0.3.11"]
+    [ring/ring-core "1.0.0-beta1"]
 
 To include all of them, add:
 
-    [ring "0.3.11"]
+    [ring "1.0.0-beta1"]
 
 ## Development
 
