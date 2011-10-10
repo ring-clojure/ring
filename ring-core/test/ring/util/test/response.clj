@@ -66,4 +66,7 @@
       (is (.startsWith (slurp body) "(ns ring.util.response")))
     (let [body (:body (resource-response "clojure/java/io.clj"))]
       (is (instance? InputStream body))
-      (is (.contains (slurp body) "clojure.java.io")))))
+      (is (.contains (slurp body) "clojure.java.io"))))
+
+  (testing "resource is a directory"
+    (is (nil? (resource-response "/ring/assets")))))
