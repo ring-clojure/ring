@@ -31,3 +31,21 @@
       (is (= (:filename upload)     "test.txt"))
       (is (= (:content-type upload) "text/plain"))
       (is (= (:content upload)      "foo")))))
+
+(deftest test-multiple-params
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "bar\r\n"
+                       "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "baz\r\n"
+                       "--XXXX--")
+        handler (wrap-multipart-params identity {:store string-store})
+        request {:content-type "multipart/form-data; boundary=XXXX"
+                 :content-length (count form-body)
+                 :body (string-input-stream form-body)}
+        response (handler request)]
+    (is (= (get-in response [:params "foo"])
+           ["bar" "baz"]))))

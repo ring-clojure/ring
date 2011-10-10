@@ -50,11 +50,14 @@
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
   [request encoding store]
-  (into {}
-        (for [^FileItemStream item (file-item-seq
-                                    (request-context request encoding))]
-      [(.getFieldName item)
-       (parse-file-item item store)])))
+  (reduce
+   (fn [params item]
+     (assoc-param params
+                  (.getFieldName item)
+                  (parse-file-item item store)))
+   {}
+   (file-item-seq
+    (request-context request encoding))))
 
 (defn- load-var
   "Returns the var named by the supplied symbol, or nil if not found. Attempts
