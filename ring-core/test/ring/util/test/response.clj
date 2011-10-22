@@ -12,6 +12,10 @@
   (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
          (redirect-after-post "http://example.com"))))
 
+(deftest test-not-found
+  (is (= {:status 404 :headers {} :body "Not found"}
+         (not-found "Not found"))))
+
 (deftest test-response
   (is (= {:status 200 :headers {} :body "foobar"}
          (response "foobar"))))
@@ -23,6 +27,10 @@
   (is (= {:status 200 :headers {"Content-Type" "text/html" "Content-Length" "10"}}
          (content-type {:status 200 :headers {"Content-Length" "10"}}
                        "text/html"))))
+
+(deftest test-header
+  (is (= {:status 200 :headers {"X-Foo" "Bar"}}
+         (header {:status 200 :headers {}} "X-Foo" "Bar"))))
 
 (defmacro with-classloader
   "Temporarily replaces the current context classloader with one that
@@ -77,3 +85,11 @@
              (.getAbsoluteFile (File. "test/ring/assets/hello world.txt"))))
       (is (= (slurp (:body resp))
              "Hello World\n")))))
+
+(deftest test-set-cookie
+  (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar"}}}
+         (set-cookie {:status 200 :headers {}}
+                     "Foo" "Bar")))
+  (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar" :http-only true}}}
+         (set-cookie {:status 200 :headers {}}
+                     "Foo" "Bar" {:http-only true}))))

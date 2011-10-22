@@ -18,6 +18,13 @@
    :headers {"Location" url}
    :body    ""})
 
+(defn not-found
+  "Returns a 404 'not found' response."
+  [body]
+  {:status  404
+   :headers {}
+   :body    body})
+
 (defn response
   "Returns a skeletal Ring response with the given body, status of 200, and no
   headers."
@@ -115,3 +122,9 @@
   to the given content-type."
   [resp content-type]
   (header resp "Content-Type" content-type))
+
+(defn set-cookie
+  "Sets a cookie on the response. Requires the handler to be wrapped in the
+  wrap-cookies middleware."
+  [resp name value & [opts]]
+  (assoc-in resp [:cookies name] (merge {:value value} opts)))
