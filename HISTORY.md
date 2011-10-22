@@ -1,3 +1,16 @@
+## 1.0.0 (TBA)
+
+* Multipart parameters with same name correctly create vector of values
+* Fixed exception when resource-response is passed a directory
+* wrap-reload middleware changed to act like wrap-reload-modified
+* wrap-keyword-params ignores parameter names that cannot be keywords
+* wrap-keyword-params can be safely applied multiple times
+* Removed ring.middleware.static
+* Servlet outputstream no longer explicitly closed and flushed
+* Downgraded Jetty from 6.1.26 to 6.1.25 to solve socket issue
+* Jetty SSL adapter respects the :host option
+* Cookies can be set as http-only
+
 ## 0.3.11 (2011-07-14)
 
 * Multipart parameter storage backends (temp-file and byte-array)
