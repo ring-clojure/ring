@@ -123,7 +123,24 @@
 
 (defn wrap-cookies
   "Parses the cookies in the request map, then assocs the resulting map
-  to the :cookies key on the request."
+  to the :cookies key on the request.
+
+  Each cookie is represented as a map, with its value being held in the
+  :value key. A cookie may optionally contain a :path, :domain or :port
+  attribute.
+
+  To set cookies, add a map to the :cookies key on the response. The values
+  of the cookie map can either be strings, or maps containing the following
+  keys:
+
+  :value     - the new value of the cookie
+  :path      - the subpath the cookie is valid for
+  :domain    - the domain the cookie is valid for
+  :port      - the port the cookie is valid for
+  :max-age   - the maximum age in seconds of the cookie
+  :expires   - a date string at which the cookie will expire
+  :secure    - set to true if the cookie is valid for HTTPS only
+  :http-only - set to true if the cookie is valid for HTTP only"
   [handler]
   (fn [request]
     (let [request (if (request :cookies)
