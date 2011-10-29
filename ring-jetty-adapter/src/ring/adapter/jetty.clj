@@ -47,18 +47,19 @@
     server))
 
 (defn ^Server run-jetty
-  "Serve the given handler according to the options.
-  Options:
-    :configurator   - A function called with the Server instance.
-    :port
-    :host
-    :join?          - Block the caller: defaults to true.
-    :ssl?           - Use SSL.
-    :ssl-port       - SSL port: defaults to 443, implies :ssl?
-    :keystore
-    :key-password
-    :truststore
-    :trust-password"
+  "Start a Jetty webserver to serve the given handler according to the
+  supplied options:
+
+  :configurator - a function called with the Jetty Server instance
+  :port         - the port to listen on (defaults to 80)
+  :host         - the hostname to listen on
+  :join?        - blocks the thread until server ends (defaults to true)
+  :ssl?         - allow connections over HTTPS
+  :ssl-port     - the SSL port to listen on (defaults to 443, implies :ssl?)
+  :keystore     - the keystore to use for SSL connections
+  :key-password - the password to the keystore
+  :truststore   - a truststore to use for SSL connections
+  :trust-password - the password to the truststore"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
