@@ -78,3 +78,8 @@
         resp    ((wrap-cookies handler) {})]
     (is (= {"Set-Cookie" (list "a=b" "c=d")}
            (:headers resp)))))
+
+(deftest wrap-cookies-invalid-attrs
+  (let [response {:cookies {"a" {:value "foo" :invalid true}}}
+        handler  (wrap-cookies (constantly response))]
+    (is (thrown? AssertionError (handler {})))))

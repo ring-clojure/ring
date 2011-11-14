@@ -88,8 +88,9 @@
 
 (defn- valid-attr?
   "Is the attribute valid?"
-  [[_ value]]
-  (not (.contains (str value) ";")))
+  [[key value]]
+  (and (contains? set-cookie-attrs key)
+       (not (.contains (str value) ";"))))
 
 (defn- write-attr-map
   "Write a map of cookie attributes to a string."
@@ -118,7 +119,7 @@
     (update-in response
                [:headers "Set-Cookie"]
                concat
-               (write-cookies cookies))
+               (doall (write-cookies cookies)))
     response))
 
 (defn wrap-cookies
