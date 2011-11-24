@@ -38,26 +38,23 @@
     (.getItemIterator (FileUpload.) context)))
 
 (defn- parse-file-item
-  "Parse a FileItemStream into a parameter value. If the request is a file the
+  "Parse a FileItemStream into a key-value pair. If the request is a file the
   supplied store function is used to save it."
   [^FileItemStream item store]
-  (if (.isFormField item)
-    (Streams/asString (.openStream item))
-    (store {:filename     (.getName item)
-            :content-type (.getContentType item)
-            :stream       (.openStream item)})))
+  [(.getFieldName item)
+   (if (.isFormField item)
+     (Streams/asString (.openStream item))
+     (store {:filename     (.getName item)
+             :content-type (.getContentType item)
+             :stream       (.openStream item)}))])
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
   [request encoding store]
-  (reduce
-   (fn [params item]
-     (assoc-param params
-                  (.getFieldName item)
-                  (parse-file-item item store)))
-   {}
-   (file-item-seq
-    (request-context request encoding))))
+  (->> (request-context request encoding)
+       (file-item-seq)
+       (map #(parse-file-item % store))
+       (reduce (fn [m [k v]] (assoc-param m k v)) {})))
 
 (defn- load-var
   "Returns the var named by the supplied symbol, or nil if not found. Attempts
