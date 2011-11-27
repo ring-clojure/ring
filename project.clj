@@ -1,11 +1,11 @@
-(defproject ring "1.0.0-RC3"
+(defproject ring "1.0.0-RC4"
   :description "A Clojure web applications library."
   :url "http://github.com/mmcgrana/ring"
   :dependencies
-    [[ring/ring-core "1.0.0-RC3"]
-     [ring/ring-devel "1.0.0-RC3"]
-     [ring/ring-jetty-adapter "1.0.0-RC3"]
-     [ring/ring-servlet "1.0.0-RC3"]]
+    [[ring/ring-core "1.0.0-RC4"]
+     [ring/ring-devel "1.0.0-RC4"]
+     [ring/ring-jetty-adapter "1.0.0-RC4"]
+     [ring/ring-servlet "1.0.0-RC4"]]
   :dev-dependencies
     [[org.clojars.weavejester/autodoc "0.9.0"]]
   :autodoc
