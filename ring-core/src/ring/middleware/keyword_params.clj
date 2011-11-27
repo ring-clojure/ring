@@ -8,8 +8,11 @@
   (cond
     (map? target)
       (into {}
-        (for [[k v] target :when (keyword-syntax? k)]
-          [(keyword k) (keyify-params v)]))
+        (for [[k v] target]
+          [(if (and (string? k) (keyword-syntax? k))
+             (keyword k)
+             k)
+           (keyify-params v)]))
     (vector? target)
       (vec (map keyify-params target))
     :else
