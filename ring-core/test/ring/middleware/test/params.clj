@@ -36,3 +36,11 @@
     (is (= {} (:query-params resp)))
     (is (= {} (:form-params resp)))
     (is (= {} (:params resp)))))
+
+(deftest wrap-params-encoding
+  (let [req  {:character-encoding "UTF-16"
+              :content-type "application/x-www-form-urlencoded"
+              :body (tu/string-input-stream "hello=world" "UTF-16")}
+        resp (wrapped-echo req)]
+    (is (= (:params resp) {"hello" "world"}))
+    (is (= (:form-params resp) {"hello" "world"}))))

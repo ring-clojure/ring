@@ -47,7 +47,7 @@
   [request encoding]
   (merge-with merge request
     (if-let [body (and (urlencoded-form? request) (:body request))]
-      (let [params (parse-params (slurp body) encoding)]
+      (let [params (parse-params (slurp body :encoding encoding) encoding)]
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
 
