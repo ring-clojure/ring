@@ -16,9 +16,9 @@
       session is stored. Defaults to in-memory storage
       (ring.middleware.session.store.MemoryStore).
     :root
-      The root path of the session. Anything path above this will not
-      be able to see this session. Equivalent to setting the cookie's
-      path attribute. Defaults to \"/\".
+      The root path of the session. Any path above this will not be able to
+      see this session. Equivalent to setting the cookie's path attribute.
+      Defaults to \"/\".
     :cookie-name
       The name of the cookie that holds the session key. Defaults to
       \"ring-session\"
