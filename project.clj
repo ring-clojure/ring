@@ -7,7 +7,13 @@
      [ring/ring-jetty-adapter "1.0.0-RC5"]
      [ring/ring-servlet "1.0.0-RC5"]]
   :dev-dependencies
-    [[codox "0.3.0"]]
+    [[lein-sub "0.1.1"]
+     [codox "0.3.0"]]
+  :sub
+    ["ring-core"
+     "ring-devel"
+     "ring-jetty-adapter"
+     "ring-servlet"]
   :codox
     {:sources ["ring-core/src"
                "ring-devel/src"
