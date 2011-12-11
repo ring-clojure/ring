@@ -1,4 +1,4 @@
-## 1.0.0 (TBA)
+## 1.0.0 (2011-12-11)
 
 * Multipart parameters with same name correctly create vector of values
 * Fixed exception when resource-response is passed a directory
@@ -10,6 +10,9 @@
 * Downgraded Jetty from 6.1.26 to 6.1.25 to solve socket issue
 * Jetty SSL adapter respects the :host option
 * Cookies can be set as http-only
+* Fixed wrap-params for non-UTF8-encoded POST requests
+* Fixed wrap-multipart-params bug that occurs in Clojure 1.3.0
+* Better error reporting on invalid cookie attributes in wrap-cookies
 
 ## 0.3.11 (2011-07-14)
 
