@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html><head><link href="css/default.css" rel="stylesheet" type="text/css"><script src="js/jquery.min.js" type="text/javascript"></script><script src="js/page_effects.js" type="text/javascript"></script><title>ring.middleware.cookies documentation</title></head><body><div id="header"><h1><a href="index.html">Ring 1.0.0 API documentation</a></h1></div><div class="sidebar" id="namespaces"><h3>Namespaces</h3><ul><li><a href="ring.middleware.content-type.html">ring.middleware.content-type</a></li><li class="current"><a href="ring.middleware.cookies.html">ring.middleware.cookies</a></li><li><a href="ring.middleware.file.html">ring.middleware.file</a></li><li><a href="ring.middleware.file-info.html">ring.middleware.file-info</a></li><li><a href="ring.middleware.flash.html">ring.middleware.flash</a></li><li><a href="ring.middleware.keyword-params.html">ring.middleware.keyword-params</a></li><li><a href="ring.middleware.multipart-params.html">ring.middleware.multipart-params</a></li><li><a href="ring.middleware.multipart-params.byte-array.html">ring.middleware.multipart-params.byte-array</a></li><li><a href="ring.middleware.multipart-params.temp-file.html">ring.middleware.multipart-params.temp-file</a></li><li><a href="ring.middleware.nested-params.html">ring.middleware.nested-params</a></li><li><a href="ring.middleware.params.html">ring.middleware.params</a></li><li><a href="ring.middleware.resource.html">ring.middleware.resource</a></li><li><a href="ring.middleware.session.html">ring.middleware.session</a></li><li><a href="ring.middleware.session.cookie.html">ring.middleware.session.cookie</a></li><li><a href="ring.middleware.session.memory.html">ring.middleware.session.memory</a></li><li><a href="ring.middleware.session.store.html">ring.middleware.session.store</a></li><li><a href="ring.util.codec.html">ring.util.codec</a></li><li><a href="ring.util.mime-type.html">ring.util.mime-type</a></li><li><a href="ring.util.response.html">ring.util.response</a></li><li><a href="ring.util.test.html">ring.util.test</a></li><li><a href="ring.handler.dump.html">ring.handler.dump</a></li><li><a href="ring.middleware.lint.html">ring.middleware.lint</a></li><li><a href="ring.middleware.reload.html">ring.middleware.reload</a></li><li><a href="ring.middleware.stacktrace.html">ring.middleware.stacktrace</a></li><li><a href="ring.adapter.jetty.html">ring.adapter.jetty</a></li><li><a href="ring.util.servlet.html">ring.util.servlet</a></li></ul></div><div class="sidebar" id="vars"><h3>Public Vars</h3><ul><li><a href="ring.middleware.cookies.html#var-wrap-cookies">wrap-cookies</a></li></ul></div><div class="namespace-docs" id="content"><h2>ring.middleware.cookies documentation</h2><pre class="doc">Cookie manipulation.
+</pre><div class="public" id="var-wrap-cookies"><h3>wrap-cookies</h3><div class="usage"><code>(wrap-cookies handler)</code></div><pre class="doc">Parses the cookies in the request map, then assocs the resulting map
+to the :cookies key on the request.
+
+Each cookie is represented as a map, with its value being held in the
+:value key. A cookie may optionally contain a :path, :domain or :port
+attribute.
+
+To set cookies, add a map to the :cookies key on the response. The values
+of the cookie map can either be strings, or maps containing the following
+keys:
+
+:value     - the new value of the cookie
+:path      - the subpath the cookie is valid for
+:domain    - the domain the cookie is valid for
+:port      - the port the cookie is valid for
+:max-age   - the maximum age in seconds of the cookie
+:expires   - a date string at which the cookie will expire
+:secure    - set to true if the cookie is valid for HTTPS only
+:http-only - set to true if the cookie is valid for HTTP only</pre></div></div></body></html>
