@@ -69,4 +69,11 @@
       (is (.contains (slurp body) "clojure.java.io"))))
 
   (testing "resource is a directory"
-    (is (nil? (resource-response "/ring/assets")))))
+    (is (nil? (resource-response "/ring/assets"))))
+
+  (testing "resource is a file with spaces in path"
+    (let [resp (resource-response "/ring/assets/hello world.txt")]
+      (is (= (:body resp)
+             (.getAbsoluteFile (File. "test/ring/assets/hello world.txt"))))
+      (is (= (slurp (:body resp))
+             "Hello World\n")))))

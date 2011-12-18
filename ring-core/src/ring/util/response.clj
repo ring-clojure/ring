@@ -1,7 +1,8 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
   (:import java.io.File)
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
@@ -62,6 +63,27 @@
   (if-let [file (get-file filepath opts)]
     (response file)))
 
+;; In Clojure versions 1.2.0, 1.2.1 and 1.3.0, the as-file function
+;; in clojure.java.io does not correctly decode special characters in
+;; URLs (e.g. '%20' should be turned into ' ').
+;;
+;; See: http://dev.clojure.org/jira/browse/CLJ-885
+;;
+;; As a work-around, we'll backport the fix from the Clojure master
+;; branch into url-as-file.
+
+(defn- url-as-file [u]
+  (io/as-file
+   (str/replace
+    (.replace (.getFile u) \/ File/separatorChar)
+    #"%.."
+    (fn [escape]
+      (-> escape
+          (.substring 1 3)
+          (Integer/parseInt 16)
+          (char)
+          (str))))))
+
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the
   resource does not exist.
@@ -73,7 +95,7 @@
                  (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
       (if (= "file" (.getProtocol resource))
-        (let [file (io/as-file resource)]
+        (let [file (url-as-file resource)]
           (if-not (.isDirectory file)
             (response file)))
         (response (io/input-stream resource))))))
