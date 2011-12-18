@@ -1,3 +1,7 @@
+## 1.0.1 (2011-12-18)
+
+* Workaround for [CLJ-885](http://dev.clojure.org/jira/browse/CLJ-885)
+
 ## 1.0.0 (2011-12-11)
 
 * Multipart parameters with same name correctly create vector of values
