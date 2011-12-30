@@ -77,7 +77,7 @@
   (let [data (encrypt key (.getBytes (pr-str data)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
-(defn- secure-compare [a b]
+(defn- secure-compare [^String a ^String b]
   (if (and a b (= (.length a) (.length b)))
       (= 0
          (reduce bit-or
