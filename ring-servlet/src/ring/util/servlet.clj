@@ -60,7 +60,7 @@
   [^HttpServletResponse response, status]
   (.setStatus response status))
 
-(defn set-content-type [response content-type]
+(defn set-content-type [^HttpServletResponse response content-type]
   (.setContentType
    response
    (-> content-type
@@ -73,7 +73,7 @@
        (re-find #"charset=(.+);?")
        (second)))
 
-(defn- set-character-encoding [response content-type]
+(defn- set-character-encoding [^HttpServletResponse response content-type]
   (when-let [charset (get-charset content-type)]
     (.setCharacterEncoding response charset)))
 
