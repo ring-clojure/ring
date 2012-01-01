@@ -4,6 +4,7 @@
            (org.mortbay.jetty Server Request Response)
            (org.mortbay.jetty.bio SocketConnector)
            (org.mortbay.jetty.security SslSocketConnector)
+           (org.mortbay.thread QueuedThreadPool)
            (javax.servlet.http HttpServletRequest HttpServletResponse))
   (:require [ring.util.servlet :as servlet]))
 
@@ -59,13 +60,15 @@
   :keystore     - the keystore to use for SSL connections
   :key-password - the password to the keystore
   :truststore   - a truststore to use for SSL connections
-  :trust-password - the password to the truststore"
+  :trust-password - the password to the truststore
+  :max-threads  - the maximum number of threads to use (default 250)"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
       (configurator s))
     (doto s
       (.addHandler (proxy-handler handler))
+      (.setThreadPool (QueuedThreadPool. (options :max-threads 250)))
       (.start))
     (when (:join? options true)
       (.join s))
