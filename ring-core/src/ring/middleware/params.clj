@@ -1,38 +1,13 @@
 (ns ring.middleware.params
   "Parse form and query params."
-  (:require [ring.util.codec :as codec]
-            [clojure.string :as string]))
-
-(defn assoc-param
-  "Associate a key with a value. If the key already exists in the map,
-  create a vector of values."
-  [map key val]
-  (assoc map key
-    (if-let [cur (map key)]
-      (if (vector? cur)
-        (conj cur val)
-        [cur val])
-      val)))
-
-(defn- parse-params
-  "Parse parameters from a string into a map."
-  [^String param-string encoding]
-  (reduce
-    (fn [param-map encoded-param]
-      (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
-        (assoc-param param-map
-          (codec/url-decode key encoding)
-          (codec/url-decode (or val "") encoding))
-         param-map))
-    {}
-    (string/split param-string #"&")))
+  (:require [ring.util.codec :as codec]))
 
 (defn- assoc-query-params
   "Parse and assoc parameters from the query string with the request."
   [request encoding]
   (merge-with merge request
     (if-let [query-string (:query-string request)]
-      (let [params (parse-params query-string encoding)]
+      (let [params (codec/form-decode query-string encoding)]
         {:query-params params, :params params})
       {:query-params {}, :params {}})))
 
@@ -47,7 +22,7 @@
   [request encoding]
   (merge-with merge request
     (if-let [body (and (urlencoded-form? request) (:body request))]
-      (let [params (parse-params (slurp body :encoding encoding) encoding)]
+      (let [params (codec/form-decode (slurp body :encoding encoding) encoding)]
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
 

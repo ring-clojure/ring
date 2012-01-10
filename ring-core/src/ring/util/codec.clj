@@ -2,7 +2,8 @@
   "Encoding and decoding utilities."
   (:import java.io.File
            (java.net URLEncoder URLDecoder)
-           org.apache.commons.codec.binary.Base64))
+           org.apache.commons.codec.binary.Base64)
+  (:require [clojure.string :as string]))
 
 (defn url-encode
   "Returns the form-url-encoded version of the given string, using either a
@@ -27,3 +28,27 @@
   "Decode a base64 encoded string into an array of bytes."
   [^String encoded]
   (Base64/decodeBase64 (.getBytes encoded)))
+
+(defn assoc-param
+  "Associate a key with a value. If the key already exists in the map,
+  create a vector of values."
+  [map key val]
+  (assoc map key
+    (if-let [cur (map key)]
+      (if (vector? cur)
+        (conj cur val)
+        [cur val])
+      val)))
+
+(defn form-decode
+  "Parse parameters from a string into a map."
+  [^String param-string encoding]
+  (reduce
+    (fn [param-map encoded-param]
+      (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
+        (assoc-param param-map
+          (url-decode key encoding)
+          (url-decode (or val "") encoding))
+         param-map))
+    {}
+    (string/split param-string #"&")))
