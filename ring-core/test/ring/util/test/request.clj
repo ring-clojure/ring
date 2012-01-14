@@ -3,15 +3,7 @@
         ring.util.request))
 
 (deftest test-header-seq
-  (are [r k hs] (= (header-seq r k) hs)
-    {:headers {"accept" "text/html, text/xml"}}
-    "accept"
-    ["text/html" "text/xml"]
-
-    {:headers {"content-type" "text/html"}}
-    "content-type"
-    ["text/html"]
-
-    {:headers {}}
-    "x-foo"
-    nil))
+  (are [k v hs] (= (header-seq {:headers {k v}} k) hs)
+    "accept" "text/html, text/xml" ["text/html" "text/xml"]
+    "content-type" "text/html" ["text/html"]
+    "x-foo" nil nil))
