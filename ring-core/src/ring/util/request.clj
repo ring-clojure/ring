@@ -22,13 +22,13 @@
         (assoc :value value))))
 
 (defn accept
-  "Parse the accept header and returns an ordered seq of maps for each media
-  type. Each map will contain at least a :value and a :q key.
+  "Parse the accept header and returns a seq of maps for each media type.
+  Each map will contain at least a :value and a :q key.
 
   e.g. (accept {:headers {\"accept\": \"text/html, text/xml;q=0.8\"})
 
        => ({:value \"text/html\", :q 1.0}
            {:value \"text/xml\",  :q 0.8})"
   [request]
-  (->> (header-seq request "accept")
-       (map parse-accept-value)))
+  (if-let [values (header-seq request "accept")]
+    (map parse-accept-value values)))
