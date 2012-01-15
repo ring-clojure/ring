@@ -42,16 +42,18 @@
 
 (defn form-decode
   "Parse parameters from a string into a map."
-  [^String param-string encoding]
-  (reduce
-    (fn [param-map encoded-param]
-      (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
-        (assoc-param param-map
-          (url-decode key encoding)
-          (url-decode (or val "") encoding))
-         param-map))
-    {}
-    (string/split param-string #"&")))
+  ([^String param-string]
+     (form-decode param-string "UTF-8"))
+  ([^String param-string encoding]
+     (reduce
+      (fn [param-map encoded-param]
+        (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
+          (assoc-param param-map
+                       (url-decode key encoding)
+                       (url-decode (or val "") encoding))
+          param-map))
+      {}
+      (string/split param-string #"&"))))
 
 (defn form-encode
   "Encode parameters from a map into a string."
