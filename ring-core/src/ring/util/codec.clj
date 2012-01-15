@@ -52,3 +52,23 @@
          param-map))
     {}
     (string/split param-string #"&")))
+
+(defn form-encode
+  "Encode parameters from a map into a string."
+  ([param-map]
+     (form-encode param-map "UTF-8"))
+  ([param-map encoding]
+     (form-encode (keys param-map)
+                  (vals param-map)
+                  encoding))
+  ([params values encoding]
+     (string/join #"&"
+                  (map (fn [param value]
+                         (if (vector? value)
+                           (form-encode (repeat (count value) param)
+                                        value
+                                        encoding)
+                           (str (url-encode param)
+                                "="
+                                (url-encode value))))
+                       params values))))
