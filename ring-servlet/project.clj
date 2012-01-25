@@ -1,5 +1,5 @@
-(defproject ring/ring-servlet "1.0.1"
+(defproject ring/ring-servlet "1.0.2"
   :description "Ring servlet utilities."
   :url "http://github.com/mmcgrana/ring"
-  :dependencies [[ring/ring-core "1.0.1"]
+  :dependencies [[ring/ring-core "1.0.2"]
                  [javax.servlet/servlet-api "2.5"]])
