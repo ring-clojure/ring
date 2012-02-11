@@ -1,3 +1,7 @@
+## 1.0.2 (2012-01-25)
+
+* Updated clj-stacktrace to 0.2.4 to fix swank-clojure issue
+
 ## 1.0.1 (2011-12-18)
 
 * Workaround for [CLJ-885](http://dev.clojure.org/jira/browse/CLJ-885)
