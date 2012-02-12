@@ -128,3 +128,10 @@
   wrap-cookies middleware."
   [resp name value & [opts]]
   (assoc-in resp [:cookies name] (merge {:value value} opts)))
+
+(defn response?
+  "True if the supplied value is a valid response map."
+  [resp]
+  (and (map? resp)
+       (integer? (:status resp))
+       (map? (:headers resp))))

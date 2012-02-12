@@ -32,6 +32,12 @@
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
          (header {:status 200 :headers {}} "X-Foo" "Bar"))))
 
+(deftest test-response?
+  (is (response? {:status 200, :headers {}}))
+  (is (response? {:status 200, :headers {}, :body "Foo"}))
+  (is (not (response? {})))
+  (is (not (response? {:users []}))))
+
 (defmacro with-classloader
   "Temporarily replaces the current context classloader with one that
    includes everything in dir"
