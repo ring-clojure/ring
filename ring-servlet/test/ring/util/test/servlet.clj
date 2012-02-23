@@ -9,20 +9,23 @@
       (nextElement [] (let [f (first @e)] (swap! e rest) f)))))
 
 (defn- servlet-request [request]
-  (proxy [javax.servlet.http.HttpServletRequest] []
-    (getServerPort [] (request :server-port))
-    (getServerName [] (request :server-name))
-    (getRemoteAddr [] (request :remote-addr))
-    (getRequestURI [] (request :uri))
-    (getQueryString [] (request :query-string))
-    (getScheme [] (name (request :scheme)))
-    (getMethod [] (-> request :request-method name .toUpperCase))
-    (getHeaderNames [] (enumeration (keys (request :headers))))
-    (getHeaders [name] (enumeration (get-in request [:headers name])))
-    (getContentType [] (request :content-type))
-    (getContentLength [] (or (request :content-length) -1))
-    (getCharacterEncoding [] (request :character-encoding))
-    (getInputStream [] (request :body))))
+  (let [attributes {"javax.servlet.request.X509Certificate"
+                    [(request :ssl-client-cert)]}]
+    (proxy [javax.servlet.http.HttpServletRequest] []
+      (getServerPort [] (request :server-port))
+      (getServerName [] (request :server-name))
+      (getRemoteAddr [] (request :remote-addr))
+      (getRequestURI [] (request :uri))
+      (getQueryString [] (request :query-string))
+      (getScheme [] (name (request :scheme)))
+      (getMethod [] (-> request :request-method name .toUpperCase))
+      (getHeaderNames [] (enumeration (keys (request :headers))))
+      (getHeaders [name] (enumeration (get-in request [:headers name])))
+      (getContentType [] (request :content-type))
+      (getContentLength [] (or (request :content-length) -1))
+      (getCharacterEncoding [] (request :character-encoding))
+      (getAttribute [k] (attributes k))
+      (getInputStream [] (request :body)))))
 
 (defn- servlet-response [response]
   (proxy [javax.servlet.http.HttpServletResponse] []
@@ -47,6 +50,7 @@
 
 (deftest servlet-test
   (let [body (proxy [javax.servlet.ServletInputStream] [])
+        cert (proxy [java.security.cert.X509Certificate] [])
         request {:server-port    8080
                  :server-name    "foobar"
                  :remote-addr    "127.0.0.1"
@@ -59,7 +63,8 @@
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
-                 :body           body}
+                 :ssl-client-cert cert
+                 :body            body}
           response (atom {})]
     (testing "request"
       (letfn [(handler [r]
@@ -76,7 +81,8 @@
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
-                 :body           body)
+                 :ssl-client-cert cert
+                 :body            body)
                {:status 200, :headers {}})]
         (run-servlet handler request response)))
     (testing "response"
