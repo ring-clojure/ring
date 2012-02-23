@@ -1,4 +1,4 @@
-=== Ring Spec (1.0)
+=== Ring Spec (1.1)
 Ring is defined in terms of handlers, middleware, adapters, requests maps, and 
 response maps, each of which are described below.
 
@@ -75,6 +75,10 @@ corresponding values:
 :character-encoding
   (Optional, String)
   The name of the character encoding used in the request body, if known.
+
+:ssl-client-cert
+  (Optional, X509Certificate)
+  The SSL client certificate, if supplied.
 
 :headers
   (Required, IPersistentMap)
