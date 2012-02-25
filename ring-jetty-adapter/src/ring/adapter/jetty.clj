@@ -5,6 +5,7 @@
            (org.eclipse.jetty.server.nio SelectChannelConnector)
            (org.eclipse.jetty.server.ssl SslSelectChannelConnector)
            (org.eclipse.jetty.util.thread QueuedThreadPool)
+           (org.eclipse.jetty.util.ssl SslContextFactory)
            (javax.servlet.http HttpServletRequest HttpServletResponse))
   (:require [ring.util.servlet :as servlet]))
 
@@ -19,24 +20,28 @@
           (servlet/update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
-(defn- add-ssl-connector!
-  "Add an SslSocketConnector to a Jetty Server instance."
-  [^Server server options]
-  (let [ssl-connector (SslSelectChannelConnector.)]
-    (doto ssl-connector
-      (.setPort        (options :ssl-port 443))
-      (.setHost        (options :host))
-      (.setKeystore    (options :keystore))
-      (.setKeyPassword (options :key-password)))
+(defn- ssl-context-factory
+  "Creates a new SslContextFactory instance from a map of options."
+  [options]
+  (let [context (SslContextFactory.)]
+    (.setKeyStorePath context (options :keystore))
+    (.setKeyStorePassword context (options :key-password))
     (when (options :truststore)
-      (.setTruststore ssl-connector (options :truststore)))
+      (.setTruststore context (options :truststore)))
     (when (options :trust-password)
-      (.setTrustPassword ssl-connector (options :trust-password)))
+      (.setTrustPassword context (options :trust-password)))
     (case (options :client-auth)
-      :need (.setNeedClientAuth ssl-connector true)
-      :want (.setWantClientAuth ssl-connector true)
+      :need (.setNeedClientAuth context true)
+      :want (.setWantClientAuth context true)
       nil)
-    (.addConnector server ssl-connector)))
+    context))
+
+(defn- ssl-connector
+  "Creates a SslSelectChannelConnector instance."
+  [options]
+  (doto (SslSelectChannelConnector. (ssl-context-factory options))
+    (.setPort (options :ssl-port 443))
+    (.setHost (options :host))))
 
 (defn- create-server
   "Construct a Jetty Server instance."
@@ -48,7 +53,7 @@
                     (.addConnector connector)
                     (.setSendDateHeader true))]
     (when (or (options :ssl?) (options :ssl-port))
-      (add-ssl-connector! server options))
+      (.addConnector server (ssl-connector options)))
     server))
 
 (defn ^Server run-jetty
