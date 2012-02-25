@@ -32,6 +32,9 @@
       (.setTruststore ssl-connector (options :truststore)))
     (when (options :trust-password)
       (.setTrustPassword ssl-connector (options :trust-password)))
+    (case (options :client-auth)
+      :need (.setNeedClientAuth ssl-connector true)
+      :want (.setWantClientAuth ssl-connector true))
     (.addConnector server ssl-connector)))
 
 (defn- create-server
@@ -61,7 +64,9 @@
   :key-password - the password to the keystore
   :truststore   - a truststore to use for SSL connections
   :trust-password - the password to the truststore
-  :max-threads  - the maximum number of threads to use (default 250)"
+  :max-threads  - the maximum number of threads to use (default 250)
+  :client-auth  - SSL client certificate authenticate, may be set to :need,
+                  :want or :none (defaults to :none)"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
