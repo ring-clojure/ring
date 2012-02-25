@@ -26,6 +26,7 @@
   (let [context (SslContextFactory.)]
     (.setKeyStorePath context (options :keystore))
     (.setKeyStorePassword context (options :key-password))
+    (.setTrustAll context (boolean (options :trust-all?)))
     (when (options :truststore)
       (.setTruststore context (options :truststore)))
     (when (options :trust-password)
@@ -71,8 +72,9 @@
   :truststore   - a truststore to use for SSL connections
   :trust-password - the password to the truststore
   :max-threads  - the maximum number of threads to use (default 250)
-  :client-auth  - SSL client certificate authenticate, may be set to :need,
-                  :want or :none (defaults to :none)"
+  :client-auth  - SSL client certificate authentication; may be set to :need,
+                  :want or :none (defaults to :none)
+  :trust-all?   - set to true to accept all client certificates"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))]
     (when-let [configurator (:configurator options)]
