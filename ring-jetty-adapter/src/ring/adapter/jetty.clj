@@ -34,7 +34,8 @@
       (.setTrustPassword ssl-connector (options :trust-password)))
     (case (options :client-auth)
       :need (.setNeedClientAuth ssl-connector true)
-      :want (.setWantClientAuth ssl-connector true))
+      :want (.setWantClientAuth ssl-connector true)
+      nil)
     (.addConnector server ssl-connector)))
 
 (defn- create-server
