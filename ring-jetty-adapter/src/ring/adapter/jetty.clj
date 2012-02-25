@@ -1,10 +1,10 @@
 (ns ring.adapter.jetty
   "Adapter for the Jetty webserver."
-  (:import (org.mortbay.jetty.handler AbstractHandler)
-           (org.mortbay.jetty Server Request Response)
-           (org.mortbay.jetty.bio SocketConnector)
-           (org.mortbay.jetty.security SslSocketConnector)
-           (org.mortbay.thread QueuedThreadPool)
+  (:import (org.eclipse.jetty.server Server Request)
+           (org.eclipse.jetty.server.handler AbstractHandler)
+           (org.eclipse.jetty.server.nio SelectChannelConnector)
+           (org.eclipse.jetty.server.ssl SslSelectChannelConnector)
+           (org.eclipse.jetty.util.thread QueuedThreadPool)
            (javax.servlet.http HttpServletRequest HttpServletResponse))
   (:require [ring.util.servlet :as servlet]))
 
@@ -12,17 +12,17 @@
   "Returns an Jetty Handler implementation for the given Ring handler."
   [handler]
   (proxy [AbstractHandler] []
-    (handle [target ^Request request response dispatch]
+    (handle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (when response-map
           (servlet/update-servlet-response response response-map)
-          (.setHandled request true))))))
+          (.setHandled base-request true))))))
 
 (defn- add-ssl-connector!
   "Add an SslSocketConnector to a Jetty Server instance."
   [^Server server options]
-  (let [ssl-connector (SslSocketConnector.)]
+  (let [ssl-connector (SslSelectChannelConnector.)]
     (doto ssl-connector
       (.setPort        (options :ssl-port 443))
       (.setHost        (options :host))
@@ -40,7 +40,7 @@
 (defn- create-server
   "Construct a Jetty Server instance."
   [options]
-  (let [connector (doto (SocketConnector.)
+  (let [connector (doto (SelectChannelConnector.)
                     (.setPort (options :port 80))
                     (.setHost (options :host)))
         server    (doto (Server.)
@@ -72,7 +72,7 @@
     (when-let [configurator (:configurator options)]
       (configurator s))
     (doto s
-      (.addHandler (proxy-handler handler))
+      (.setHandler (proxy-handler handler))
       (.setThreadPool (QueuedThreadPool. (options :max-threads 250)))
       (.start))
     (when (:join? options true)

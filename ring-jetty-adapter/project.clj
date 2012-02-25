@@ -3,6 +3,5 @@
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[ring/ring-core "1.1.0-SNAPSHOT"]
                  [ring/ring-servlet "1.1.0-SNAPSHOT"]
-                 [org.mortbay.jetty/jetty "6.1.25"]
-                 [org.mortbay.jetty/jetty-util "6.1.25"]]
+                 [org.eclipse.jetty/jetty-server "7.6.1.v20120215"]]
   :dev-dependencies [[clj-http "0.3.2"]])
