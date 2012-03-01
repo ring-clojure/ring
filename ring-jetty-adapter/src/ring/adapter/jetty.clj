@@ -27,7 +27,7 @@
     (.setKeyStorePath context (options :keystore))
     (.setKeyStorePassword context (options :key-password))
     (when (options :truststore)
-      (.setTruststore context (options :truststore)))
+      (.setTrustStore context (options :truststore)))
     (when (options :trust-password)
       (.setTrustPassword context (options :trust-password)))
     (case (options :client-auth)
