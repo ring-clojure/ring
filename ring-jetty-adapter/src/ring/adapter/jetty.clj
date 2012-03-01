@@ -24,7 +24,9 @@
   "Creates a new SslContextFactory instance from a map of options."
   [options]
   (let [context (SslContextFactory.)]
-    (.setKeyStorePath context (options :keystore))
+    (if (string? (options :keystore))
+      (.setKeyStorePath context (options :keystore))
+      (.setKeyStore context (options :keystore)))
     (.setKeyStorePassword context (options :key-password))
     (when (options :truststore)
       (.setTrustStore context (options :truststore)))
