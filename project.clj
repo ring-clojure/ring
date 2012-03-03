@@ -8,7 +8,7 @@
      [ring/ring-servlet "1.1.0-SNAPSHOT"]]
   :dev-dependencies
     [[lein-sub "0.1.1"]
-     [codox "0.4.1"]]
+     [codox "0.5.0"]]
   :sub
     ["ring-core"
      "ring-devel"
