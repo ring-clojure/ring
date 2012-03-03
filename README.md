@@ -42,5 +42,3 @@ thanks to those communities for their work.
 ## License
 
 Copyright (c) 2009-2012 Mark McGranaghan and released under an MIT license.
-
-Clojure logo by Tom Hickey.
