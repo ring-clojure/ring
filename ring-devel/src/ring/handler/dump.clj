@@ -1,7 +1,8 @@
 (ns ring.handler.dump
   "Reflect Ring requests into responses for debugging."
   (:use hiccup.core
-        hiccup.page-helpers
+        hiccup.page
+        hiccup.def
         ring.util.response)
   (:require [clojure.set :as set]
             [clojure.pprint :as pprint]))

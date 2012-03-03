@@ -2,7 +2,7 @@
   "Catch exceptions and render web and log stacktraces for debugging."
   (:require [clojure.java.io :as io])
   (:use hiccup.core
-        hiccup.page-helpers
+        hiccup.page
         clj-stacktrace.core
         clj-stacktrace.repl
         ring.util.response))
