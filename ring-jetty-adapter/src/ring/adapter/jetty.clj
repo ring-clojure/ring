@@ -72,7 +72,7 @@
   :key-password - the password to the keystore
   :truststore   - a truststore to use for SSL connections
   :trust-password - the password to the truststore
-  :max-threads  - the maximum number of threads to use (default 250)
+  :max-threads  - the maximum number of threads to use (default 50)
   :client-auth  - SSL client certificate authenticate, may be set to :need,
                   :want or :none (defaults to :none)"
   [handler options]
@@ -81,7 +81,7 @@
       (configurator s))
     (doto s
       (.setHandler (proxy-handler handler))
-      (.setThreadPool (QueuedThreadPool. (options :max-threads 250)))
+      (.setThreadPool (QueuedThreadPool. (options :max-threads 50)))
       (.start))
     (when (:join? options true)
       (.join s))
