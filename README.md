@@ -32,7 +32,11 @@ To include all of them:
 ## Documentation
 
 * [Wiki](https://github.com/mmcgrana/ring/wiki)
-* [API Docs](http://mmcgrana.github.com/ring)
+* [API docs](http://mmcgrana.github.com/ring)
+
+## Community
+
+* [Google group](http://groups.google.com/group/ring-clojure)
 
 ## Thanks
 
