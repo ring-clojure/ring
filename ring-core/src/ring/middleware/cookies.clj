@@ -1,6 +1,9 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
-  (:require [ring.util.codec :as codec]))
+  (:require [ring.util.codec :as codec])
+  (:use [clj-time.core :only (in-secs)]
+        [clj-time.format :only (formatters unparse)])
+  (:import (org.joda.time Interval DateTime)))
 
 (def ^{:private true
        :doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"}
@@ -91,7 +94,11 @@
   "Is the attribute valid?"
   [[key value]]
   (and (contains? set-cookie-attrs key)
-       (not (.contains (str value) ";"))))
+       (not (.contains (str value) ";"))
+       (case key
+         :max-age (or (instance? Interval value) (integer? value))
+         :expires (or (instance? DateTime value) (string? value))
+         true)))
 
 (defn- write-attr-map
   "Write a map of cookie attributes to a string."
@@ -100,9 +107,11 @@
   (for [[key value] attrs]
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
-        (true? value)  (str ";" attr-name)
-        (false? value) ""
-        :else          (str ";" attr-name "=" value)))))
+       (instance? Interval value) (str ";" attr-name "=" (in-secs value))
+       (instance? DateTime value) (str ";" attr-name "=" (unparse (formatters :rfc822) value))
+       (true? value)  (str ";" attr-name)
+       (false? value) ""
+       :else (str ";" attr-name "=" value)))))
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
