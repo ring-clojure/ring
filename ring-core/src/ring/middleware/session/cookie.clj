@@ -79,12 +79,9 @@
 
 (defn- secure-compare [^String a ^String b]
   (if (and a b (= (.length a) (.length b)))
-      (= 0
-         (reduce bit-or
-                 (map bit-xor
-                      (.getBytes a)
-                      (.getBytes b))))
-      false))
+    (zero? (reduce bit-or
+                   (map bit-xor (.getBytes a) (.getBytes b))))
+    false))
 
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
