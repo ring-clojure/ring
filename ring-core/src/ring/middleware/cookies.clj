@@ -45,11 +45,12 @@
 (defn- normalize-quoted-strs
   "Turn quoted strings into normal Clojure strings using read-string."
   [cookies]
-  (for [[name value] cookies]
-    (let [value (codec/url-decode value)]
-      (if (.startsWith ^String value "\"")
-        [name (read-string value)]
-        [name value]))))
+  (remove nil?
+    (for [[name value] cookies]
+      (if-let [value (codec/url-decode value)]
+        (if (.startsWith ^String value "\"")
+          [name (read-string value)]
+          [name value])))))
 
 (defn- get-cookie
   "Get a single cookie from a sequence of cookie-values"

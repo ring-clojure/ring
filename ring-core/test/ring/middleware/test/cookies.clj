@@ -72,6 +72,11 @@
     (is (= {"Set-Cookie" (list "a=hello+world")}
            (:headers resp)))))
 
+(deftest wrap-cookies-invalid-url-encoded
+  (let [req  {:headers {"cookie" "a=%D"}}
+        resp ((wrap-cookies :cookies) req)]
+    (is (= {} resp))))
+
 (deftest wrap-cookies-keep-set-cookies-intact
   (let [handler (constantly {:headers {"Set-Cookie" (list "a=b")}
                              :cookies {:c "d"}})
