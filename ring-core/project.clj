@@ -6,4 +6,5 @@
                  [commons-io "2.1"]
                  [commons-fileupload "1.2.1"]
                  [javax.servlet/servlet-api "2.5"]]
-  :dev-dependencies [[org.clojure/clojure-contrib "1.2.0"]])
+  :profiles
+  {:dev {:dependencies [[org.clojure/clojure-contrib "1.2.0"]]}})

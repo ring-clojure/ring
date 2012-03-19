@@ -6,8 +6,8 @@
      [ring/ring-devel "1.1.0-SNAPSHOT"]
      [ring/ring-jetty-adapter "1.1.0-SNAPSHOT"]
      [ring/ring-servlet "1.1.0-SNAPSHOT"]]
-  :dev-dependencies
-    [[lein-sub "0.1.1"]
+  :plugins
+    [[lein-sub "0.2.0"]
      [codox "0.5.0"]]
   :sub
     ["ring-core"

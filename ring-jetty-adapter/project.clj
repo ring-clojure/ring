@@ -4,4 +4,5 @@
   :dependencies [[ring/ring-core "1.1.0-SNAPSHOT"]
                  [ring/ring-servlet "1.1.0-SNAPSHOT"]
                  [org.eclipse.jetty/jetty-server "7.6.1.v20120215"]]
-  :dev-dependencies [[clj-http "0.3.2"]])
+  :profiles
+  {:dev {:dependencies [[clj-http "0.3.2"]]}})
