@@ -1,10 +1,8 @@
 (ns ring.util.test
   "Utilities for testing Ring components."
-  (:import java.io.ByteArrayInputStream))
+  (:require [ring.util.io :as io]))
 
-(defn string-input-stream
-  "Returns a ByteArrayInputStream for the given String."
-  ([^String s]
-     (ByteArrayInputStream. (.getBytes s)))
-  ([^String s encoding]
-     (ByteArrayInputStream. (.getBytes s encoding))))
+(def ^{:doc "Returns a ByteArrayInputStream for the given String."
+       :deprecated "1.1"}
+  string-input-stream
+  io/string-input-stream)
