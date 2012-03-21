@@ -1,6 +1,7 @@
 (ns ring.middleware.test.cookies
   (:use clojure.test
-        ring.middleware.cookies))
+        ring.middleware.cookies
+        [clj-time.core :only (interval date-time)]))
 
 (deftest wrap-cookies-basic-cookie
   (let [req  {:headers {"cookie" "a=b"}}
@@ -88,3 +89,57 @@
   (let [response {:cookies {"a" {:value "foo" :invalid true}}}
         handler  (wrap-cookies (constantly response))]
     (is (thrown? AssertionError (handler {})))))
+
+(deftest wrap-cookies-accepts-max-age
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :max-age 123}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})]
+    (is (= {"Set-Cookie" (list "a=b;Path=/;Secure;HttpOnly;Max-Age=123")}
+           (:headers resp)))))
+
+(deftest wrap-cookies-accepts-expires
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :expires "123"}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})]
+    (is (= {"Set-Cookie" (list "a=b;Path=/;Secure;HttpOnly;Expires=123")}
+           (:headers resp)))))
+
+(deftest wrap-cookies-accepts-max-age-from-clj-time
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :max-age (interval (date-time 2012)
+                                         (date-time 2015))}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})
+        max-age 94694400]
+    (is (= {"Set-Cookie" (list (str "a=b;Path=/;Secure;HttpOnly;Max-Age=" max-age))}
+           (:headers resp)))))
+
+(deftest wrap-cookies-accepts-expires-from-clj-time
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :expires (date-time 2015 12 31)}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})
+        expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+    (is (= {"Set-Cookie" (list (str "a=b;Path=/;Secure;HttpOnly;Expires=" expires))}
+           (:headers resp)))))
+
+(deftest wrap-cookies-throws-exception-when-not-using-intervals-correctly
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :expires (interval (date-time 2012)
+                                         (date-time 2015))}}
+        handler (constantly {:cookies cookies})]
+    (is (thrown? AssertionError ((wrap-cookies handler) {})))))
+
+(deftest wrap-cookies-throws-exception-when-not-using-datetime-correctly
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :max-age (date-time 2015 12 31)}}
+        handler (constantly {:cookies cookies})]
+    (is (thrown? AssertionError ((wrap-cookies handler) {})))))
