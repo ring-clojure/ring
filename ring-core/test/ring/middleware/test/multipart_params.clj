@@ -1,7 +1,7 @@
 (ns ring.middleware.test.multipart-params
   (:use clojure.test
         ring.middleware.multipart-params
-        ring.util.test)
+        [ring.util.io :only (string-input-stream)])
   (:import java.io.InputStream))
 
 (defn string-store [item]

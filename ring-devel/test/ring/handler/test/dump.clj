@@ -1,12 +1,12 @@
 (ns ring.handler.test.dump
   (:use clojure.test
-        ring.handler.dump)
-  (:require [ring.util.test :as tu]))
+        [ring.util.io :only (string-input-stream)]
+        ring.handler.dump))
 
 (def post-req
   {:uri            "/foo/bar"
    :request-method :post
-   :body           (tu/string-input-stream "post body")})
+   :body           (string-input-stream "post body")})
 
 (def get-req
   {:uri            "/foo/bar"

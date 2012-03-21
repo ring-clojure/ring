@@ -1,6 +1,6 @@
 (ns ring.middleware.test.resource
   (:use clojure.test
-        ring.util.test
+        [ring.util.io :only (string-input-stream)]
         ring.middleware.resource))
 
 (defn test-handler [request]

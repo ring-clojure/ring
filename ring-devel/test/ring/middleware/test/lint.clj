@@ -1,7 +1,7 @@
 (ns ring.middleware.test.lint
   (:use clojure.test
+        [ring.util.io :only (string-input-stream)]
         ring.middleware.lint)
-  (:require [ring.util.test :as tu])
   (:import (java.io File InputStream)))
 
 (def valid-request
@@ -110,7 +110,7 @@
   [nil {:foo "bar"} {"bar" :foo} {"Bar" "foo"}])
 
 (lints-req :body
-  [nil (tu/string-input-stream "thebody")]
+  [nil (string-input-stream "thebody")]
   ["thebody" :thebody])
 
 
@@ -123,5 +123,5 @@
   [nil {:foo "bar"} {"foo" :bar} {"dir" 123}])
 
 (lints-resp :body
-  [nil "thebody" (list "foo" "bar") (tu/string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
+  [nil "thebody" (list "foo" "bar") (string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
   [123 :thebody])

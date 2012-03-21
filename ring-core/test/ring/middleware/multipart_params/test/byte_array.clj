@@ -1,6 +1,6 @@
 (ns ring.middleware.multipart-params.test.byte-array
   (:use clojure.test
-        ring.util.test
+        [ring.util.io :only (string-input-stream)]
         ring.middleware.multipart-params.byte-array))
 
 (deftest test-byte-array-store
