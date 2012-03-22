@@ -17,3 +17,11 @@
 (deftest test-base64-encoding
   (let [str-bytes (.getBytes "foo?/+" "UTF-8")]
     (is (Arrays/equals str-bytes (base64-decode (base64-encode str-bytes))))))
+
+(deftest form-encoding
+  (let [encoded-params "p%2F1=v%2F1&p%2F2=v%2F21&p%2F2=v%2F22"]
+    (is (= (form-decode encoded-params)
+           (-> encoded-params
+               form-decode
+               form-encode
+               form-decode)))))
