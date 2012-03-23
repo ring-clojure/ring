@@ -1,24 +1,53 @@
 (ns ring.util.codec
   "Encoding and decoding utilities."
   (:use ring.util.data)
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as str])
   (:import java.io.File
            (java.net URLEncoder URLDecoder)
            org.apache.commons.codec.binary.Base64))
+
+(defn- double-escape [^String x]
+  (.replace x "\\" "\\\\"))
+
+(defn percent-encode
+  "Percent-encode every character in the given string using either the specified
+  encoding, or UTF-8 by default."
+  [unencoded & [encoding]]
+  (->> (.getBytes unencoded (or encoding "UTF-8"))
+       (map (partial format "%%%02X"))
+       (str/join)))
+
+(defn- parse-bytes [encoded-bytes]
+  (->> (re-seq #"%.." encoded-bytes)
+       (map #(subs % 1))
+       (map #(.byteValue (Integer/parseInt % 16)))
+       (byte-array)))
+
+(defn percent-decode
+  "Decode every percent-encoded character in the given string using the
+  specified encoding, or UTF-8 by default."
+  [encoded & [encoding]]
+  (str/replace encoded
+               #"(?:%..)+"
+               (fn [chars]
+                 (-> (parse-bytes chars)
+                     (String. (or encoding "UTF-8"))
+                     (double-escape)))))
 
 (defn url-encode
   "Returns the url-encoded version of the given string, using either a specified
   encoding or UTF-8 by default."
   [unencoded & [encoding]]
-  (URLEncoder/encode unencoded (or encoding "UTF-8")))
+  (str/replace
+    unencoded
+    #"[^A-Za-z0-9_~.+-]+"
+    #(double-escape (percent-encode % encoding))))
 
 (defn url-decode
   "Returns the url-decoded version of the given string, using either a specified
   encoding or UTF-8 by default. If the encoding is invalid, nil is returned."
   [encoded & [encoding]]
-  (try
-    (URLDecoder/decode encoded (or encoding "UTF-8"))
-    (catch Exception e nil)))
+  (percent-decode encoded encoding))
 
 (defn base64-encode
   "Encode an array of bytes into a base64 encoded string."
@@ -43,7 +72,7 @@
                   (url-decode (or val "") encoding))
           param-map))
       {}
-      (string/split param-string #"&"))))
+      (str/split param-string #"&"))))
 
 (defn form-encode
   "Encode parameters from a map into a string."
@@ -54,7 +83,7 @@
                   (vals param-map)
                   encoding))
   ([params values encoding]
-     (string/join #"&"
+     (str/join #"&"
                   (map (fn [param value]
                          (if (vector? value)
                            (form-encode (repeat (count value) param)
