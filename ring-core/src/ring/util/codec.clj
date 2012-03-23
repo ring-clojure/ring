@@ -1,19 +1,20 @@
 (ns ring.util.codec
   "Encoding and decoding utilities."
+  (:use ring.util.data)
+  (:require [clojure.string :as string])
   (:import java.io.File
            (java.net URLEncoder URLDecoder)
-           org.apache.commons.codec.binary.Base64)
-  (:require [clojure.string :as string]))
+           org.apache.commons.codec.binary.Base64))
 
 (defn url-encode
-  "Returns the form-url-encoded version of the given string, using either a
-  specified encoding or UTF-8 by default."
+  "Returns the url-encoded version of the given string, using either a specified
+  encoding or UTF-8 by default."
   [unencoded & [encoding]]
   (URLEncoder/encode unencoded (or encoding "UTF-8")))
 
 (defn url-decode
-  "Returns the form-url-decoded version of the given string, using either a
-  specified encoding or UTF-8 by default."
+  "Returns the url-decoded version of the given string, using either a specified
+  encoding or UTF-8 by default. If the encoding is invalid, nil is returned."
   [encoded & [encoding]]
   (try
     (URLDecoder/decode encoded (or encoding "UTF-8"))
@@ -29,17 +30,6 @@
   [^String encoded]
   (Base64/decodeBase64 (.getBytes encoded)))
 
-(defn assoc-param
-  "Associate a key with a value. If the key already exists in the map,
-  create a vector of values."
-  [map key val]
-  (assoc map key
-    (if-let [cur (map key)]
-      (if (vector? cur)
-        (conj cur val)
-        [cur val])
-      val)))
-
 (defn form-decode
   "Parse parameters from a string into a map."
   ([^String param-string]
@@ -48,9 +38,9 @@
      (reduce
       (fn [param-map encoded-param]
         (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
-          (assoc-param param-map
-                       (url-decode key encoding)
-                       (url-decode (or val "") encoding))
+          (assoc+ param-map
+                  (url-decode key encoding)
+                  (url-decode (or val "") encoding))
           param-map))
       {}
       (string/split param-string #"&"))))

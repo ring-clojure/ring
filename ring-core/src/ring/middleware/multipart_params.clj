@@ -1,6 +1,6 @@
 (ns ring.middleware.multipart-params
   "Parse multipart upload into params."
-  (:use [ring.util.codec :only (assoc-param)])
+  (:use [ring.util.data :only (assoc+)])
   (:import [org.apache.commons.fileupload.util Streams]
            [org.apache.commons.fileupload
              RequestContext
@@ -54,7 +54,7 @@
   (->> (request-context request encoding)
        (file-item-seq)
        (map #(parse-file-item % store))
-       (reduce (fn [m [k v]] (assoc-param m k v)) {})))
+       (reduce (fn [m [k v]] (assoc+ m k v)) {})))
 
 (defn- load-var
   "Returns the var named by the supplied symbol, or nil if not found. Attempts
