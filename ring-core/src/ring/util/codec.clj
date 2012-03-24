@@ -3,6 +3,7 @@
   (:use ring.util.data)
   (:require [clojure.string :as str])
   (:import java.io.File
+           java.util.Map
            (java.net URLEncoder URLDecoder)
            org.apache.commons.codec.binary.Base64))
 
@@ -59,6 +60,35 @@
   [^String encoded]
   (Base64/decodeBase64 (.getBytes encoded)))
 
+(defprotocol FormEncodeable
+  (form-encode* [x encoding]))
+
+(defn form-encode
+  "Encode the supplied value into www-form-urlencoded format, often used in
+  URL query strings and POST request bodies, using the specified encoding.
+  If the encoding is not specified, it defaults to UTF-8"
+  [x & [encoding]]
+  (form-encode* x (or encoding "UTF-8")))
+
+(extend-protocol FormEncodeable
+  String
+  (form-encode* [unencoded encoding]
+    (URLEncoder/encode unencoded encoding))
+  Map
+  (form-encode* [params encoding]
+    (letfn [(encode [x] (form-encode x encoding))
+            (encode-param [[k v]] (str (encode (name k)) "=" (encode v)))]
+      (->> params
+           (mapcat
+            (fn [[k v]]
+              (if (or (seq? v) (sequential? v) )
+                (map #(encode-param [k %]) v)
+                [(encode-param [k v])])))
+           (str/join "&"))))
+  Object
+  (form-encode* [x encoding]
+    (form-encode* (str x) encoding)))
+
 (defn form-decode
   "Parse parameters from a string into a map."
   ([^String param-string]
@@ -73,23 +103,3 @@
           param-map))
       {}
       (str/split param-string #"&"))))
-
-(defn form-encode
-  "Encode parameters from a map into a string."
-  ([param-map]
-     (form-encode param-map "UTF-8"))
-  ([param-map encoding]
-     (form-encode (keys param-map)
-                  (vals param-map)
-                  encoding))
-  ([params values encoding]
-     (str/join #"&"
-                  (map (fn [param value]
-                         (if (vector? value)
-                           (form-encode (repeat (count value) param)
-                                        value
-                                        encoding)
-                           (str (url-encode param)
-                                "="
-                                (url-encode value))))
-                       params values))))

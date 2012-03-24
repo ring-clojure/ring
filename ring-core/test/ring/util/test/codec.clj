@@ -28,6 +28,22 @@
   (let [str-bytes (.getBytes "foo?/+" "UTF-8")]
     (is (Arrays/equals str-bytes (base64-decode (base64-encode str-bytes))))))
 
+(deftest test-form-encode
+  (testing "strings"
+    (are [x y] (= (form-encode x) y)
+      "foo bar" "foo+bar"
+      "foo+bar" "foo%2Bbar"
+      "foo/bar" "foo%2Fbar")
+    (is (= (form-encode "foo/bar" "UTF-16") "foo%FE%FF%00%2Fbar")))
+  (testing "maps"
+    (are [x y] (= (form-encode x) y)
+      {"a" "b"} "a=b"
+      {:a "b"}  "a=b"
+      {"a" 1}   "a=1"
+      {"a" "b" "c" "d"} "a=b&c=d"
+      {"a" "b c"}       "a=b+c")
+    (is (= (form-encode {"a" "foo/bar"} "UTF-16") "a=foo%FE%FF%00%2Fbar"))))
+
 (deftest form-encoding
   (let [encoded-params "p%2F1=v%2F1&p%2F2=v%2F21&p%2F2=v%2F22"]
     (is (= (form-decode encoded-params)
