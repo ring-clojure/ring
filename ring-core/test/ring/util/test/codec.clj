@@ -44,10 +44,13 @@
       {"a" "b c"}       "a=b+c")
     (is (= (form-encode {"a" "foo/bar"} "UTF-16") "a=foo%FE%FF%00%2Fbar"))))
 
-(deftest form-encoding
-  (let [encoded-params "p%2F1=v%2F1&p%2F2=v%2F21&p%2F2=v%2F22"]
-    (is (= (form-decode encoded-params)
-           (-> encoded-params
-               form-decode
-               form-encode
-               form-decode)))))
+(deftest test-form-decode
+  (are [x y] (= (form-decode x) y)
+    "foo"     "foo"
+    "a=b"     {"a" "b"}
+    "a=b&c=d" {"a" "b" "c" "d"}
+    "foo+bar" "foo bar"
+    "a=b+c"   {"a" "b c"}
+    "a=b%2Fc" {"a" "b/c"})
+  (is (= (form-decode "a=foo%FE%FF%00%2Fbar" "UTF-16")
+         {"a" "foo/bar"})))

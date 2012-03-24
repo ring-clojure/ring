@@ -90,16 +90,17 @@
     (form-encode* (str x) encoding)))
 
 (defn form-decode
-  "Parse parameters from a string into a map."
-  ([^String param-string]
-     (form-decode param-string "UTF-8"))
-  ([^String param-string encoding]
-     (reduce
-      (fn [param-map encoded-param]
-        (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" encoded-param)]
-          (assoc+ param-map
-                  (url-decode key encoding)
-                  (url-decode (or val "") encoding))
-          param-map))
-      {}
-      (str/split param-string #"&"))))
+  "Decode the supplied www-form-urlencoded string using the specified encoding,
+  or UTF-8 by default. If the encoded value is a string, a string is returned.
+  If the encoded value is a map of parameters, a map is returned."
+  [^String encoded & [encoding]]
+  (letfn [(decode [s] (URLDecoder/decode s (or encoding "UTF-8")))]
+    (if-not (.contains encoded "=")
+      (decode encoded)
+      (reduce
+       (fn [m param]
+         (if-let [[k v] (str/split param #"=" 2)]
+           (assoc+ m (decode k) (decode v))
+           m))
+       {}
+       (str/split encoded #"&")))))
