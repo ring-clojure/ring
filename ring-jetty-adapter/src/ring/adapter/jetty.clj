@@ -77,12 +77,12 @@
                   :want or :none (defaults to :none)"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))]
-    (when-let [configurator (:configurator options)]
-      (configurator s))
     (doto s
       (.setHandler (proxy-handler handler))
-      (.setThreadPool (QueuedThreadPool. (options :max-threads 50)))
-      (.start))
+      (.setThreadPool (QueuedThreadPool. (options :max-threads 50))))
+    (when-let [configurator (:configurator options)]
+      (configurator s))
+    (.start s)
     (when (:join? options true)
       (.join s))
     s))
