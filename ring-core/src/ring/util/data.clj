@@ -1,7 +1,7 @@
 (ns ring.util.data
   "Miscellaneous functions for manipulating data structures.")
 
-(defn assoc+
+(defn assoc-conj
   "Associate a key with a value in a map. If the key already exists in the map,
   a vector of values is associated with the key."
   [map key val]

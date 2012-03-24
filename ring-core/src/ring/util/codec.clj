@@ -107,7 +107,7 @@
     (reduce
      (fn [m param]
        (if-let [[k v] (str/split param #"=" 2)]
-         (assoc+ m (form-decode-str k encoding) (form-decode-str v encoding))
+         (assoc-conj m (form-decode-str k encoding) (form-decode-str v encoding))
          m))
      {}
      (str/split encoded #"&"))))
