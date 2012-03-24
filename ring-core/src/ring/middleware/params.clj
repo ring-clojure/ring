@@ -2,12 +2,16 @@
   "Parse form and query params."
   (:require [ring.util.codec :as codec]))
 
+(defn- parse-params [params encoding]
+  (let [params (codec/form-decode params encoding)]
+    (if (map? params) params {})))
+
 (defn- assoc-query-params
   "Parse and assoc parameters from the query string with the request."
   [request encoding]
   (merge-with merge request
     (if-let [query-string (:query-string request)]
-      (let [params (codec/form-decode query-string encoding)]
+      (let [params (parse-params query-string encoding)]
         {:query-params params, :params params})
       {:query-params {}, :params {}})))
 
@@ -22,7 +26,7 @@
   [request encoding]
   (merge-with merge request
     (if-let [body (and (urlencoded-form? request) (:body request))]
-      (let [params (codec/form-decode (slurp body :encoding encoding) encoding)]
+      (let [params (parse-params (slurp body :encoding encoding) encoding)]
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
 

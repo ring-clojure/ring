@@ -44,6 +44,10 @@
       {"a" "b c"}       "a=b+c")
     (is (= (form-encode {"a" "foo/bar"} "UTF-16") "a=foo%FE%FF%00%2Fbar"))))
 
+(deftest test-form-decode-str
+  (is (= (form-decode-str "foo=bar+baz") "foo=bar baz"))
+  (is (nil? (form-decode-str "%D"))))
+
 (deftest test-form-decode
   (are [x y] (= (form-decode x) y)
     "foo"     "foo"

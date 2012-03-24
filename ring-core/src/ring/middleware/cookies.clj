@@ -50,7 +50,7 @@
   [cookies]
   (remove nil?
     (for [[name value] cookies]
-      (if-let [value (codec/url-decode value)]
+      (if-let [value (codec/form-decode-str value)]
         (if (.startsWith ^String value "\"")
           [name (read-string value)]
           [name value])))))
@@ -88,7 +88,7 @@
 (defn- write-value
   "Write the main cookie value."
   [key value]
-  (str (name key) "=" (codec/url-encode value)))
+  (codec/form-encode {key value}))
 
 (defn- valid-attr?
   "Is the attribute valid?"

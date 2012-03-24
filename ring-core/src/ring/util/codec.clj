@@ -63,20 +63,13 @@
 (defprotocol FormEncodeable
   (form-encode* [x encoding]))
 
-(defn form-encode
-  "Encode the supplied value into www-form-urlencoded format, often used in
-  URL query strings and POST request bodies, using the specified encoding.
-  If the encoding is not specified, it defaults to UTF-8"
-  [x & [encoding]]
-  (form-encode* x (or encoding "UTF-8")))
-
 (extend-protocol FormEncodeable
   String
   (form-encode* [unencoded encoding]
     (URLEncoder/encode unencoded encoding))
   Map
   (form-encode* [params encoding]
-    (letfn [(encode [x] (form-encode x encoding))
+    (letfn [(encode [x] (form-encode* x encoding))
             (encode-param [[k v]] (str (encode (name k)) "=" (encode v)))]
       (->> params
            (mapcat
@@ -89,18 +82,32 @@
   (form-encode* [x encoding]
     (form-encode* (str x) encoding)))
 
+(defn form-encode
+  "Encode the supplied value into www-form-urlencoded format, often used in
+  URL query strings and POST request bodies, using the specified encoding.
+  If the encoding is not specified, it defaults to UTF-8"
+  [x & [encoding]]
+  (form-encode* x (or encoding "UTF-8")))
+
+(defn form-decode-str
+  "Decode the supplied www-form-urlencoded string using the specified encoding,
+  or UTF-8 by default."
+  [^String encoded & [encoding]]
+  (try
+    (URLDecoder/decode encoded (or encoding "UTF-8"))
+    (catch Exception _ nil)))
+
 (defn form-decode
   "Decode the supplied www-form-urlencoded string using the specified encoding,
   or UTF-8 by default. If the encoded value is a string, a string is returned.
   If the encoded value is a map of parameters, a map is returned."
-  [^String encoded & [encoding]]
-  (letfn [(decode [s] (URLDecoder/decode s (or encoding "UTF-8")))]
-    (if-not (.contains encoded "=")
-      (decode encoded)
-      (reduce
-       (fn [m param]
-         (if-let [[k v] (str/split param #"=" 2)]
-           (assoc+ m (decode k) (decode v))
-           m))
-       {}
-       (str/split encoded #"&")))))
+  [encoded & [encoding]]
+  (if-not (.contains encoded "=")
+    (form-decode-str encoded encoding)
+    (reduce
+     (fn [m param]
+       (if-let [[k v] (str/split param #"=" 2)]
+         (assoc+ m (form-decode-str k encoding) (form-decode-str v encoding))
+         m))
+     {}
+     (str/split encoded #"&"))))
