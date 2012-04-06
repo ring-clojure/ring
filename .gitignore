@@ -8,3 +8,4 @@ autodoc
 .lein-failures
 doc
 .lein-deps-sum
+.lein-env
