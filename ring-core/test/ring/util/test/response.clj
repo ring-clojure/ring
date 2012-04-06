@@ -28,6 +28,18 @@
          (content-type {:status 200 :headers {"Content-Length" "10"}}
                        "text/html"))))
 
+(deftest test-charset
+  (testing "add charset"
+    (is (= (charset {:status 200 :headers {"Content-Type" "text/html"}} "UTF-8")
+           {:status 200 :headers {"Content-Type" "text/html; charset=UTF-8"}})))
+  (testing "replace existing charset"
+    (is (= (charset {:status 200 :headers {"Content-Type" "text/html; charset=UTF-16"}}
+                    "UTF-8")
+           {:status 200 :headers {"Content-Type" "text/html; charset=UTF-8"}})))
+  (testing "default content-type"
+    (is (= (charset {:status 200 :headers {}} "UTF-8")
+           {:status 200 :headers {"Content-Type" "text/plain; charset=UTF-8"}}))))
+
 (deftest test-header
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
          (header {:status 200 :headers {}} "X-Foo" "Bar"))))

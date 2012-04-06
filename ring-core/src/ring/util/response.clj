@@ -123,6 +123,16 @@
   [resp content-type]
   (header resp "Content-Type" content-type))
 
+(defn charset
+  "Returns an updated Ring response with the supplied charset added to the
+  Content-Type header."
+  [resp charset]
+  (update-in resp [:headers "Content-Type"]
+    (fn [content-type]
+      (-> (or content-type "text/plain")
+          (str/replace #";\s*charset=[^;]*" "")
+          (str "; charset=" charset)))))
+
 (defn set-cookie
   "Sets a cookie on the response. Requires the handler to be wrapped in the
   wrap-cookies middleware."
