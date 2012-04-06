@@ -1,4 +1,4 @@
-(defproject ring/ring-core "1.1.0-beta2"
+(defproject ring/ring-core "1.1.0-beta3"
   :description "Ring core libraries."
   :url "http://github.com/mmcgrana/ring"
   :dependencies [[org.clojure/clojure "1.2.1"]

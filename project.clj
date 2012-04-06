@@ -1,11 +1,11 @@
-(defproject ring "1.1.0-beta2"
+(defproject ring "1.1.0-beta3"
   :description "A Clojure web applications library."
   :url "http://github.com/mmcgrana/ring"
   :dependencies
-    [[ring/ring-core "1.1.0-beta2"]
-     [ring/ring-devel "1.1.0-beta2"]
-     [ring/ring-jetty-adapter "1.1.0-beta2"]
-     [ring/ring-servlet "1.1.0-beta2"]]
+    [[ring/ring-core "1.1.0-beta3"]
+     [ring/ring-devel "1.1.0-beta3"]
+     [ring/ring-jetty-adapter "1.1.0-beta3"]
+     [ring/ring-servlet "1.1.0-beta3"]]
   :plugins
     [[lein-sub "0.2.0"]
      [codox "0.6.0"]]
