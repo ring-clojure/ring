@@ -39,6 +39,13 @@
   (.startsWith (.getCanonicalPath (File. root path))
                (.getCanonicalPath (File. root))))
 
+(defn- directory-transversal?
+  "Check if a path contains '..'."
+  [^String path]
+  (-> (str/split path #"/|\\")
+      (set)
+      (contains? "..")))
+
 (defn- find-index-file
   "Search the directory for an index file."
   [^File dir]
@@ -52,7 +59,9 @@
   explanation of options."
   [^String path opts]
   (if-let [^File file (if-let [^String root (:root opts)]
-                  (and (safe-path? root path) (File. root path))
+                        (if (or (safe-path? root path) 
+                                (and (:allow-symlinks? opts) (not (directory-transversal? path))))
+                          (File. root path))
                   (File. path))]
     (cond
       (.isDirectory file)
@@ -64,8 +73,9 @@
   "Returns a Ring response to serve a static file, or nil if an appropriate
   file does not exist.
   Options:
-    :root         - take the filepath relative to this root path
-    :index-files? - look for index.* files in directories, defaults to true"
+    :root            - take the filepath relative to this root path
+    :index-files?    - look for index.* files in directories, defaults to true
+    :allow-symlinks? - serve files through symbolic links, defaults to false"
   [filepath & [opts]]
   (if-let [file (get-file filepath opts)]
     (response file)))

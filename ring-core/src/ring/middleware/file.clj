@@ -20,7 +20,7 @@
   to the ring.util.response/file-response function."
   [app ^String root-path & [opts]]
   (ensure-dir root-path)
-  (let [opts (merge {:root root-path, :index-files? true} opts)]
+  (let [opts (merge {:root root-path, :index-files? true, :allow-symlinks? false} opts)]
     (fn [req]
       (if-not (= :get (:request-method req))
         (app req)
