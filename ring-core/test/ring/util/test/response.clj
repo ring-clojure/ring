@@ -104,6 +104,25 @@
       (is (= (slurp (:body resp))
              "Hello World\n")))))
 
+(deftest test-file-response
+  (testing "response map"
+    (let [resp (file-response "foo.html" {:root "test/ring/assets"})]
+      (is (= (resp :status) 200))
+      (is (= (resp :headers) {}))
+      (is (= (slurp (resp :body)) "foo"))))
+
+  (testing "file path cannot contain '..' "
+    (is (nil? (file-response "../../../project.clj" {:root "test/ring/assets"})))
+    (is (nil? (file-response "../../../project.clj" {:root "test/ring/assets/bars" :allow-symlinks? true}))))
+
+  (testing "file response optionally follows symlinks"
+    (let [resp (file-response "backlink/foo.html" {:root "test/ring/assets/bars" :allow-symlinks? true})]
+      (is (= (resp :status) 200))
+      (is (= (resp :headers) {}))
+      (is (= (slurp (resp :body)) "foo")))
+    
+    (is (nil? (file-response "backlink/foo.html" {:root "test/ring/assets/bars"})))))
+
 (deftest test-set-cookie
   (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar"}}}
          (set-cookie {:status 200 :headers {}}
