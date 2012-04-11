@@ -87,6 +87,3 @@
   (-> handler
       wrap-stacktrace-log
       wrap-stacktrace-web))
-
-(def ^{:private true} css "
-")
