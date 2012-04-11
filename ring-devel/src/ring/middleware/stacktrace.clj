@@ -37,7 +37,7 @@
     (html5
       [:head
         [:title "Ring: Stacktrace"]
-        (style-resource "css/stacktrace.css")]
+        (style-resource "ring/css/stacktrace.css")]
       [:body
         [:div#exception
           [:h3.info (h (str ex))]
