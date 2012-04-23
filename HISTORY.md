@@ -1,3 +1,20 @@
+## 1.1.0 (2012-04-23)
+
+* Support for SSL client certificates in Jetty adapter
+* Jetty adapter dependency upgraded to 7.6.1
+* wrap-cookies support for Joda-Time objects in expires and max-age attributes
+* Added wrap-head middleware
+* wrap-file middleware has option to follow symlinks
+* Added form-encode and form-decode to ring.util.codec
+* Fixed url-encode and url-decode to handle "+" correctly
+* Added ring.util.io namespace
+* Deprecated ring.util.test namespace
+* Hiccup ring-devel dependency upgraded to 1.0.0
+* Added more functions to ring.util.response
+* Default number of Jetty adapter threads is now 50
+* Support for KeyStore instances in Jetty adapter
+* Jetty configurator option now always applied last
+
 ## 1.0.2 (2012-01-25)
 
 * Updated clj-stacktrace to 0.2.4 to fix swank-clojure issue
