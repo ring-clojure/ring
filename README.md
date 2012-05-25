@@ -9,7 +9,7 @@ servers, and web frameworks.
 The [SPEC][1] file at the root of this distribution for provides a
 complete description of the Ring interface.
 
-[1]: https://github.com/mmcgrana/ring/blob/master/SPEC
+[1]: https://github.com/ring-clojure/ring/blob/master/SPEC
 
 ## Libraries
 
@@ -31,8 +31,8 @@ To include all of them:
 
 ## Documentation
 
-* [Wiki](https://github.com/mmcgrana/ring/wiki)
-* [API docs](http://mmcgrana.github.com/ring)
+* [Wiki](https://github.com/ring-clojure/ring/wiki)
+* [API docs](http://ring-clojure.github.com/ring)
 
 ## Community
 
