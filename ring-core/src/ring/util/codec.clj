@@ -8,7 +8,7 @@
            org.apache.commons.codec.binary.Base64))
 
 (defn- double-escape [^String x]
-  (.replace x "\\" "\\\\"))
+  (.replace (.replace x "\\" "\\\\") "$" "\\$"))
 
 (defn percent-encode
   "Percent-encode every character in the given string using either the specified
