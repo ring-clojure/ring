@@ -1,6 +1,6 @@
 (defproject ring/ring-core "1.1.0"
   :description "Ring core libraries."
-  :url "http://github.com/mmcgrana/ring"
+  :url "https://github.com/ring-clojure/ring"
   :dependencies [[org.clojure/clojure "1.2.1"]
                  [commons-codec "1.6"]
                  [commons-io "2.1"]

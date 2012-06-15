@@ -1,6 +1,6 @@
 (defproject ring "1.1.0"
   :description "A Clojure web applications library."
-  :url "http://github.com/mmcgrana/ring"
+  :url "https://github.com/ring-clojure/ring"
   :dependencies
     [[ring/ring-core "1.1.0"]
      [ring/ring-devel "1.1.0"]

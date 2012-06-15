@@ -1,6 +1,6 @@
 (defproject ring/ring-jetty-adapter "1.1.0"
   :description "Ring Jetty adapter."
-  :url "http://github.com/mmcgrana/ring"
+  :url "https://github.com/ring-clojure/ring"
   :dependencies [[ring/ring-core "1.1.0"]
                  [ring/ring-servlet "1.1.0"]
                  [org.eclipse.jetty/jetty-server "7.6.1.v20120215"]]
