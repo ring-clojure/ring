@@ -31,7 +31,7 @@
     (when (options :truststore)
       (.setTrustStore context (options :truststore)))
     (when (options :trust-password)
-      (.setTrustPassword context (options :trust-password)))
+      (.setTrustStorePassword context (options :trust-password)))
     (case (options :client-auth)
       :need (.setNeedClientAuth context true)
       :want (.setWantClientAuth context true)
