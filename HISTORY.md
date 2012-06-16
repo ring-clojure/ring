@@ -1,3 +1,8 @@
+## 1.1.1 (2012-06-16)
+
+* Fixed bug with url-decoding "$"
+* Fixed bug with trust-store password
+
 ## 1.1.0 (2012-04-23)
 
 * Support for SSL client certificates in Jetty adapter
