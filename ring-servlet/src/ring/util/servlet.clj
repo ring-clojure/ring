@@ -83,18 +83,23 @@
   (when-let [charset (get-charset content-type)]
     (.setCharacterEncoding response charset)))
 
+(defmulti set-header (fn [_ key _] key))
+
+(defmethod set-header :default [^HttpServletResponse response key val-or-vals]
+  (if (string? val-or-vals)
+    (.setHeader response key val-or-vals)
+    (doseq [val val-or-vals]
+      (.addHeader response key val))))
+
+(defmethod set-header "Content-Type" [^HttpServletResponse response key val]
+  (set-character-encoding response val)
+  (set-content-type response val))
+
 (defn set-headers
   "Update a HttpServletResponse with a map of headers."
   [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
-    (if (string? val-or-vals)
-      (.setHeader response key val-or-vals)
-      (doseq [val val-or-vals]
-        (.addHeader response key val))))
-  ; Some headers must be set through specific methods
-  (when-let [content-type (get headers "Content-Type")]
-    (set-character-encoding response content-type)
-    (set-content-type response content-type)))
+    (set-header response key val-or-vals)))
 
 (defn- set-body
   "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
