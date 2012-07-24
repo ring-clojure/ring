@@ -17,6 +17,7 @@
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (when response-map
+          (.setCharacterEncoding response "UTF-8")
           (servlet/update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
