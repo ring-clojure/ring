@@ -62,8 +62,8 @@
         (is (= (get-in response [:headers "content-type"])
                "text/plain;charset=UTF-8")))))
 
-  (testing "custom character encoding"
-    (with-server (content-type-handler "text/plain;charset=US-ASCII") {:port 4347}
+  (testing "custom content-type"
+    (with-server (content-type-handler "text/plain;charset=UTF-16;version=1") {:port 4347}
       (let [response (http/get "http://localhost:4347")]
         (is (= (get-in response [:headers "content-type"])
-               "text/plain;charset=US-ASCII"))))))
+               "text/plain;charset=UTF-16;version=1"))))))
