@@ -33,8 +33,6 @@
       (swap! response assoc :status status))
     (setHeader [name value]
       (swap! response assoc-in [:headers name] value))
-    (setCharacterEncoding [value]
-      (swap! response assoc :character-encoding value))
     (setContentType [value]
       (swap! response assoc :content-type value))))
 
@@ -94,13 +92,4 @@
         (run-servlet handler request response)
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
-        (is (= (@response :character-encoding) "UTF-8"))
-        (is (= (get-in @response [:headers "X-Server"]) "Bar"))))
-    (testing "response with character encoding"
-      (letfn [(handler [r]
-               {:status  200
-                :headers {"Content-Type" "text/plain; charset=utf-16"}
-                :body    nil})]
-        (run-servlet handler request response)
-        (is (= (@response :content-type) "text/plain"))
-        (is (= (@response :character-encoding) "utf-16"))))))
+        (is (= (get-in @response [:headers "X-Server"]) "Bar"))))))
