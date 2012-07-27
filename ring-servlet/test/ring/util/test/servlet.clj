@@ -33,6 +33,7 @@
       (swap! response assoc :status status))
     (setHeader [name value]
       (swap! response assoc-in [:headers name] value))
+    (setCharacterEncoding [value])
     (setContentType [value]
       (swap! response assoc :content-type value))))
 
