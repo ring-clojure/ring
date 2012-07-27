@@ -11,6 +11,12 @@
    :headers {"Content-Type" "text/plain"}
    :body    "Hello World"})
 
+(defn- content-type-handler [content-type]
+  (constantly
+   {:status  200
+    :headers {"Content-Type" content-type}
+    :body    ""}))
+
 (defmacro with-server [app options & body]
   `(let [server# (run-jetty ~app ~(assoc options :join? false))]
      (try
@@ -37,25 +43,27 @@
 
   (testing "configurator set to run last"
     (let [max-threads 20 
-          new-handler  (proxy [AbstractHandler] [] (handle [_ ^Request base-request request response]))
+          new-handler  (proxy [AbstractHandler] []
+                         (handle [_ ^Request base-request request response]))
           threadPool (QueuedThreadPool. ({} :max-threads max-threads))
-          configurator (fn [server] (.setThreadPool server threadPool) (.setHandler server new-handler))
-          server (run-jetty hello-world {:join? false :port 4347 :configurator configurator})]
+          configurator (fn [server]
+                         (.setThreadPool server threadPool)
+                         (.setHandler server new-handler))
+          server (run-jetty hello-world
+                            {:join? false :port 4347 :configurator configurator})]
       (is (= (.getMaxThreads (.getThreadPool server)) max-threads))
       (is (identical? new-handler (.getHandler server)))
       (is (= 1 (count (.getHandlers server))))
-      (.stop server))))
-
-(deftest test-character-encoding
-  (defn- test-app [content-type]
-    (constantly {:status 200 :headers {"Content-Type" content-type} :body ""}))
+      (.stop server)))
 
   (testing "default character encoding"
-    (with-server (test-app "text/plain") {:port 4347}
+    (with-server (content-type-handler "text/plain") {:port 4347}
       (let [response (http/get "http://localhost:4347")]
-        (is (= (get-in response [:headers "content-type"]) "text/plain;charset=UTF-8")))))
+        (is (= (get-in response [:headers "content-type"])
+               "text/plain;charset=UTF-8")))))
 
   (testing "custom character encoding"
-    (with-server (test-app "text/plain;charset=US-ASCII") {:port 4347}
+    (with-server (content-type-handler "text/plain;charset=US-ASCII") {:port 4347}
       (let [response (http/get "http://localhost:4347")]
-        (is (= (get-in response [:headers "content-type"]) "text/plain;charset=US-ASCII"))))))
+        (is (= (get-in response [:headers "content-type"])
+               "text/plain;charset=US-ASCII"))))))
