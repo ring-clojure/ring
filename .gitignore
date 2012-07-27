@@ -10,3 +10,4 @@ doc
 .lein-deps-sum
 .lein-env
 target
+checkouts
