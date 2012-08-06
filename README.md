@@ -6,7 +6,7 @@ unified API, Ring allows web applications to be constructed of modular
 components that can be shared among a variety of applications, web
 servers, and web frameworks.
 
-The [SPEC][1] file at the root of this distribution for provides a
+The [SPEC][1] file at the root of this distribution provides a
 complete description of the Ring interface.
 
 [1]: https://github.com/ring-clojure/ring/blob/master/SPEC
