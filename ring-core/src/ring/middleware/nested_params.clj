@@ -7,9 +7,11 @@
     \"foo[bar][][baz]\"
     => [\"foo\" \"bar\" \"\" \"baz\"]"
   [param-name]
-  (let [[_ k ks] (re-matches #"(.*?)((?:\[.*?\])*)" (name param-name))
-        keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
-    (cons k keys)))
+  (if (= (first param-name) \[)
+    (read-string param-name)
+    (let [[_ k ks] (re-matches #"(.*?)((?:\[.*?\])*)" (name param-name))
+          keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
+      (cons k keys))))
 
 (defn- assoc-nested
   "Similar to assoc-in, but treats values of blank keys as elements in a
@@ -18,9 +20,16 @@
   (conj m
         (if k
           (if-let [[j & js] ks]
-            (if (= j "")
-              {k (assoc-nested (get m k []) js v)}
-              {k (assoc-nested (get m k {}) ks v)})
+            (cond
+             (number? j) (let [nested-vec (get m k [])
+                               nested-cnt (count nested-vec)
+                               nested-vec (if (< j nested-cnt)
+                                            nested-vec
+                                            (into nested-vec (repeat (inc (- j nested-cnt)) nil)))
+                               nested-vec (update-in nested-vec [j] (fnil assoc-nested {}) js v)]
+                           {k nested-vec})
+             (= j "") {k (assoc-nested (get m k []) js v)}
+             :else {k (assoc-nested (get m k {}) ks v)})
             {k v})
           v)))
 
