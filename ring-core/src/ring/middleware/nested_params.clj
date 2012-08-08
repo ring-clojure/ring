@@ -5,7 +5,12 @@
   "Parse a parameter name into a list of keys using a 'C'-like index
   notation. e.g.
     \"foo[bar][][baz]\"
-    => [\"foo\" \"bar\" \"\" \"baz\"]"
+    => [\"foo\" \"bar\" \"\" \"baz\"]
+
+   If the parameter name starts with '[', it will be passed to read-string
+   to parse into a vector. The vector may contain numbers which will be
+   treated as indexes into nested vectors. e.g.
+     \"[:parents 1 :children 0 :name]\""
   [param-name]
   (if (= (first param-name) \[)
     (read-string param-name)
@@ -15,7 +20,7 @@
 
 (defn- assoc-nested
   "Similar to assoc-in, but treats values of blank keys as elements in a
-  list."
+  list. Numbers are treated as indexes into nested vectors."
   [m [k & ks] v]
   (conj m
         (if k
