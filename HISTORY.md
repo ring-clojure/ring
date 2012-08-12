@@ -1,3 +1,8 @@
+## 1.1.2 (2012-08-12)
+
+* Fixed bug with content-type parameters in adapter and servlets
+* Fixed bug with temp-file store spawning too many threads
+
 ## 1.1.1 (2012-06-16)
 
 * Fixed bug with url-decoding "$"
