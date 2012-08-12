@@ -25,3 +25,15 @@
     (is (.exists (:tempfile result)))
     (Thread/sleep 2500)
     (is (not (.exists (:tempfile result))))))
+
+(defn all-threads []
+  (.keySet (Thread/getAllStackTraces)))
+
+(deftest test-temp-file-threads
+  (let [store (temp-file-store)]
+    (dotimes [_ 200]
+      (store {:filename "foo.txt"
+              :content-type "text/plain"
+              :stream (string-input-stream "foo")}))
+    (is (< (count (all-threads))
+           100))))
