@@ -39,13 +39,13 @@
     :size         - the size in bytes of the uploaded data"
   ([] (temp-file-store {:expires-in 3600}))
   ([{:keys [expires-in]}]
-     (fn [item]
-       (let [file-set  (atom #{})
-             temp-file (make-temp-file file-set)]
-         (io/copy (:stream item) temp-file)
-         (when expires-in
-           (do-every expires-in
-             (remove-old-files file-set expires-in)))
-         (-> (select-keys item [:filename :content-type])
-             (assoc :tempfile temp-file
-                    :size (.length temp-file)))))))
+     (let [file-set (atom #{})]
+       (when expires-in
+         (do-every expires-in
+           (remove-old-files file-set expires-in)))
+       (fn [item]
+         (let [temp-file (make-temp-file file-set)]
+           (io/copy (:stream item) temp-file)
+           (-> (select-keys item [:filename :content-type])
+               (assoc :tempfile temp-file
+                      :size (.length temp-file))))))))
