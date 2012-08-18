@@ -88,16 +88,16 @@
                 parameter in the multipart parameter map. The default storage
                 function is the temp-file-store."
   [handler & [opts]]
-  (fn [request]
-    (let [encoding (or (:encoding opts)
-                       (:character-encoding request)
-                       "UTF-8")
-          store    (or (:store opts)
-                       (default-store))
-          params   (if (multipart-form? request)
-                     (parse-multipart-params request encoding store)
-                     {})
-          request  (merge-with merge request
-                     {:multipart-params params}
-                     {:params params})]
-      (handler request))))
+  (let [store (or (:store opts)
+                  (default-store))]
+    (fn [request]
+      (let [encoding (or (:encoding opts)
+                         (:character-encoding request)
+                         "UTF-8")
+            params   (if (multipart-form? request)
+                       (parse-multipart-params request encoding store)
+                       {})
+            request  (merge-with merge request
+                                 {:multipart-params params}
+                                 {:params params})]
+        (handler request)))))

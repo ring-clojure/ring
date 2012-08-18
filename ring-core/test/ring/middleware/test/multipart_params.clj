@@ -49,3 +49,13 @@
         response (handler request)]
     (is (= (get-in response [:params "foo"])
            ["bar" "baz"]))))
+
+(defn all-threads []
+  (.keySet (Thread/getAllStackTraces)))
+
+(deftest test-multipart-threads
+  (let [handler (wrap-multipart-params identity)]
+    (dotimes [_ 200]
+      (handler {}))
+    (is (< (count (all-threads))
+           100))))
