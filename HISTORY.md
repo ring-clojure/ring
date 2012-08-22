@@ -1,3 +1,9 @@
+## 1.1.3 (2012-08-22)
+
+* Fixed wrap-multipart creating default store each request
+* Fixed wrap-session :root option default overriding :cookie-attrs
+* Fixed potential security issue where users could force a custom session cookie name
+
 ## 1.1.2 (2012-08-12)
 
 * Fixed bug with content-type parameters in adapter and servlets
