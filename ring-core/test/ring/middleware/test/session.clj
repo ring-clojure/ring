@@ -68,10 +68,11 @@
                           (constantly "foo:bar")
                           (constantly nil))
 	handler (constantly {:session {:foo "bar"}})
-	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
+	handler (wrap-session handler {:store store
+                                       :cookie-attrs {:max-age 5 :path "/foo"}})
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Path=/;Max-Age=5"]))))
+	   ["ring-session=foo%3Abar;Max-Age=5;Path=/foo"]))))
 
 (deftest session-does-not-clobber-response-cookies
   (let [store (make-store (constantly {})
@@ -82,7 +83,7 @@
 	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
 	response (handler {:cookies {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Path=/;Max-Age=5" "cookie2=value2"]))))
+	   ["ring-session=foo%3Abar;Max-Age=5;Path=/" "cookie2=value2"]))))
 
 (deftest session-root-can-be-set
   (let [store (make-store (constantly {})

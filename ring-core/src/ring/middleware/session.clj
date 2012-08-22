@@ -30,8 +30,10 @@
   ([handler options]
      (let [store        (options :store (memory-store))
            cookie-name  (options :cookie-name "ring-session")
-           session-root (options :root "/")
-           cookie-attrs (merge (options :cookie-attrs) {:path session-root})]
+           cookie-attrs (merge {:path "/"}
+                               (options :cookie-attrs)
+                               (if-let [root (options :root)]
+                                 {:path root}))]
       (wrap-cookies
         (fn [request]
           (let [sess-key (get-in request [:cookies cookie-name :value])
