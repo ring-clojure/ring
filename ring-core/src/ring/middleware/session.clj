@@ -36,9 +36,10 @@
                                  {:path root}))]
       (wrap-cookies
         (fn [request]
-          (let [sess-key (get-in request [:cookies cookie-name :value])
-                session  (read-session store sess-key)
-                request  (assoc request :session session)]
+          (let [req-key  (get-in request [:cookies cookie-name :value])
+                session  (read-session store req-key)
+                sess-key (if session req-key)
+                request  (assoc request :session (or session {}))]
             (if-let [response (handler request)]
               (let [sess-key* (if (contains? response :session)
                                 (if-let [session (response :session)]

@@ -6,7 +6,7 @@
 (deftype MemoryStore [session-map]
   SessionStore
   (read-session [_ key]
-    (@session-map key {}))
+    (@session-map key))
   (write-session [_ key data]
     (let [key (or key (str (UUID/randomUUID)))]
       (swap! session-map assoc key data)

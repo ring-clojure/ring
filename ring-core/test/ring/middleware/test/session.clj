@@ -109,3 +109,15 @@
 (deftest session-response-is-nil
   (let [handler (wrap-session (constantly nil))]
     (is (nil? (handler {})))))
+
+(deftest session-made-up-key
+  (let [store-ref (atom {})
+        store     (make-store
+                   #(@store-ref %)
+                   #(do (swap! store-ref assoc %1 %2) %1)
+                   #(do (swap! store-ref dissoc %) nil))
+        handler   (wrap-session
+                   (constantly {:session {:foo "bar"}})
+                   {:store store})]
+    (handler {:cookies {"ring-session" {:value "faked-key"}}})
+    (is (not (contains? @store-ref "faked-key")))))

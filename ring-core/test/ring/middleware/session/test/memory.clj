@@ -4,8 +4,7 @@
 
 (deftest memory-session-read-not-exist
   (let [store (memory-store)]
-    (is (read-session store "non-existent")
-        {})))
+    (is (nil? (read-session store "non-existent")))))
 
 (deftest memory-session-create
   (let [store    (memory-store)
@@ -26,8 +25,7 @@
   (let [store    (memory-store)
         sess-key (write-session store nil {:foo "bar"})]
     (is (nil? (delete-session store sess-key)))
-    (is (= (read-session store sess-key)
-           {}))))
+    (is (nil? (read-session store sess-key)))))
 
 (deftest memory-session-custom-atom
   (let [session  (atom {})

@@ -4,8 +4,7 @@
 
 (deftest cookie-session-read-not-exist
   (let [store (cookie-store)]
-    (is (read-session store "non-existent")
-        {})))
+    (is (nil? (read-session store "non-existent")))))
 
 (deftest cookie-session-create
   (let [store    (cookie-store)

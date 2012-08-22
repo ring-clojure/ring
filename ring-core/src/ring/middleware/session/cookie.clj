@@ -94,7 +94,7 @@
 (deftype CookieStore [secret-key]
   SessionStore
   (read-session [_ data]
-    (or (if data (unseal secret-key data)) {}))
+    (if data (unseal secret-key data)))
   (write-session [_ _ data]
     (seal secret-key data))
   (delete-session [_ _]
