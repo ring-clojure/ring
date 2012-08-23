@@ -1,7 +1,7 @@
-(ns ring.middleware.absolute-uri
-  "Middleware for adding absolute URI of request to request map.")
+(ns ring.util.request
+  "Functions that operate on Ring requests")
 
-(defn- absolute-uri [req]
+(defn request-url [req]
   (let [scheme (-> req :scheme name)
         host (:server-name req)
         port (:server-port req)
@@ -9,8 +9,3 @@
         path (:uri req)
         query (when-let [q (:query-string req)] (str "?" q))]
     (str scheme "://" host port-part path query)))
-
-(defn wrap-absolute-uri [handler]
-  (fn [request]
-    (handler (assoc request :absolute-uri (absolute-uri request)))))
-
