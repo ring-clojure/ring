@@ -14,7 +14,7 @@
     (try
       (handler request)
       (catch Exception ex
-        (let [msg (str "Exception: " (pst-str ex))]
+        (let [msg (str "Exception: " (with-out-str (pst ex)))]
           (.println *err* msg)
           (throw ex))))))
 
@@ -52,7 +52,7 @@
              [:tbody (map elem-partial (:trimmed-elems cause))]]])])))
 
 (defn- js-ex-response [e]
-  (-> (response (pst-str e))
+  (-> (response (with-out-str (pst e)))
       (status 500)
       (content-type "text/javascript")))
 
