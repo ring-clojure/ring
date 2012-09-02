@@ -1,3 +1,7 @@
+## 1.1.4 (2012-09-02)
+
+* Fixed bug in wrap-reload by updated ns-tracker version
+
 ## 1.1.3 (2012-08-22)
 
 * Fixed wrap-multipart creating default store each request
