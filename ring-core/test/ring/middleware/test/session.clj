@@ -1,6 +1,5 @@
 (ns ring.middleware.test.session
   (:use clojure.test
-        clojure.contrib.mock.test-adapter
         ring.middleware.session
         ring.middleware.session.store))
 
@@ -10,38 +9,54 @@
     (write-session [_ k s] (writer k s))
     (delete-session [_ k] (deleter k))))
 
-(declare reader writer deleter)
+(defn trace-fn [f]
+  (let [trace (atom [])]
+    (with-meta
+      (fn [& args]
+        (swap! trace conj args)
+        (apply f args))
+      {:trace trace})))
+
+(defn trace [f]
+  (-> f meta :trace deref))
 
 (deftest session-is-read
-  (expect [reader  (times 1
-                     (has-args [(partial = "test")]
-                     (returns {:bar "foo"})))
-           writer  (times never)
-           deleter (times never)]
-    (let [store   (make-store reader writer deleter)
-          handler (fn [req]
-                    (is (= (req :session) {:bar "foo"}))
-                    {})
-          handler (wrap-session handler {:store store})]
-      (handler {:cookies {"ring-session" {:value "test"}}}))))
+  (let [reader   (trace-fn (constantly {:bar "foo"}))
+        writer   (trace-fn (constantly nil))
+        deleter  (trace-fn (constantly nil))
+        store    (make-store reader writer deleter)
+        handler  (trace-fn (constantly {}))
+        handler* (wrap-session handler {:store store})]
+    (handler* {:cookies {"ring-session" {:value "test"}}})
+    (is (= (trace reader) [["test"]]))
+    (is (= (trace writer) []))
+    (is (= (trace deleter) []))
+    (is (= (-> handler trace first first :session)
+           {:bar "foo"}))))
 
 (deftest session-is-written
-  (expect [reader  (times 1 (returns {}))
-           writer  (times 1 (has-args [nil? (partial = {:foo "bar"})]))
-           deleter (times never)]
-    (let [store   (make-store reader writer deleter)
-          handler (constantly {:session {:foo "bar"}})
-          handler (wrap-session handler {:store store})]
-      (handler {:cookies {}}))))
+  (let [reader  (trace-fn (constantly {}))
+        writer  (trace-fn (constantly nil))
+        deleter (trace-fn (constantly nil))
+        store   (make-store reader writer deleter)
+        handler (constantly {:session {:foo "bar"}})
+        handler (wrap-session handler {:store store})]
+    (handler {:cookies {}})
+    (is (= (trace reader) [[nil]]))
+    (is (= (trace writer) [[nil {:foo "bar"}]]))
+    (is (= (trace deleter) []))))
 
 (deftest session-is-deleted
-  (expect [reader  (times 1 (returns {}))
-           writer  (times never)
-           deleter (times 1 (has-args [(partial = "test")]))]
-    (let [store   (make-store reader writer deleter)
-          handler (constantly {:session nil})
-          handler (wrap-session handler {:store store})]
-      (handler {:cookies {"ring-session" {:value "test"}}}))))
+  (let [reader  (trace-fn (constantly {}))
+        writer  (trace-fn (constantly nil))
+        deleter (trace-fn (constantly nil))
+        store   (make-store reader writer deleter)
+        handler (constantly {:session nil})
+        handler (wrap-session handler {:store store})]
+    (handler {:cookies {"ring-session" {:value "test"}}})
+    (is (= (trace reader) [["test"]]))
+    (is (= (trace writer) []))
+    (is (= (trace deleter) [["test"]]))))
 
 (deftest session-write-outputs-cookie
   (let [store (make-store (constantly {})
