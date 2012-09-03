@@ -23,14 +23,18 @@
                  :content-type "text/plain"
                  :stream (string-input-stream "foo")})]
     (is (.exists (:tempfile result)))
-    (Thread/sleep 2500)
+    (Thread/sleep 3000)
     (is (not (.exists (:tempfile result))))))
 
 (defn all-threads []
   (.keySet (Thread/getAllStackTraces)))
 
 (deftest test-temp-file-threads
-  (let [store (temp-file-store)]
+  (let [threads0 (all-threads)
+        store    (temp-file-store)
+        threads1 (all-threads)]
+    (is (= (count threads0)
+           (count threads1)))
     (dotimes [_ 200]
       (store {:filename "foo.txt"
               :content-type "text/plain"

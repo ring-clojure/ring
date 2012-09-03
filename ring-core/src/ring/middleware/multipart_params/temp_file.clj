@@ -2,12 +2,17 @@
   (:require [clojure.java.io :as io])
   (:import java.io.File))
 
+(defn- background-thread [f]
+  (doto (Thread. f)
+    (.setDaemon true)
+    (.start)))
+
 (defmacro ^{:private true} do-every [delay & body]
-  `(future
-     (while true
-       (Thread/sleep (* ~delay 1000))
-       (try ~@body
-            (catch Exception ex#)))))
+  `(background-thread
+     #(while true
+        (Thread/sleep (* ~delay 1000))
+        (try ~@body
+             (catch Exception ex#)))))
 
 (defn- expired? [^File file expiry-time]
   (< (.lastModified file)
@@ -26,6 +31,11 @@
     (.deleteOnExit temp-file)
     temp-file))
 
+(defn- start-clean-up [file-set expires-in]
+  (when expires-in
+    (do-every expires-in
+      (remove-old-files file-set expires-in))))
+
 (defn temp-file-store
   "Returns a function that stores multipart file parameters as temporary files.
   Accepts the following options:
@@ -39,11 +49,10 @@
     :size         - the size in bytes of the uploaded data"
   ([] (temp-file-store {:expires-in 3600}))
   ([{:keys [expires-in]}]
-     (let [file-set (atom #{})]
-       (when expires-in
-         (do-every expires-in
-           (remove-old-files file-set expires-in)))
+     (let [file-set (atom #{})
+           clean-up (delay (start-clean-up file-set expires-in))]
        (fn [item]
+         (force clean-up)
          (let [temp-file (make-temp-file file-set)]
            (io/copy (:stream item) temp-file)
            (-> (select-keys item [:filename :content-type])
