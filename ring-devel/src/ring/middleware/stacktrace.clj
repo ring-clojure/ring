@@ -14,9 +14,8 @@
     (try
       (handler request)
       (catch Exception ex
-        (let [msg (str "Exception: " (pst-str ex))]
-          (.println *err* msg)
-          (throw ex))))))
+        (pst-on *err* false ex)
+        (throw ex)))))
 
 (defn- style-resource [path]
   (html [:style {:type "text/css"} (slurp (io/resource path))]))
