@@ -6,4 +6,7 @@
                  [commons-io "2.1"]
                  [commons-fileupload "1.2.1"]
                  [javax.servlet/servlet-api "2.5"]
-                 [clj-time "0.3.7"]])
+                 [clj-time "0.3.7"]]
+  :profiles
+  {:1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}})
