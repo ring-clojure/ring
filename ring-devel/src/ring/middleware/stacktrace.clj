@@ -9,12 +9,12 @@
 
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown."
-  [handler]
+  [handler & [{color? :color?}]]
   (fn [request]
     (try
       (handler request)
       (catch Exception ex
-        (pst-on *err* false ex)
+        (pst-on *err* color? ex)
         (throw ex)))))
 
 (defn- style-resource [path]
@@ -82,7 +82,7 @@
 (defn wrap-stacktrace
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
   logged to *err*, and a helpful debugging web response is returned."
-  [handler]
+  [handler & [{:as options}]]
   (-> handler
-      wrap-stacktrace-log
-      wrap-stacktrace-web))
+      (wrap-stacktrace-log options)
+      (wrap-stacktrace-web)))
