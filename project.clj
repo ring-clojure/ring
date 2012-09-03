@@ -7,7 +7,7 @@
      [ring/ring-jetty-adapter "1.2.0-SNAPSHOT"]
      [ring/ring-servlet "1.2.0-SNAPSHOT"]]
   :plugins
-    [[lein-sub "0.2.0"]
+    [[lein-sub "0.2.1"]
      [codox "0.6.1"]]
   :sub
     ["ring-core"
