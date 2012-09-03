@@ -2,12 +2,17 @@
   (:require [clojure.java.io :as io])
   (:import java.io.File))
 
+(defn- background-thread [f]
+  (doto (Thread. f)
+    (.setDaemon true)
+    (.start)))
+
 (defmacro ^{:private true} do-every [delay & body]
-  `(future
-     (while true
-       (Thread/sleep (* ~delay 1000))
-       (try ~@body
-            (catch Exception ex#)))))
+  `(background-thread
+     #(while true
+        (Thread/sleep (* ~delay 1000))
+        (try ~@body
+             (catch Exception ex#)))))
 
 (defn- expired? [^File file expiry-time]
   (< (.lastModified file)
