@@ -120,7 +120,6 @@
   (fn [^HttpServlet servlet
        ^HttpServletRequest request
        ^HttpServletResponse response]
-    (.setCharacterEncoding response "UTF-8")
     (let [request-map (-> request
                         (build-request-map)
                         (merge-servlet-keys servlet request response))]
