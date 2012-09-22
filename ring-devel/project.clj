@@ -4,4 +4,4 @@
   :dependencies [[ring/ring-core "1.1.5"]
                  [hiccup "1.0.0"]
                  [clj-stacktrace "0.2.4"]
-                 [ns-tracker "0.1.2"]])
+                 [ns-tracker "0.2.0"]])
