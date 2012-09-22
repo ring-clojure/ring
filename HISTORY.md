@@ -1,10 +1,15 @@
+## 1.1.6 (2012-09-22)
+
+* Removed default charset being incorrectly set on images
+* Fixed another bug in wrap-reload by updating ns-tracker version
+
 ## 1.1.5 (2012-09-03)
 
 * Fixed hanging when compiling handler with wrap-multiparm-params middleware
 
 ## 1.1.4 (2012-09-02)
 
-* Fixed bug in wrap-reload by updated ns-tracker version
+* Fixed bug in wrap-reload by updating ns-tracker version
 
 ## 1.1.3 (2012-08-22)
 
