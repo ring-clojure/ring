@@ -1,11 +1,11 @@
-(defproject ring "1.1.5"
+(defproject ring "1.1.6"
   :description "A Clojure web applications library."
   :url "https://github.com/ring-clojure/ring"
   :dependencies
-    [[ring/ring-core "1.1.5"]
-     [ring/ring-devel "1.1.5"]
-     [ring/ring-jetty-adapter "1.1.5"]
-     [ring/ring-servlet "1.1.5"]]
+    [[ring/ring-core "1.1.6"]
+     [ring/ring-devel "1.1.6"]
+     [ring/ring-jetty-adapter "1.1.6"]
+     [ring/ring-servlet "1.1.6"]]
   :plugins
     [[lein-sub "0.2.0"]
      [codox "0.6.1"]]
