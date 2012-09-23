@@ -18,7 +18,10 @@
 (defn- attempt-parse [date format]
   (try
     (.parse (formatter format) date)
-    (catch ParseException _ nil)))
+    (catch ParseException _ nil)
+    ;; Also catch RuntimeExceptions, needed for Clojure 1.3.0
+    ;; See: https://groups.google.com/forum/#!topic/clojure/I5l1YHVMgkI
+    (catch RuntimeException _ nil)))
 
 (defn- trim-quotes [s]
   (str/replace s #"^'|'$" ""))
