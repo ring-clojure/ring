@@ -3,7 +3,9 @@
   (:require [clojure.java.io :as io])
   (:import [java.io PipedInputStream
                     PipedOutputStream
-                    ByteArrayInputStream]))
+                    ByteArrayInputStream
+                    Closeable
+                    IOException]))
 
 (defn piped-input-stream
   "Create an input stream from a function that takes an output stream as its
@@ -29,3 +31,11 @@
      (ByteArrayInputStream. (.getBytes s)))
   ([^String s encoding]
      (ByteArrayInputStream. (.getBytes s encoding))))
+
+(defn close!
+  "Ensure a stream is closed, swallowing any exceptions."
+  [stream]
+  (when (instance? java.io.Closeable stream)
+    (try
+      (.close stream)
+      (catch IOException _ nil))))
