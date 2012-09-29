@@ -66,6 +66,7 @@
   :port         - the port to listen on (defaults to 80)
   :host         - the hostname to listen on
   :join?        - blocks the thread until server ends (defaults to true)
+  :daemon?      - use daemon threads (defaults to false)
   :ssl?         - allow connections over HTTPS
   :ssl-port     - the SSL port to listen on (defaults to 443, implies :ssl?)
   :keystore     - the keystore to use for SSL connections
@@ -76,10 +77,13 @@
   :client-auth  - SSL client certificate authenticate, may be set to :need,
                   :want or :none (defaults to :none)"
   [handler options]
-  (let [^Server s (create-server (dissoc options :configurator))]
+  (let [^Server s (create-server (dissoc options :configurator))
+        ^QueuedThreadPool p (QueuedThreadPool. (options :max-threads 50))]
+    (when (:daemon? options false)
+      (.setDaemon p true))
     (doto s
       (.setHandler (proxy-handler handler))
-      (.setThreadPool (QueuedThreadPool. (options :max-threads 50))))
+      (.setThreadPool p))
     (when-let [configurator (:configurator options)]
       (configurator s))
     (.start s)
