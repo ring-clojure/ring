@@ -42,7 +42,7 @@
         (is (= (:body response) "Hello World")))))
 
   (testing "configurator set to run last"
-    (let [max-threads 20 
+    (let [max-threads 20
           new-handler  (proxy [AbstractHandler] []
                          (handle [_ ^Request base-request request response]))
           threadPool (QueuedThreadPool. ({} :max-threads max-threads))
@@ -55,6 +55,20 @@
       (is (identical? new-handler (.getHandler server)))
       (is (= 1 (count (.getHandlers server))))
       (.stop server)))
+
+  (testing "setting daemon threads"
+    (testing "default (daemon off)"
+      (let [server (run-jetty hello-world {:port 4347 :join? false})]
+        (is (not (.. server getThreadPool isDaemon)))
+        (.stop server)))
+    (testing "daemon on"
+      (let [server (run-jetty hello-world {:port 4347 :join? false :daemon? true})]
+        (is (.. server getThreadPool isDaemon))
+        (.stop server)))
+    (testing "daemon off"
+      (let [server (run-jetty hello-world {:port 4347 :join? false :daemon? false})]
+        (is (not (.. server getThreadPool isDaemon)))
+        (.stop server))))
 
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port 4347}
