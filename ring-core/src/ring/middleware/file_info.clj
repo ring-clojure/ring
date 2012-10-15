@@ -44,6 +44,7 @@
               lmodified   (Date. (.lastModified ^File body))
               response    (-> response
                               (res/content-type file-type)
+                              (res/header "Cache-Control" "public")
                               (res/header
                                 "Last-Modified"
                                 (.format (make-http-format) lmodified)))]
