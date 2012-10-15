@@ -32,7 +32,8 @@
   (with-last-modified [known-file 1263506400]
     (is (= {:headers {"Content-Type"   "text/plain"
                       "Content-Length" "6"
-                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"}
+                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"
+                      "Cache-Control"  "public"}
             :body    known-file}
            (known-file-app {:headers {}})))))
 
@@ -40,7 +41,8 @@
   (with-last-modified [unknown-file 1263506400]
     (is (= {:headers {"Content-Type"   "application/octet-stream"
                       "Content-Length" "7"
-                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"}
+                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"
+                      "Cache-Control"  "public"}
             :body    unknown-file}
            (unknown-file-app {:headers {}})))))
 
@@ -48,7 +50,8 @@
   (with-last-modified [known-file 0]
     (is (= {:headers {"Content-Type"   "custom/type"
                       "Content-Length" "6"
-                      "Last-Modified"  "Thu, 01 Jan 1970 00:00:00 +0000"}
+                      "Last-Modified"  "Thu, 01 Jan 1970 00:00:00 +0000"
+                      "Cache-Control"  "public"}
             :body known-file}
            (custom-type-app {:headers {}})))))
 
@@ -57,7 +60,8 @@
     (is (= {:status  304
             :headers {"Content-Type"   "text/plain"
                       "Content-Length" "0"
-                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"}
+                      "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"
+                      "Cache-Control"  "public"}
             :body    ""}
            (known-file-app
              {:headers {"if-modified-since" "Thu, 14 Jan 2010 22:00:00 +0000" }})))))
@@ -66,7 +70,8 @@
   (with-last-modified [known-file 1263506400]
     (is (= {:headers {"Content-Type" "text/plain"
                       "Content-Length" "6"
-                      "Last-Modified" "Thu, 14 Jan 2010 22:00:00 +0000"}
+                      "Last-Modified" "Thu, 14 Jan 2010 22:00:00 +0000"
+                      "Cache-Control"  "public"}
             :body    known-file}
            (known-file-app
              {:headers {"if-modified-since" "Wed, 13 Jan 2010 22:00:00 +0000"}})))))
