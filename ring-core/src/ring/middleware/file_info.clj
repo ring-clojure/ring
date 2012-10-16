@@ -22,13 +22,16 @@
     (.setTimeZone (TimeZone/getTimeZone "UTC"))))
 
 (defn wrap-file-info
-  "Wraps an app such that responses with a file body will have appropriate
+  "DEPRECATED
+
+  Wraps an app such that responses with a file body will have appropriate
   Content-Type, Content-Length, and Last Modified headers added if they can be
   determined from the file. If the request specifies a If-Modified-Since header
   that matches the last modification date of the file, a 304 Not Modified
   response is returned. If two arguments are given, the second is taken to be a
   map of file extensions to content types that will supplement the default,
   built-in map."
+  {:deprecated "1.1.7"}
   [handler & [mime-types]]
   (not-modified/wrap-not-modified
    (fn [request]
