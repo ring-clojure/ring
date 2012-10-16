@@ -1,7 +1,7 @@
 (ns ring.middleware.not-modified
   "Middleware to return a 304 Not Modified response."
   (:use [ring.util.time :only (parse-date)]
-        [ring.util.response :only (status normalize-headers)]
+        [ring.util.response :only (status header normalize-headers)]
         [ring.util.io :only (close!)]))
 
 (defn- etag-match? [request response]
@@ -32,5 +32,6 @@
         (do (close! (:body response))
             (-> response
                 (status 304)
+                (header "Content-Length" "0")
                 (assoc :body nil)))
         response))))
