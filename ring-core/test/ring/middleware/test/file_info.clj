@@ -58,7 +58,7 @@
             :headers {"Content-Type"   "text/plain"
                       "Content-Length" "0"
                       "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"}
-            :body    ""}
+            :body    nil}
            (known-file-app
              {:headers {"if-modified-since" "Thu, 14 Jan 2010 22:00:00 +0000" }})))))
 

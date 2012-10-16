@@ -1,6 +1,7 @@
 (ns ring.middleware.file-info
   "Augment Ring File responses."
-  (:require [ring.util.response :as res])
+  (:require [ring.util.response :as res]
+            [ring.middleware.not-modified :as not-modified])
   (:use [ring.util.mime-type :only (ext-mime-type)])
   (:import java.io.File
            (java.util Date Locale TimeZone)
@@ -20,36 +21,27 @@
   (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ" Locale/US)
     (.setTimeZone (TimeZone/getTimeZone "UTC"))))
 
-(defn- not-modified-since?
-  "Has the file been modified since the last request from the client?"
-  [{headers :headers :as req} last-modified]
-  (if-let [modified-since (headers "if-modified-since")]
-    (not (.before (.parse (make-http-format) modified-since)
-                  last-modified))))
-
 (defn wrap-file-info
-  "Wrap an app such that responses with a file a body will have corresponding
+  "DEPRECATED
+
+  Wraps an app such that responses with a file body will have appropriate
   Content-Type, Content-Length, and Last Modified headers added if they can be
-  determined from the file.
-  If the request specifies a If-Modified-Since header that matches the last
-  modification date of the file, a 304 Not Modified response is returned.
-  If two arguments are given, the second is taken to be a map of file extensions
-  to content types that will supplement the default, built-in map."
-  [app & [mime-types]]
-  (fn [req]
-    (let [{:keys [headers body] :as response} (app req)]
-      (if (instance? File body)
-        (let [file-type   (guess-mime-type body mime-types)
-              file-length (.length ^File body)
-              lmodified   (Date. (.lastModified ^File body))
-              response    (-> response
-                              (res/content-type file-type)
-                              (res/header
-                                "Last-Modified"
-                                (.format (make-http-format) lmodified)))]
-          (if (not-modified-since? req lmodified)
-            (-> response (res/status 304)
-                (res/header "Content-Length" 0)
-                (assoc :body ""))
-            (-> response (res/header "Content-Length" file-length))))
-        response))))
+  determined from the file. If the request specifies a If-Modified-Since header
+  that matches the last modification date of the file, a 304 Not Modified
+  response is returned. If two arguments are given, the second is taken to be a
+  map of file extensions to content types that will supplement the default,
+  built-in map."
+  {:deprecated "1.1.7"}
+  [handler & [mime-types]]
+  (not-modified/wrap-not-modified
+   (fn [request]
+     (let [{:keys [headers body] :as response} (handler request)]
+       (if (instance? File body)
+         (let [file-type   (guess-mime-type body mime-types)
+               file-length (.length ^File body)
+               lmodified   (Date. (.lastModified ^File body))]
+           (-> response
+               (res/content-type file-type)
+               (res/header "Last-Modified" (.format (make-http-format) lmodified))
+               (res/header "Content-Length" file-length)))
+         response)))))
