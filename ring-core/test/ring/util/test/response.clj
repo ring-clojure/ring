@@ -50,6 +50,13 @@
   (is (not (response? {})))
   (is (not (response? {:users []}))))
 
+(deftest test-normalize-headers
+  (is (= {:status 200 :body "Foo" :headers {"last-modified" "Foo"
+                                            "content-type"  "Bar"}}
+         (normalize-headers {:status 200 :body "Foo"
+                             :headers {"LaSt-MoDiFiEd" "Foo"
+                                       "CONTENT-TYPE"  "Bar"}}))))
+
 (defmacro with-classloader
   "Temporarily replaces the current context classloader with one that
    includes everything in dir"

@@ -162,3 +162,9 @@
   (and (map? resp)
        (integer? (:status resp))
        (map? (:headers resp))))
+
+(defn normalize-headers
+  "Returns an updated Ring response with lowercase header names."
+  [resp]
+  (assoc resp :headers
+         (into {} (for [[k v] (:headers resp)] [(str/lower-case k) v]))))
