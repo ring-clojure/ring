@@ -17,7 +17,7 @@
         modified-since (date-header request "if-modified-since")]
     (and modified-date
          modified-since
-         (.before modified-since modified-date))))
+         (not (.before modified-since modified-date)))))
 
 (defn wrap-not-modified
   "Middleware that returns a 304 Not Modified from the wrapped handler if the
