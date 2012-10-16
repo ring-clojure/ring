@@ -28,16 +28,16 @@
                   last-modified))))
 
 (defn wrap-file-info
-  "Wrap an app such that responses with a file a body will have corresponding
+  "Wraps an app such that responses with a file body will have appropriate
   Content-Type, Content-Length, and Last Modified headers added if they can be
-  determined from the file.
-  If the request specifies a If-Modified-Since header that matches the last
-  modification date of the file, a 304 Not Modified response is returned.
-  If two arguments are given, the second is taken to be a map of file extensions
-  to content types that will supplement the default, built-in map."
-  [app & [mime-types]]
-  (fn [req]
-    (let [{:keys [headers body] :as response} (app req)]
+  determined from the file. If the request specifies a If-Modified-Since header
+  that matches the last modification date of the file, a 304 Not Modified
+  response is returned. If two arguments are given, the second is taken to be a
+  map of file extensions to content types that will supplement the default,
+  built-in map."
+  [handler & [mime-types]]
+  (fn [request]
+    (let [{:keys [headers body] :as response} (handler request)]
       (if (instance? File body)
         (let [file-type   (guess-mime-type body mime-types)
               file-length (.length ^File body)
@@ -47,7 +47,7 @@
                               (res/header
                                 "Last-Modified"
                                 (.format (make-http-format) lmodified)))]
-          (if (not-modified-since? req lmodified)
+          (if (not-modified-since? request lmodified)
             (-> response (res/status 304)
                 (res/header "Content-Length" 0)
                 (assoc :body ""))
