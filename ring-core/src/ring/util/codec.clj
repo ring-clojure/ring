@@ -13,7 +13,7 @@
 (defn percent-encode
   "Percent-encode every character in the given string using either the specified
   encoding, or UTF-8 by default."
-  [unencoded & [encoding]]
+  [^String unencoded & [^String encoding]]
   (->> (.getBytes unencoded (or encoding "UTF-8"))
        (map (partial format "%%%02X"))
        (str/join)))
@@ -21,17 +21,17 @@
 (defn- parse-bytes [encoded-bytes]
   (->> (re-seq #"%.." encoded-bytes)
        (map #(subs % 1))
-       (map #(.byteValue (Integer/parseInt % 16)))
+       (map #(.byteValue (Integer/valueOf % 16)))
        (byte-array)))
 
 (defn percent-decode
   "Decode every percent-encoded character in the given string using the
   specified encoding, or UTF-8 by default."
-  [encoded & [encoding]]
+  [^String encoded & [^String encoding]]
   (str/replace encoded
                #"(?:%..)+"
                (fn [chars]
-                 (-> (parse-bytes chars)
+                 (-> ^bytes (parse-bytes chars)
                      (String. (or encoding "UTF-8"))
                      (double-escape)))))
 
@@ -44,7 +44,7 @@
     #"[^A-Za-z0-9_~.+-]+"
     #(double-escape (percent-encode % encoding))))
 
-(defn url-decode
+(defn ^String url-decode
   "Returns the url-decoded version of the given string, using either a specified
   encoding or UTF-8 by default. If the encoding is invalid, nil is returned."
   [encoded & [encoding]]
@@ -101,7 +101,7 @@
   "Decode the supplied www-form-urlencoded string using the specified encoding,
   or UTF-8 by default. If the encoded value is a string, a string is returned.
   If the encoded value is a map of parameters, a map is returned."
-  [encoded & [encoding]]
+  [^String encoded & [encoding]]
   (if-not (.contains encoded "=")
     (form-decode-str encoded encoding)
     (reduce

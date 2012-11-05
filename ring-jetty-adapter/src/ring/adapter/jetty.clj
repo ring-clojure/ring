@@ -26,10 +26,10 @@
   (let [context (SslContextFactory.)]
     (if (string? (options :keystore))
       (.setKeyStorePath context (options :keystore))
-      (.setKeyStore context (options :keystore)))
+      (.setKeyStore context ^java.security.KeyStore (options :keystore)))
     (.setKeyStorePassword context (options :key-password))
     (when (options :truststore)
-      (.setTrustStore context (options :truststore)))
+      (.setTrustStore context ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
       (.setTrustStorePassword context (options :trust-password)))
     (case (options :client-auth)
@@ -78,7 +78,7 @@
                   :want or :none (defaults to :none)"
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))
-        ^QueuedThreadPool p (QueuedThreadPool. (options :max-threads 50))]
+        ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
     (when (:daemon? options false)
       (.setDaemon p true))
     (doto s

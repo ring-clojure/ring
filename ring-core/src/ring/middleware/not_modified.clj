@@ -8,7 +8,7 @@
   (if-let [etag (get-in response [:headers "etag"])]
     (= etag (get-in request [:headers "if-none-match"]))))
 
-(defn- date-header [response header]
+(defn- ^java.util.Date date-header [response header]
   (if-let [http-date (get-in response [:headers header])]
     (parse-date http-date)))
 

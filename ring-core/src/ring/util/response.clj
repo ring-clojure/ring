@@ -96,12 +96,12 @@
 ;; As a work-around, we'll backport the fix from the Clojure master
 ;; branch into url-as-file.
 
-(defn- url-as-file [u]
+(defn- ^File url-as-file [^java.net.URL u]
   (io/as-file
    (str/replace
     (.replace (.getFile u) \/ File/separatorChar)
     #"%.."
-    (fn [escape]
+    (fn [^String escape]
       (-> escape
           (.substring 1 3)
           (Integer/parseInt 16)
