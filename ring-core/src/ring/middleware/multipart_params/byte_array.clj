@@ -11,4 +11,4 @@
   []
   (fn [item]
     (-> (select-keys item [:filename :content-type])
-        (assoc :bytes (IOUtils/toByteArray (:stream item))))))
+        (assoc :bytes (IOUtils/toByteArray ^java.io.InputStream (:stream item))))))

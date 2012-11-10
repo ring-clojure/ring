@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io])
   (:import java.io.File))
 
-(defn- background-thread [f]
+(defn- background-thread [^Runnable f]
   (doto (Thread. f)
     (.setDaemon true)
     (.start)))

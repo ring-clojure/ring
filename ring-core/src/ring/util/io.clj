@@ -29,7 +29,7 @@
   "Returns a ByteArrayInputStream for the given String."
   ([^String s]
      (ByteArrayInputStream. (.getBytes s)))
-  ([^String s encoding]
+  ([^String s ^String encoding]
      (ByteArrayInputStream. (.getBytes s encoding))))
 
 (defn close!
@@ -37,5 +37,5 @@
   [stream]
   (when (instance? java.io.Closeable stream)
     (try
-      (.close stream)
+      (.close ^java.io.Closeable stream)
       (catch IOException _ nil))))
