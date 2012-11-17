@@ -8,14 +8,16 @@
      [ring/ring-servlet "1.2.0-SNAPSHOT"]]
   :plugins
     [[lein-sub "0.2.1"]
-     [codox "0.6.1"]]
+     [codox "0.6.3"]]
   :sub
     ["ring-core"
      "ring-devel"
      "ring-jetty-adapter"
      "ring-servlet"]
   :codox
-    {:sources ["ring-core/src"
+    {:src-dir-uri "http://github.com/ring-clojure/ring/blob/1.1.6"
+     :src-linenum-anchor-prefix "L"
+     :sources ["ring-core/src"
                "ring-devel/src"
                "ring-jetty-adapter/src"
                "ring-servlet/src"]})
