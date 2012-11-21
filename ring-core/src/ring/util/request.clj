@@ -11,20 +11,29 @@
        (if-let [query (:query-string request)]
          (str "?" query))))
 
-(defmulti body-string
-  "Return the request body as a string."
-  (comp class :body))
+(defprotocol WithRequestBody
+  (body-string [request]))
 
-(defmethod body-string nil [_] nil)
+(extend-protocol WithRequestBody
+  nil
+  (body-string [self] nil)
 
-(defmethod body-string String [request]
-  (:body request))
+  clojure.lang.IPersistentMap
+  (body-string [self]
+    (body-string (:body self)))
 
-(defmethod body-string clojure.lang.ISeq [request]
-  (apply str (:body request)))
+  String
+  (body-string [self]
+    self)
 
-(defmethod body-string java.io.File [request]
-  (slurp (:body request)))
+  clojure.lang.ISeq
+  (body-string [self]
+    (apply str self))
 
-(defmethod body-string java.io.InputStream [request]
-  (slurp (:body request)))
+  java.io.File
+  (body-string [self]
+    (slurp self))
+
+  java.io.InputStream
+  (body-string [self]
+    (slurp self)))
