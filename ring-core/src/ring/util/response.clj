@@ -1,6 +1,7 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
   (:import java.io.File)
+  (:use [ring.util.time :only (format-date)])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -108,22 +109,6 @@
           (char)
           (str))))))
 
-(defn resource-response
-  "Returns a Ring response to serve a packaged resource, or nil if the
-  resource does not exist.
-  Options:
-    :root - take the resource relative to this root"
-  [path & [opts]]
-  (let [path (-> (str (:root opts "") "/" path)
-                 (.replace "//" "/")
-                 (.replaceAll "^/" ""))]
-    (if-let [resource (io/resource path)]
-      (if (= "file" (.getProtocol resource))
-        (let [file (url-as-file resource)]
-          (if-not (.isDirectory file)
-            (response file)))
-        (response (io/input-stream resource))))))
-
 (defn status
   "Returns an updated Ring response with the given status."
   [resp status]
@@ -162,3 +147,41 @@
   (and (map? resp)
        (integer? (:status resp))
        (map? (:headers resp))))
+
+(defn- set-resource-headers
+  "Set Last-Modified and Content-Length for a resource"
+  [resp ^java.net.URL res-url]
+  (when resp
+    (let [ucon (doto (.openConnection res-url)
+                 (.setDoInput false))
+          content-length (.getContentLength ucon)
+          resp (if (neg? content-length)
+                 resp
+                 (header resp "Content-Length" content-length))
+          last-modified (.getLastModified ucon)
+          resp (if (zero? last-modified)
+                 resp
+                 (header resp "Last-Modified" (format-date (java.util.Date. last-modified))))]
+      resp)))
+
+(defn resource-response
+  "Returns a Ring response to serve a packaged resource, or nil if the
+  resource does not exist.
+  Options:
+    :root - take the resource relative to this root"
+  [path & [opts]]
+  (let [path (-> (str (:root opts "") "/" path)
+    (.replace "//" "/")
+    (.replaceAll "^/" ""))]
+    (if-let [resource (io/resource path)]
+      (->
+        (if (= "file" (.getProtocol resource))
+          (let [file (url-as-file resource)]
+            (if-not (.isDirectory file)
+              (response file)))
+          ; a jar url ending in a slash is by definition a directory
+          (when-not (.endsWith path "/")
+            ; paths to directories with trailing slashes return an URL, but a nil InputStream
+            (when-let [in (io/input-stream resource)]
+              (response in))))
+        (set-resource-headers resource)))))

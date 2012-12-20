@@ -33,3 +33,8 @@
        (map (partial attempt-parse (trim-quotes http-date)))
        (remove nil?)
        (first)))
+
+(defn format-date
+  "Format a date as RFC1123 format"
+  [^java.util.Date date]
+  (.format (formatter :rfc1123) date))
