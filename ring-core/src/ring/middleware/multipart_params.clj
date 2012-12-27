@@ -20,7 +20,7 @@
   [request encoding]
   (reify RequestContext
     (getContentType [this]       (:content-type request))
-    (getContentLength [this]     (:content-length request))
+    (getContentLength [this]     (or (:content-length request) -1))
     (getCharacterEncoding [this] encoding)
     (getInputStream [this]       (:body request))))
 
