@@ -25,7 +25,7 @@ Adapters are implemented as functions of two arguments: a handler and an options
 map. The options map provides any needed configuration to the adapter, such as
 the port on which to run.
 
-Once initialized, adapters receive HTTP requests, parse them to construct an 
+Once initialized, adapters receive HTTP requests, parse them to construct a 
 request map, and then invoke their handler with this request map as an
 argument. Once the handler returns a response map, the adapter uses it to 
 construct and send an HTTP response to the client.
