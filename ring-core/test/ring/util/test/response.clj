@@ -68,7 +68,7 @@
   (testing "response map"
     (let [resp (resource-response "/ring/assets/foo.html")]
       (is (= (resp :status) 200))
-      (is (= (resp :headers) {}))
+      (is (= (into #{} (keys (resp :headers))) #{"Content-Length" "Last-Modified"}))
       (is (= (slurp (resp :body)) "foo"))))
 
   (testing "with root option"
@@ -96,6 +96,12 @@
 
   (testing "resource is a directory"
     (is (nil? (resource-response "/ring/assets"))))
+
+  (testing "resource is a directory in a jar file"
+    (is (nil? (resource-response "/java/lang"))))
+
+  (testing "resource is a directory in a jar file with a trailing slash"
+    (is (nil? (resource-response "/java/lang/"))))
 
   (testing "resource is a file with spaces in path"
     (let [resp (resource-response "/ring/assets/hello world.txt")]
