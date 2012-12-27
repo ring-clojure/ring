@@ -31,26 +31,49 @@ h1 {
     margin-bottom: 1em;
 }
 
-table.trace {
+.trace {
+    width: 90%;
     margin: auto;
+}
+
+.trace table {
+    width: 100%;
     font-size: 12pt;
     background: #cfcfcf;
     border: 0.8em solid #cfcfcf;
     margin-bottom: 1.5em;
 }
 
-table.trace td {
+.trace td {
     padding-top: 0.4em;
     padding-bottom: 0.4em;
 }
 
-table.trace td.method {
+.trace td.method {
     padding-left: 1em;
     padding-right: 0.2em;
     text-aligh: left;
 }
 
-table.trace td.source {
+.trace td.source {
     padding-left: 0.2em;
     text-align: right;
+}
+
+.trace .views {
+    width: 100%;
+    background: #bcbcbc;
+}
+
+.views .label, .views ul, .views li {
+    display: inline-block;
+}
+
+.trace .views .label {
+    padding: 0.4em 1em;
+}
+
+.trace .views li {
+    padding: 0.4em 2em;
+    cursor: pointer;
 }

@@ -23,10 +23,10 @@
 
 (defn- elem-partial [elem]
   (if (:clojure elem)
-    [:tr
+    [:tr.clojure
       [:td.source (h (source-str elem))]
       [:td.method (h (clojure-method-str elem))]]
-    [:tr
+    [:tr.java
       [:td.source (h (source-str elem))]
       [:td.method (h (java-method-str elem))]]))
 
@@ -35,13 +35,21 @@
     (html5
       [:head
         [:title "Ring: Stacktrace"]
-        (include-css "__ring/css/stacktrace.css")]
+        (include-css "__ring/css/stacktrace.css")
+        (include-js "__ring/js/jquery.js")]
       [:body
         [:div#exception
           [:h1 (.getName (:class ex))]
           [:div.message (:message ex)]
-          [:table.trace
-            [:tbody (map elem-partial (:trace-elems ex))]]]])))
+          [:div.trace       
+            [:div.views
+              [:div.label "Source file type:"]
+              [:ul
+                [:li {:onclick "$('.java').show();$('.clojure').show();"} "All"]
+                [:li {:onclick "$('.java').hide();$('.clojure').show();"} "Clojure"]
+                [:li {:onclick "$('.java').show();$('.clojure').hide();"} "Java"]]]
+            [:table
+              [:tbody (map elem-partial (:trace-elems ex))]]]]])))
 
 (defn- js-ex-response [e]
   (-> (response (pst-str e))
@@ -70,6 +78,8 @@
     (case (path-info request)
       "/__ring/css/stacktrace.css"
       (resource-response "ring/css/stacktrace.css")
+      "/__ring/js/jquery.js"
+      (resource-response "ring/js/jquery.js")
       (try
         (handler request)
         (catch Exception ex
