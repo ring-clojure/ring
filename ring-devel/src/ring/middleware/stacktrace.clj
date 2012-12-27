@@ -30,25 +30,17 @@
       [:td.method (h (java-method-str elem))]]))
 
 (defn- html-exception [ex]
-  (let [ex-seq    (iterate :cause (parse-exception ex))
-        exception (first ex-seq)
-        causes    (rest ex-seq)]
+  (let [ex (parse-exception ex)]
     (html5
       [:head
         [:title "Ring: Stacktrace"]
         (style-resource "ring/css/stacktrace.css")]
       [:body
         [:div#exception
-          [:h3.info (h (str ex))]
+          [:h1 (.getName (:class ex))]
+          [:div.message (:message ex)]
           [:table.trace
-            [:tbody (map elem-partial (:trace-elems exception))]]]
-        (for [cause causes :while cause]
-          [:div#causes
-           [:h3.info "Caused by: "
-                    (h (.getName (:class cause))) " "
-                    (h (:message cause))]
-           [:table.trace
-             [:tbody (map elem-partial (:trimmed-elems cause))]]])])))
+            [:tbody (map elem-partial (:trace-elems ex))]]]])))
 
 (defn- js-ex-response [e]
   (-> (response (pst-str e))
