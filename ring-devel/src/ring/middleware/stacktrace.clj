@@ -5,7 +5,8 @@
         hiccup.page
         clj-stacktrace.core
         clj-stacktrace.repl
-        ring.util.response))
+        ring.util.response
+        ring.util.request))
 
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown."
@@ -34,7 +35,7 @@
     (html5
       [:head
         [:title "Ring: Stacktrace"]
-        (style-resource "ring/css/stacktrace.css")]
+        (include-css "__ring/css/stacktrace.css")]
       [:body
         [:div#exception
           [:h1 (.getName (:class ex))]
@@ -66,10 +67,13 @@
    response is returned."
   [handler]
   (fn [request]
-    (try
-      (handler request)
-      (catch Exception ex
-        (ex-response request ex)))))
+    (case (path-info request)
+      "/__ring/css/stacktrace.css"
+      (resource-response "ring/css/stacktrace.css")
+      (try
+        (handler request)
+        (catch Exception ex
+          (ex-response request ex))))))
 
 (defn wrap-stacktrace
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
