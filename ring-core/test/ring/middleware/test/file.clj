@@ -25,13 +25,13 @@
 (deftest test-wrap-file-directory
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/"})]
     (is (= 200 status))
-    (is (= {} headers))
+    (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
     (is (= index-html body))))
 
 (deftest test-wrap-file-with-extension
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/foo.html"})]
     (is (= 200 status))
-    (is (= {} headers))
+    (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
     (is (= foo-html body))))
 
 (deftest test-wrap-file-no-index

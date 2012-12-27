@@ -104,7 +104,9 @@
     :allow-symlinks? - serve files through symbolic links, defaults to false"
   [filepath & [opts]]
   (if-let [file (find-file filepath opts)]
-    (response file)))
+    (-> (response file)
+        (file-content-length)
+        (file-last-modified))))
 
 ;; In Clojure versions 1.2.0, 1.2.1 and 1.3.0, the as-file function
 ;; in clojure.java.io does not correctly decode special characters in

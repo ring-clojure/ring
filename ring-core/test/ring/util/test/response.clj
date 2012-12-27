@@ -114,7 +114,8 @@
   (testing "response map"
     (let [resp (file-response "foo.html" {:root "test/ring/assets"})]
       (is (= (resp :status) 200))
-      (is (= (resp :headers) {}))
+      (is (= (into #{} (keys (resp :headers))) #{"Content-Length" "Last-Modified"}))
+      (is (= (get-in resp [:headers "Content-Length"]) "3"))
       (is (= (slurp (resp :body)) "foo"))))
 
   (testing "file path cannot contain '..' "
@@ -124,7 +125,8 @@
   (testing "file response optionally follows symlinks"
     (let [resp (file-response "backlink/foo.html" {:root "test/ring/assets/bars" :allow-symlinks? true})]
       (is (= (resp :status) 200))
-      (is (= (resp :headers) {}))
+      (is (= (into #{} (keys (resp :headers))) #{"Content-Length" "Last-Modified"}))
+      (is (= (get-in resp [:headers "Content-Length"]) "3"))
       (is (= (slurp (resp :body)) "foo")))
     
     (is (nil? (file-response "backlink/foo.html" {:root "test/ring/assets/bars"})))))
