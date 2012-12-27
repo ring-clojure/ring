@@ -62,15 +62,15 @@
       #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
        (.listFiles dir))))
 
-(defn- get-file
-  "Safely retrieve the correct file. See file-response for an
-  explanation of options."
-  [^String path opts]
-  (if-let [^File file (if-let [^String root (:root opts)]
-                        (if (or (safe-path? root path) 
-                                (and (:allow-symlinks? opts) (not (directory-transversal? path))))
-                          (File. root path))
-                  (File. path))]
+(defn- safely-find-file [path opts]
+  (if-let [^String root (:root opts)]
+    (if (or (safe-path? root path)
+            (and (:allow-symlinks? opts) (not (directory-transversal? path))))
+      (File. root path))
+    (File. path)))
+
+(defn- find-file [^String path opts]
+  (if-let [^File file (safely-find-file path opts)]
     (cond
       (.isDirectory file)
         (and (:index-files? opts true) (find-index-file file))
@@ -85,7 +85,7 @@
     :index-files?    - look for index.* files in directories, defaults to true
     :allow-symlinks? - serve files through symbolic links, defaults to false"
   [filepath & [opts]]
-  (if-let [file (get-file filepath opts)]
+  (if-let [file (find-file filepath opts)]
     (response file)))
 
 ;; In Clojure versions 1.2.0, 1.2.1 and 1.3.0, the as-file function
