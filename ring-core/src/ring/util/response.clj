@@ -1,6 +1,6 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
-  (:import java.io.File)
+  (:import java.io.File java.util.Date java.net.URL)
   (:use [ring.util.time :only (format-date)])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
@@ -41,6 +41,16 @@
    :headers {}
    :body    body})
 
+(defn status
+  "Returns an updated Ring response with the given status."
+  [resp status]
+  (assoc resp :status status))
+
+(defn header
+  "Returns an updated Ring response with the specified header added."
+  [resp name value]
+  (assoc-in resp [:headers name] (str value)))
+
 (defn- safe-path?
   "Is a filepath safe for a particular root?"
   [^String root ^String path]
@@ -77,6 +87,14 @@
       (.exists file)
         file)))
 
+(defn- file-content-length [resp]
+  (let [file ^File (:body resp)]
+    (header resp "Content-Length" (.length file))))
+
+(defn- file-last-modified [resp]
+  (let [file ^File (:body resp)]
+    (header resp "Last-Modified" (format-date (Date. (.lastModified file))))))
+
 (defn file-response
   "Returns a Ring response to serve a static file, or nil if an appropriate
   file does not exist.
@@ -109,16 +127,6 @@
           (char)
           (str))))))
 
-(defn status
-  "Returns an updated Ring response with the given status."
-  [resp status]
-  (assoc resp :status status))
-
-(defn header
-  "Returns an updated Ring response with the specified header added."
-  [resp name value]
-  (assoc-in resp [:headers name] (str value)))
-
 (defn content-type
   "Returns an updated Ring response with the a Content-Type header corresponding
   to the given content-type."
@@ -148,21 +156,35 @@
        (integer? (:status resp))
        (map? (:headers resp))))
 
-(defn- set-resource-headers
-  "Set Last-Modified and Content-Length for a resource"
-  [resp ^java.net.URL res-url]
-  (when resp
-    (let [ucon (doto (.openConnection res-url)
-                 (.setDoInput false))
-          content-length (.getContentLength ucon)
-          resp (if (neg? content-length)
-                 resp
-                 (header resp "Content-Length" content-length))
-          last-modified (.getLastModified ucon)
-          resp (if (zero? last-modified)
-                 resp
-                 (header resp "Last-Modified" (format-date (java.util.Date. last-modified))))]
-      resp)))
+(defn- connection-content-length [resp conn]
+  (let [content-length (.getContentLength conn)]
+    (if (neg? content-length)
+      resp
+      (header resp "Content-Length" content-length))))
+
+(defn- connection-last-modified [resp conn]
+  (let [last-modified (.getLastModified conn)]
+    (if (zero? last-modified)
+      resp
+      (header resp "Last-Modified" (format-date (Date. last-modified))))))
+
+(defn- file-url [url]
+  (if (= "file" (.getProtocol url))
+    (url-as-file url)))
+
+(defn url-response
+  "Return a response for the supplied URL."
+  [^URL url]
+  (if-let [file (file-url url)]
+    (if-not (.isDirectory file)
+      (-> (response file)
+          (file-content-length)
+          (file-last-modified)))
+    (let [conn (.openConnection url)]
+      (if-let [stream (.getInputStream conn)]
+        (-> (response stream)
+            (connection-content-length conn)
+            (connection-last-modified conn))))))
 
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the
@@ -171,17 +193,7 @@
     :root - take the resource relative to this root"
   [path & [opts]]
   (let [path (-> (str (:root opts "") "/" path)
-    (.replace "//" "/")
-    (.replaceAll "^/" ""))]
+                 (.replace "//" "/")
+                 (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
-      (->
-        (if (= "file" (.getProtocol resource))
-          (let [file (url-as-file resource)]
-            (if-not (.isDirectory file)
-              (response file)))
-          ; a jar url ending in a slash is by definition a directory
-          (when-not (.endsWith path "/")
-            ; paths to directories with trailing slashes return an URL, but a nil InputStream
-            (when-let [in (io/input-stream resource)]
-              (response in))))
-        (set-resource-headers resource)))))
+      (url-response resource))))
