@@ -28,3 +28,9 @@
 
 (defmethod body-string java.io.InputStream [request]
   (slurp (:body request)))
+
+(defn path-info
+  "Returns the relative path of the request."
+  [request]
+  (or (:path-info request)
+      (:uri request)))
