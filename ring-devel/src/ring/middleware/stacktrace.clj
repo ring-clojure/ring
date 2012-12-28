@@ -43,11 +43,11 @@
           [:div.message (:message ex)]
           [:div.trace       
             [:div.views
-              [:div.label "Source file type:"]
+              [:div.label "Show:"]
               [:ul
-                [:li {:onclick "$('.java').show();$('.clojure').show();"} "All"]
-                [:li {:onclick "$('.java').hide();$('.clojure').show();"} "Clojure"]
-                [:li {:onclick "$('.java').show();$('.clojure').hide();"} "Java"]]]
+                [:li {:onclick "$('.java').show();$('.clojure').show();"} "All files"]
+                [:li {:onclick "$('.java').hide();$('.clojure').show();"} "Clojure files"]
+                [:li {:onclick "$('.java').show();$('.clojure').hide();"} "Java files"]]]
             [:table
               [:tbody (map elem-partial (:trace-elems ex))]]]]])))
 

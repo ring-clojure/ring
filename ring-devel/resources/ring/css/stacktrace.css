@@ -63,6 +63,7 @@ h1 {
 .trace .views {
     width: 100%;
     background: #bcbcbc;
+    padding: 0.5em 0;
 }
 
 .views .label, .views ul, .views li {
@@ -70,10 +71,10 @@ h1 {
 }
 
 .trace .views .label {
-    padding: 0.4em 1em;
+    padding: 0 1em;
 }
 
 .trace .views li {
-    padding: 0.4em 2em;
+    padding: 0 2em;
     cursor: pointer;
 }
