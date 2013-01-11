@@ -8,7 +8,7 @@
 
 
 (defn- scrubbed-uri [uri]
-  (str "/" (string/join (interpose "/" (rest (rest (string/split uri #"\/")))))))
+  (str "/" (string/join "/" (nnext (string/split uri #"\/")))))
 
 (defn- acceptable-locale? [possible-locale accepted-locales]
   (or (contains? accepted-locales possible-locale) (empty? accepted-locales)))
