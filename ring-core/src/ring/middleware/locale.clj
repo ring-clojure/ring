@@ -1,7 +1,12 @@
 (ns ^{:doc "This namespace contains middleware that digests locale
   information and adds it to the request map."}
-  ring.middleware.locale)
+  ring.middleware.locale
+  (:use
+    [clojure.string :as string :only [split join]]))
 
+
+(defn- scrubbed-uri [uri]
+  (str "/" (string/join (interpose "/" (rest (rest (string/split uri #"\/")))))))
 
 (defn- acceptable-locale? [possible-locale accepted-locales]
   (or (contains? accepted-locales possible-locale) (empty? accepted-locales)))
@@ -10,6 +15,12 @@
   (if-let [locale (:locale request)]
     (acceptable-locale? locale (:accepted-locales options))
     false))
+
+
+(defn uri [request options]
+  (let [locale (second (string/split (:uri request) #"\/"))]
+    (assoc request :locale locale :uri (scrubbed-uri (:uri request)))))
+
 
 (defn wrap-locale [handler & options]
   (let [options (apply hash-map options)]

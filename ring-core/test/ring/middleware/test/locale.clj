@@ -46,3 +46,23 @@
   (let [locale-augmenter (fn [_ _] {})
         options {:locale-augmenters [locale-augmenter]}]
     (assert-extracted-locale nil {} options)))
+
+
+(deftest provides-a-locale-augmenter-to-pull-locale-from-uri
+  (let [request {:uri "/en/index.html"}
+        options {:accepted-locales #{"en"}
+                 :locale-augmenters [uri]}]
+    (assert-extracted-locale "en" request options)))
+
+(deftest will-assume-first-item-in-uri-is-a-locale-if-accepted-locales-arent-specified
+  (let [request {:uri "/index.html"}
+        options {:locale-augmenters [uri]}]
+    (assert-extracted-locale "index.html" request options)))
+
+(deftest scrubs-locale-from-uri-if-an-accepted-locale-is-returned
+  (let [request {:uri "/en/index.html"}
+        options {}]
+    (is (= "/index.html"
+         ((wrap-locale (fn [request] (:uri request))
+             :locale-augmenters [uri])
+          request)))))
