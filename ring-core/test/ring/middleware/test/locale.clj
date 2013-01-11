@@ -103,3 +103,21 @@
         options {:locale-param-name "some_param"
                  :locale-augmenters [query-param]}]
     (assert-extracted-locale "pirate" request options)))
+
+
+
+(deftest provides-a-function-to-pull-locale-from-the-accept-language-header
+  (let [request {:headers {"accept-language" "en_US"}}
+        options {:locale-augmenters [accept-header]}]
+    (assert-extracted-locale "en_US" request options)))
+
+(deftest picks-the-accepted-locale-with-the-highest-q-score
+  (let [request {:headers {"accept-language" "en_US,en;q=0.9,ja;q=0.8,fr;q=0.7,de;q=0.6,es;q=0.5"}}
+        options {:accepted-locales #{"ja" "de" "es"}
+                 :locale-augmenters [accept-header]}]
+    (assert-extracted-locale "ja" request options)))
+
+(deftest returns-nil-if-there-is-no-accept-language-header
+  (let [request {:headers {}}
+        options {:locale-augmenters [accept-header]}]
+    (assert-extracted-locale nil request options)))
