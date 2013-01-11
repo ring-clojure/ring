@@ -3,7 +3,8 @@
   ring.middleware.locale
   (:use
     [clojure.string :as string :only [split join]]
-    [ring.middleware.cookies :only [parse-cookies]]))
+    [ring.middleware.cookies :only [parse-cookies]]
+    [ring.middleware.params :only [parse-params]]))
 
 
 (defn- scrubbed-uri [uri]
@@ -26,6 +27,11 @@
   (let [cookies (or (:cookies request) (parse-cookies request))
         locale-cookie-name (or (:locale-cookie-name options) "locale")]
     (assoc request :locale (:value (get cookies locale-cookie-name)))))
+
+(defn query-param [request options]
+  (let [query-params (or (:query-params request) (parse-params (:query-string request) "UTF-8"))
+        locale-param-name (or (:locale-param-name options) "locale")]
+    (assoc request :locale (get query-params locale-param-name))))
 
 
 (defn wrap-locale [handler & options]

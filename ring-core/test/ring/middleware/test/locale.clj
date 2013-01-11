@@ -9,7 +9,8 @@
              :locale-augmenters (:locale-augmenters options)
              :accepted-locales (:accepted-locales options)
              :default-locale (:default-locale options)
-             :locale-cookie-name (:locale-cookie-name options))
+             :locale-cookie-name (:locale-cookie-name options)
+             :locale-param-name (:locale-param-name options))
           test-request))))
 
 
@@ -85,3 +86,20 @@
                  :accepted-locales #{"en_US" "piglatin"}
                  :locale-augmenters [cookie]}]
     (assert-extracted-locale "piglatin" request options)))
+
+
+(deftest provides-a-function-to-pull-locale-from-the-query-string
+  (let [request {:query-params {"locale" "en_PI"}}
+        options {:locale-augmenters [query-param]}]
+    (assert-extracted-locale "en_PI" request options)))
+
+(deftest parses-the-query-params-if-it-needs-to
+  (let [request {:query-string "locale=fr_CA"}
+        options {:locale-augmenters [query-param]}]
+    (assert-extracted-locale "fr_CA" request options)))
+
+(deftest the-default-locale-param-name-is-locale
+  (let [request {:query-params {"some_param" "pirate"}}
+        options {:locale-param-name "some_param"
+                 :locale-augmenters [query-param]}]
+    (assert-extracted-locale "pirate" request options)))
