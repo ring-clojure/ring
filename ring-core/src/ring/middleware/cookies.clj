@@ -74,7 +74,7 @@
           (merge cookie-map cookie)))
         cookie-map)))
 
-(defn- parse-cookies
+(defn parse-cookies
   "Parse the cookies from a request map."
   [request]
   (if-let [cookie (get-in request [:headers "cookie"])]

@@ -2,7 +2,8 @@
   information and adds it to the request map."}
   ring.middleware.locale
   (:use
-    [clojure.string :as string :only [split join]]))
+    [clojure.string :as string :only [split join]]
+    [ring.middleware.cookies :only [parse-cookies]]))
 
 
 (defn- scrubbed-uri [uri]
@@ -20,6 +21,11 @@
 (defn uri [request options]
   (let [locale (second (string/split (:uri request) #"\/"))]
     (assoc request :locale locale :uri (scrubbed-uri (:uri request)))))
+
+(defn cookie [request options]
+  (let [cookies (or (:cookies request) (parse-cookies request))
+        locale-cookie-name (or (:locale-cookie-name options) "locale")]
+    (assoc request :locale (:value (get cookies locale-cookie-name)))))
 
 
 (defn wrap-locale [handler & options]

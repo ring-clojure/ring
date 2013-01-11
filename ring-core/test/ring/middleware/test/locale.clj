@@ -8,7 +8,8 @@
          ((wrap-locale (fn [request] (:locale request))
              :locale-augmenters (:locale-augmenters options)
              :accepted-locales (:accepted-locales options)
-             :default-locale (:default-locale options))
+             :default-locale (:default-locale options)
+             :locale-cookie-name (:locale-cookie-name options))
           test-request))))
 
 
@@ -66,3 +67,21 @@
          ((wrap-locale (fn [request] (:uri request))
              :locale-augmenters [uri])
           request)))))
+
+
+(deftest provides-a-function-to-pull-locale-from-a-cookie
+  (let [request {:cookies {"locale" {:value "es_LA"}}}
+        options {:locale-augmenters [cookie]}]
+    (assert-extracted-locale "es_LA" request options)))
+
+(deftest parses-the-cookies-from-the-header-if-it-needs-to
+  (let [request {:headers {"cookie" "a=b; c=d,locale=en_US"}}
+        options {:locale-augmenters [cookie]}]
+    (assert-extracted-locale "en_US" request options)))
+
+(deftest allows-to-pull-locale-from-a-cookie-other-than-the-locale-cookie
+  (let [request {:headers {"cookie" "a=b; custom_cookie=piglatin,e=en_US"}}
+        options {:locale-cookie-name "custom_cookie"
+                 :accepted-locales #{"en_US" "piglatin"}
+                 :locale-augmenters [cookie]}]
+    (assert-extracted-locale "piglatin" request options)))
