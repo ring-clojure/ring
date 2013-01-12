@@ -71,10 +71,14 @@
       secret-key)
     (secure-random-bytes 16)))
 
+(defn- serialize [x]
+  {:post [(= x (binding [*read-eval* false] (read-string %)))]}
+  (pr-str x))
+
 (defn- seal
   "Seal a Clojure data structure into an encrypted and HMACed string."
   [key data]
-  (let [data (encrypt key (.getBytes (pr-str data)))]
+  (let [data (encrypt key (.getBytes (serialize data)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
 (defn- secure-compare [a b]
