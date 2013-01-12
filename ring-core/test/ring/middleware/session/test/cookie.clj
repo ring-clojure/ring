@@ -1,6 +1,8 @@
 (ns ring.middleware.session.test.cookie
   (:use clojure.test
-        [ring.middleware.session store cookie]))
+        [ring.middleware.session store cookie])
+  (:require [ring.middleware.session.cookie :as cookie]
+            [ring.util.codec :as codec]))
 
 (deftest cookie-session-read-not-exist
   (let [store (cookie-store)]
@@ -31,3 +33,13 @@
     (is (not= sess-key sess-key*))
     (is (= (read-session store sess-key*)
            {}))))
+
+(defn seal-code-injection [key code]
+  (let [data (#'cookie/encrypt key (.getBytes (str "#=" (pr-str code))))]
+    (str (codec/base64-encode data) "--" (#'cookie/hmac key data))))
+
+(deftest cookie-session-code-injection
+  (let [secret-key (#'cookie/secure-random-bytes 16)
+        store      (cookie-store {:key secret-key})
+        session    (seal-code-injection secret-key `(+ 1 1))]
+    (is (thrown? RuntimeException (read-session store session)))))
