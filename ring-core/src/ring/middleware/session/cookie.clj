@@ -71,10 +71,14 @@
       secret-key)
     (secure-random-bytes 16)))
 
+(defn- serialize [x]
+  {:post [(= x (binding [*read-eval* false] (read-string %)))]}
+  (pr-str x))
+
 (defn- seal
   "Seal a Clojure data structure into an encrypted and HMACed string."
   [key data]
-  (let [data (encrypt key (.getBytes (pr-str data)))]
+  (let [data (encrypt key (.getBytes (serialize data)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
 (defn- secure-compare [^String a ^String b]
@@ -89,7 +93,8 @@
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
     (if (secure-compare mac (hmac key data))
-        (read-string (decrypt key data)))))
+      (binding [*read-eval* false]
+        (read-string (decrypt key data))))))
 
 (deftype CookieStore [secret-key]
   SessionStore

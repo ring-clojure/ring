@@ -52,7 +52,7 @@
     (for [[name value] cookies]
       (if-let [value (codec/form-decode-str value)]
         (if (.startsWith ^String value "\"")
-          [name (read-string value)]
+          [name (binding [*read-eval* false] (read-string value))]
           [name value])))))
 
 (defn- get-cookie
