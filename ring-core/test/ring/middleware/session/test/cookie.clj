@@ -42,3 +42,8 @@
         store      (cookie-store {:key secret-key})
         session    (seal-code-injection secret-key `(+ 1 1))]
     (is (thrown? RuntimeException (read-session store session)))))
+
+(deftest cookie-session-keyword-injection
+  (let [store    (cookie-store)
+        bad-data {:foo 1 (keyword "bar 3 :baz ") 2}]
+    (is (thrown? AssertionError (write-session store nil bad-data)))))
