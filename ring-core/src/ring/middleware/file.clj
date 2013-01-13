@@ -1,8 +1,9 @@
 (ns ring.middleware.file
   "Static file serving."
+  (:import java.io.File)
   (:require [ring.util.codec :as codec]
-            [ring.util.response :as response])
-  (:import java.io.File))
+            [ring.util.response :as response]
+            [ring.util.request :as request]))
 
 (defn- ensure-dir
   "Ensures that a directory exists at the given path, throwing if one does not."
@@ -24,6 +25,6 @@
     (fn [req]
       (if-not (= :get (:request-method req))
         (app req)
-        (let [path (.substring ^String (codec/url-decode (:uri req)) 1)]
+        (let [path (subs (codec/url-decode (request/path-info req)) 1)]
           (or (response/file-response path opts)
               (app req)))))))

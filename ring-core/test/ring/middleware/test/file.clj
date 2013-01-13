@@ -38,3 +38,13 @@
   (let [app  (wrap-file (constantly :response) public-dir {:index-files? false})
         resp (app {:request-method :get :uri "/"})]
     (is (= :response resp))))
+
+(deftest test-wrap-file-path-info
+  (let [request {:request-method :get
+                 :uri "/bar/foo.html"
+                 :context "/bar"
+                 :path-info "/foo.html"}
+        {:keys [status headers body]} (app request)]
+    (is (= 200 status))
+    (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
+    (is (= foo-html body))))

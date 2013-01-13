@@ -15,4 +15,6 @@
       {:request-method :get, :uri "/index.html"}    "index"
       {:request-method :get, :uri "/bars/foo.html"} "foo"
       {:request-method :get, :uri "/handler"}       "handler"
-      {:request-method :post, :uri "/foo.html"}     "handler")))
+      {:request-method :post, :uri "/foo.html"}     "handler"
+      {:request-method :get, :uri "/pre/foo.html"
+       :path-info "/foo.html", :context "/pre"}     "foo")))
