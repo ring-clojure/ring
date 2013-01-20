@@ -10,6 +10,14 @@
 (defn- double-escape [^String x]
   (.replace (.replace x "\\" "\\\\") "$" "\\$"))
 
+(def ^:private string-replace-bug?
+  (= "x" (str/replace "x" #"." (fn [x] "$0"))))
+
+(defmacro fix-string-replace-bug [x]
+  (if string-replace-bug?
+    `(double-escape ~x)
+    x))
+
 (defn percent-encode
   "Percent-encode every character in the given string using either the specified
   encoding, or UTF-8 by default."
@@ -33,7 +41,7 @@
                (fn [chars]
                  (-> ^bytes (parse-bytes chars)
                      (String. (or encoding "UTF-8"))
-                     (double-escape)))))
+                     (fix-string-replace-bug)))))
 
 (defn url-encode
   "Returns the url-encoded version of the given string, using either a specified
