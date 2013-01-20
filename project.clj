@@ -15,7 +15,7 @@
      "ring-jetty-adapter"
      "ring-servlet"]
   :codox
-    {:src-dir-uri "http://github.com/ring-clojure/ring/blob/1.1.7"
+    {:src-dir-uri "http://github.com/ring-clojure/ring/blob/1.1.8"
      :src-linenum-anchor-prefix "L"
      :sources ["ring-core/src"
                "ring-devel/src"
