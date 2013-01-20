@@ -47,4 +47,4 @@ thanks to those communities for their work.
 
 ## License
 
-Copyright (c) 2009-2012 Mark McGranaghan and released under an MIT license.
+Copyright (c) 2009-2013 Mark McGranaghan and released under an MIT license.
