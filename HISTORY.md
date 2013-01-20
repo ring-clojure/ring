@@ -1,3 +1,12 @@
+## 1.1.8 (2013-01-20)
+
+* Updated ns-tracker dependency to fix issue with Clojure 1.5.0
+* Updated clj-stacktrace dependency to fix exception reporting
+
+## 1.1.7 (2013-01-12)
+
+* Secuity bug fix. See: http://goo.gl/DTRhn
+
 ## 1.1.6 (2012-09-22)
 
 * Removed default charset being incorrectly set on images
