@@ -33,3 +33,24 @@
     (let [h (wrap-not-modified (constantly {:status 200 :headers {} :body ""}))]
       (is (= 200 (:status (h (etag-request "\"12345\"")))))
       (is (= 200 (:status (h (modified-request "Sun, 23 Sep 2012 10:00:00 GMT"))))))))
+
+(deftest not-modified-response-etag-match
+  (let [req  {:headers {"if-none-match" "match"}}
+        h-resp {:status 200 :headers {"etag" "match"} :body ""}]
+    (is (= 304 (:status (not-modified-response h-resp req))))))
+
+(deftest not-modified-response-etag-no-match
+  (let [req  {:headers {"if-none-match" "match"}}
+        h-resp {:status 200 :headers {"etag" "no-match"} :body ""}]
+    (is (= 200 (:status (not-modified-response h-resp req))))))
+
+(deftest not-modified-response-expired
+  (let [req    {:headers {"if-modified-since"         "Sun, 23 Sep 2012 10:52:50 GMT"}}
+        h-resp {:status 200 :headers {"last-modified" "Sun, 23 Sep 2012 10:00:00 GMT"} :body ""}]
+    (is (= 200 (:status (not-modified-response h-resp req))))))
+
+(deftest not-modified-response-current
+  (let [req    {:headers {"if-modified-since"         "Sun, 23 Sep 2012 10:52:50 GMT"}}
+        h-resp {:status 200 :headers {"last-modified" "Sun, 23 Sep 2012 11:00:00 GMT"} :body ""}]
+    (is (= 304 (:status (not-modified-response h-resp req))))))
+
