@@ -1,7 +1,5 @@
 (ns ring.middleware.session
   "Session manipulation."
-  (:use ring.middleware.cookies
-        [ring.middleware.session store memory])
   (:require [ring.middleware.cookies :as cookies]
             [ring.middleware.session.store :as store]
             [ring.middleware.session.memory :as mem]))
@@ -16,6 +14,7 @@
                           {:path root}))})
 
 (defn session-request-fn
+  "Given options, returns a function to process a session request."
   [{:keys [store cookie-name]}]
   (fn [request]
     (let [req-key  (get-in request [:cookies cookie-name :value])
@@ -25,6 +24,7 @@
                       :session/key session-key}))))
 
 (defn session-response-fn
+  "Given options, returns a function to process a session response."
   [{:keys [store cookie-name cookie-attrs]}]
   (fn [{session-key :session/key :as response}]
     (when (seq (dissoc response :session/key))
