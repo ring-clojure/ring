@@ -27,6 +27,25 @@
     (not (.before (.parse (make-http-format) modified-since)
                   last-modified))))
 
+(defn file-info-response
+  "Adds headers to response as described in wrap-file-info."
+  [{:keys [body] :as response} req & [mime-types]]
+  (if (instance? File body)
+    (let [file-type   (guess-mime-type body mime-types)
+          file-length (.length ^File body)
+          lmodified   (Date. (.lastModified ^File body))
+          response    (-> response
+                          (res/content-type file-type)
+                          (res/header
+                           "Last-Modified"
+                           (.format (make-http-format) lmodified)))]
+      (if (not-modified-since? req lmodified)
+        (-> response (res/status 304)
+            (res/header "Content-Length" 0)
+            (assoc :body ""))
+        (-> response (res/header "Content-Length" file-length))))
+    response))
+
 (defn wrap-file-info
   "Wrap an app such that responses with a file a body will have corresponding
   Content-Type, Content-Length, and Last Modified headers added if they can be
@@ -37,19 +56,6 @@
   to content types that will supplement the default, built-in map."
   [app & [mime-types]]
   (fn [req]
-    (let [{:keys [headers body] :as response} (app req)]
-      (if (instance? File body)
-        (let [file-type   (guess-mime-type body mime-types)
-              file-length (.length ^File body)
-              lmodified   (Date. (.lastModified ^File body))
-              response    (-> response
-                              (res/content-type file-type)
-                              (res/header
-                                "Last-Modified"
-                                (.format (make-http-format) lmodified)))]
-          (if (not-modified-since? req lmodified)
-            (-> response (res/status 304)
-                (res/header "Content-Length" 0)
-                (assoc :body ""))
-            (-> response (res/header "Content-Length" file-length))))
-        response))))
+    (-> req
+        app
+        (file-info-response req mime-types))))
