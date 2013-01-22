@@ -45,6 +45,12 @@
     {}
     (param-pairs params)))
 
+(defn nested-params-request
+  "Converts a request with a flat map of parameters to a nested map."
+  [request & [opts]]
+  (let [parse (:key-parser opts parse-nested-keys)]
+    (update-in request [:params] nest-params parse)))
+
 (defn wrap-nested-params
   "Middleware to converts a flat map of parameters into a nested map.
 
@@ -60,6 +66,6 @@
     => {\"foo\" [\"bar\"]}"
   [handler & [opts]]
   (fn [request]
-    (let [parse   (:key-parser opts parse-nested-keys)
-          request (update-in request [:params] nest-params parse)]
-      (handler request))))
+    (-> request
+        (nested-params-request opts)
+        handler)))

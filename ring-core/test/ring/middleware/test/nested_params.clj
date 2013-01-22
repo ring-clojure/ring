@@ -1,4 +1,5 @@
 (ns ring.middleware.test.nested-params
+  (:require [clojure.string :as string])
   (:use clojure.test
         ring.middleware.nested-params))
 
@@ -18,4 +19,14 @@
       (let [params (handler {:params {"a[][x]" "c", "a[][y]" "d"}})]
         (is (= (keys params) ["a"]))
         (is (= (set (params "a")) #{{"x" "c"} {"y" "d"}}))))))
+
+(deftest nested-params-test-with-options
+  (let [handler (wrap-nested-params :params
+                                    {:key-parser #(string/split % #"\.")})]
+    (testing ":key-parser option"
+      (are [p r] (= (handler {:params p}) r)
+        {"foo" "bar"}      {"foo" "bar"}
+        {"x.y" "z"}       {"x" {"y" "z"}}
+        {"a.b.c" "d"}    {"a" {"b" {"c" "d"}}}
+        {"a" "b", "c" "d"} {"a" "b", "c" "d"}))))
 
