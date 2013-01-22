@@ -70,6 +70,20 @@
         func  (load-var store)]
     (func)))
 
+(defn multipart-params-request
+  "Adds :multipart-params and :params keys to request."
+  [request & [opts]]
+  (let [store    (or (:store opts) (default-store))
+        encoding (or (:encoding opts)
+                     (:character-encoding request)
+                     "UTF-8")
+        params   (if (multipart-form? request)
+                   (parse-multipart-params request encoding store)
+                   {})]
+    (merge-with merge request
+                {:multipart-params params}
+                {:params params})))
+
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
   following keys to the request map:
@@ -88,16 +102,7 @@
                 parameter in the multipart parameter map. The default storage
                 function is the temp-file-store."
   [handler & [opts]]
-  (let [store (or (:store opts)
-                  (default-store))]
-    (fn [request]
-      (let [encoding (or (:encoding opts)
-                         (:character-encoding request)
-                         "UTF-8")
-            params   (if (multipart-form? request)
-                       (parse-multipart-params request encoding store)
-                       {})
-            request  (merge-with merge request
-                                 {:multipart-params params}
-                                 {:params params})]
-        (handler request)))))
+  (fn [request]
+    (-> request
+        (multipart-params-request opts)
+        handler)))
