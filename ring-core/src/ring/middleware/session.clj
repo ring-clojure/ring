@@ -13,34 +13,31 @@
                         (if-let [root (options :root)]
                           {:path root}))})
 
-(defn session-request-fn
-  "Given options, returns a function to process a session request."
-  [{:keys [store cookie-name]}]
-  (fn [request]
-    (let [req-key  (get-in request [:cookies cookie-name :value])
-          session  (store/read-session store req-key)
-          session-key (if session req-key)]
-      (merge request {:session (or session {})
-                      :session/key session-key}))))
+(defn session-request
+  "Reads current HTTP session map and adds it to :session key of the request."
+  [request & [{:keys [store cookie-name]}]]
+  (let [req-key  (get-in request [:cookies cookie-name :value])
+        session  (store/read-session store req-key)
+        session-key (if session req-key)]
+    (merge request {:session (or session {})
+                    :session/key session-key})))
 
-(defn session-response-fn
-  "Given options, returns a function to process a session response."
-  [{:keys [store cookie-name cookie-attrs]}]
-  (fn [{session-key :session/key :as response}]
-    (when (seq (dissoc response :session/key))
-      (let [new-session-key (when (contains? response :session)
-                              (if-let [session (response :session)]
-                                (store/write-session store session-key session)
-                                (when session-key
-                                  (store/delete-session store session-key))))
-            response (dissoc response :session)
-            cookie   {cookie-name
-                      (merge cookie-attrs
-                             (response :session-cookie-attrs)
-                             {:value new-session-key})}]
-        (if (and new-session-key (not= session-key new-session-key))
-          (assoc response :cookies (merge (response :cookies) cookie))
-          response)))))
+(defn session-response
+  "Updates session based on :session key in response."
+  [{session-key :session/key :as response} & [{:keys [store cookie-name cookie-attrs]}]]
+  (let [new-session-key (when (contains? response :session)
+                          (if-let [session (response :session)]
+                            (store/write-session store session-key session)
+                            (when session-key
+                              (store/delete-session store session-key))))
+        response (dissoc response :session)
+        cookie   {cookie-name
+                  (merge cookie-attrs
+                         (response :session-cookie-attrs)
+                         {:value new-session-key})}]
+    (if (and new-session-key (not= session-key new-session-key))
+      (assoc response :cookies (merge (response :cookies) cookie))
+      response)))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -67,14 +64,13 @@
   ([handler]
      (wrap-session handler {}))
   ([handler options]
-     (let [options (session-options options)
-           session-request (session-request-fn options)
-           session-response (session-response-fn options)]
+     (let [options (session-options options)]
        (cookies/wrap-cookies
         (fn [request]
-          (let [new-request (session-request request)
-                session-key (:session/key new-request)]
-            (-> new-request
-                handler
-                (assoc :session/key session-key)
-                session-response)))))))
+          (let [new-request (session-request request options)
+                session-key (:session/key new-request)
+                response (-> new-request
+                             handler
+                             (assoc :session/key session-key))]
+            (when (seq (dissoc response :session/key))
+              (session-response response options))))))))
