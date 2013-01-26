@@ -1,6 +1,6 @@
 (ns ring.middleware.multipart-params
   "Parse multipart upload into params."
-  (:use [ring.util.data :only (assoc-conj)])
+  (:use [ring.util.codec :only (assoc-conj)])
   (:import [org.apache.commons.fileupload.util Streams]
            [org.apache.commons.fileupload
              RequestContext

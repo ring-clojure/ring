@@ -2,7 +2,7 @@
   :description "Ring core libraries."
   :url "https://github.com/ring-clojure/ring"
   :dependencies [[org.clojure/clojure "1.3.0"]
-                 [commons-codec "1.6"]
+                 [ring/ring-codec "1.0.0"]
                  [commons-io "2.1"]
                  [commons-fileupload "1.2.1"]
                  [javax.servlet/servlet-api "2.5"]
