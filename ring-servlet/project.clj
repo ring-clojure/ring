@@ -4,6 +4,5 @@
   :dependencies [[ring/ring-core "1.2.0-SNAPSHOT"]
                  [javax.servlet/servlet-api "2.5"]]
   :profiles
-  {:1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
-   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
+  {:1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
    :1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}})
