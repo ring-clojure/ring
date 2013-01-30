@@ -13,8 +13,7 @@
                         (if-let [root (options :root)]
                           {:path root}))})
 
-(defn session-request
-  "Reads current HTTP session map and adds it to :session key of the request."
+(defn- bare-session-request
   [request & [{:keys [store cookie-name]}]]
   (let [req-key  (get-in request [:cookies cookie-name :value])
         session  (store/read-session store req-key)
@@ -22,8 +21,14 @@
     (merge request {:session (or session {})
                     :session/key session-key})))
 
-(defn session-response
-  "Updates session based on :session key in response."
+(defn session-request
+  "Reads current HTTP session map and adds it to :session key of the request."
+  [request & [opts]]
+  (-> request
+      cookies/cookies-request
+      (bare-session-request opts)))
+
+(defn- bare-session-response
   [{session-key :session/key :as response} & [{:keys [store cookie-name cookie-attrs]}]]
   (let [new-session-key (when (contains? response :session)
                           (if-let [session (response :session)]
@@ -38,6 +43,13 @@
     (if (and new-session-key (not= session-key new-session-key))
       (assoc response :cookies (merge (response :cookies) cookie))
       response)))
+
+(defn session-response
+  "Updates session based on :session key in response."
+  [response & [opts]]
+  (-> response
+      (bare-session-response opts)
+      cookies/cookies-response))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -65,12 +77,11 @@
      (wrap-session handler {}))
   ([handler options]
      (let [options (session-options options)]
-       (cookies/wrap-cookies
-        (fn [request]
-          (let [new-request (session-request request options)
-                session-key (:session/key new-request)
-                response (-> new-request
-                             handler
-                             (assoc :session/key session-key))]
-            (when (seq (dissoc response :session/key))
-              (session-response response options))))))))
+       (fn [request]
+         (let [new-request (session-request request options)
+               session-key (:session/key new-request)
+               response (-> new-request
+                            handler
+                            (assoc :session/key session-key))]
+           (when (seq (dissoc response :session/key))
+             (session-response response options)))))))
