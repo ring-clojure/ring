@@ -29,7 +29,7 @@
       (bare-session-request opts)))
 
 (defn- bare-session-response
-  [{session-key :session/key :as response} & [{:keys [store cookie-name cookie-attrs]}]]
+  [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
   (let [new-session-key (when (contains? response :session)
                           (if-let [session (response :session)]
                             (store/write-session store session-key session)
@@ -46,10 +46,11 @@
 
 (defn session-response
   "Updates session based on :session key in response."
-  [response & [opts]]
-  (-> response
-      (bare-session-response opts)
-      cookies/cookies-response))
+  [response request & [opts]]
+  (when response
+    (-> response
+        (bare-session-response request opts)
+        cookies/cookies-response)))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -78,10 +79,7 @@
   ([handler options]
      (let [options (session-options options)]
        (fn [request]
-         (let [new-request (session-request request options)
-               session-key (:session/key new-request)
-               response (-> new-request
-                            handler
-                            (assoc :session/key session-key))]
-           (when (seq (dissoc response :session/key))
-             (session-response response options)))))))
+         (let [new-request (session-request request options)]
+           (-> new-request
+               handler
+               (session-response new-request options)))))))
