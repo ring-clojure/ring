@@ -38,8 +38,8 @@
         (include-css "__ring/css/stacktrace.css")]
       [:body
         [:div#exception
-          [:h1 (.getName (:class ex))]
-          [:div.message (:message ex)]
+          [:h1 (h (.getName (:class ex)))]
+          [:div.message (h (:message ex))]
           [:div.trace       
             [:table
               [:tbody (map elem-partial (:trace-elems ex))]]]]])))
