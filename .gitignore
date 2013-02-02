@@ -12,3 +12,4 @@ doc
 .lein-env
 target
 checkouts
+.lein-repl-history
