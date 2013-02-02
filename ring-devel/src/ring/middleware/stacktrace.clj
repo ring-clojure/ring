@@ -35,19 +35,12 @@
     (html5
       [:head
         [:title "Ring: Stacktrace"]
-        (include-css "__ring/css/stacktrace.css")
-        (include-js "__ring/js/jquery.js")]
+        (include-css "__ring/css/stacktrace.css")]
       [:body
         [:div#exception
           [:h1 (.getName (:class ex))]
           [:div.message (:message ex)]
           [:div.trace       
-            [:div.views
-              [:div.label "Show:"]
-              [:ul
-                [:li {:onclick "$('.java').show();$('.clojure').show();"} "All files"]
-                [:li {:onclick "$('.java').hide();$('.clojure').show();"} "Clojure files"]
-                [:li {:onclick "$('.java').show();$('.clojure').hide();"} "Java files"]]]
             [:table
               [:tbody (map elem-partial (:trace-elems ex))]]]]])))
 
@@ -78,8 +71,6 @@
     (case (path-info request)
       "/__ring/css/stacktrace.css"
       (resource-response "ring/css/stacktrace.css")
-      "/__ring/js/jquery.js"
-      (resource-response "ring/js/jquery.js")
       (try
         (handler request)
         (catch Exception ex
