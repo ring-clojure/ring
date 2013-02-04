@@ -70,3 +70,6 @@
             :body    known-file}
            (known-file-app
              {:headers {"if-modified-since" "Wed, 13 Jan 2010 22:00:00 +0000"}})))))
+
+(deftest file-info-response-test
+  (is (fn? file-info-response)))

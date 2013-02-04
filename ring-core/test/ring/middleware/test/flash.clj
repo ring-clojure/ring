@@ -38,3 +38,9 @@
 (deftest flash-not-except-on-nil-response
   (let [handler (wrap-flash (constantly nil))]
     (is (nil? (handler {})))))
+
+(deftest flash-request-test
+  (is (fn? flash-request)))
+
+(deftest flash-response-test
+  (is (fn? flash-response)))

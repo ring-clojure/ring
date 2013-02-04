@@ -1,7 +1,56 @@
 (ns ring.middleware.session
   "Session manipulation."
-  (:use ring.middleware.cookies
-        [ring.middleware.session store memory]))
+  (:require [ring.middleware.cookies :as cookies]
+            [ring.middleware.session.store :as store]
+            [ring.middleware.session.memory :as mem]))
+
+(defn session-options
+  [options]
+  {:store (options :store (mem/memory-store))
+   :cookie-name (options :cookie-name "ring-session")
+   :cookie-attrs (merge {:path "/"}
+                        (options :cookie-attrs)
+                        (if-let [root (options :root)]
+                          {:path root}))})
+
+(defn- bare-session-request
+  [request & [{:keys [store cookie-name]}]]
+  (let [req-key  (get-in request [:cookies cookie-name :value])
+        session  (store/read-session store req-key)
+        session-key (if session req-key)]
+    (merge request {:session (or session {})
+                    :session/key session-key})))
+
+(defn session-request
+  "Reads current HTTP session map and adds it to :session key of the request."
+  [request & [opts]]
+  (-> request
+      cookies/cookies-request
+      (bare-session-request opts)))
+
+(defn- bare-session-response
+  [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
+  (let [new-session-key (when (contains? response :session)
+                          (if-let [session (response :session)]
+                            (store/write-session store session-key session)
+                            (when session-key
+                              (store/delete-session store session-key))))
+        response (dissoc response :session)
+        cookie   {cookie-name
+                  (merge cookie-attrs
+                         (response :session-cookie-attrs)
+                         {:value new-session-key})}]
+    (if (and new-session-key (not= session-key new-session-key))
+      (assoc response :cookies (merge (response :cookies) cookie))
+      response)))
+
+(defn session-response
+  "Updates session based on :session key in response."
+  [response request & [opts]]
+  (when response
+    (-> response
+        (bare-session-response request opts)
+        cookies/cookies-response)))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -26,31 +75,11 @@
       A map of attributes to associate with the session cookie. Defaults
       to {}."
   ([handler]
-    (wrap-session handler {}))
+     (wrap-session handler {}))
   ([handler options]
-     (let [store        (options :store (memory-store))
-           cookie-name  (options :cookie-name "ring-session")
-           cookie-attrs (merge {:path "/"}
-                               (options :cookie-attrs)
-                               (if-let [root (options :root)]
-                                 {:path root}))]
-      (wrap-cookies
-        (fn [request]
-          (let [req-key  (get-in request [:cookies cookie-name :value])
-                session  (read-session store req-key)
-                sess-key (if session req-key)
-                request  (assoc request :session (or session {}))]
-            (if-let [response (handler request)]
-              (let [sess-key* (if (contains? response :session)
-                                (if-let [session (response :session)]
-                                  (write-session store sess-key session)
-                                  (if sess-key
-                                    (delete-session store sess-key))))
-                    response (dissoc response :session)
-                    cookie   {cookie-name
-                              (merge cookie-attrs
-                                     (response :session-cookie-attrs)
-                                     {:value sess-key*})}]
-                (if (and sess-key* (not= sess-key sess-key*))
-                  (assoc response :cookies (merge (response :cookies) cookie))
-                  response)))))))))
+     (let [options (session-options options)]
+       (fn [request]
+         (let [new-request (session-request request options)]
+           (-> new-request
+               handler
+               (session-response new-request options)))))))

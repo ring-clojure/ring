@@ -18,3 +18,6 @@
       {:request-method :post, :uri "/foo.html"}     "handler"
       {:request-method :get, :uri "/pre/foo.html"
        :path-info "/foo.html", :context "/pre"}     "foo")))
+
+(deftest resource-request-test
+  (is (fn? resource-request)))
