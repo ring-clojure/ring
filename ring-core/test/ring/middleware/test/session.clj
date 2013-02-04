@@ -136,3 +136,9 @@
                    {:store store})]
     (handler {:cookies {"ring-session" {:value "faked-key"}}})
     (is (not (contains? @store-ref "faked-key")))))
+
+(deftest session-request-test
+  (is (fn? session-request)))
+
+(deftest session-response-test
+  (is (fn? session-response)))

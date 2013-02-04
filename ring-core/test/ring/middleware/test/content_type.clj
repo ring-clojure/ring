@@ -34,3 +34,6 @@
   (testing "nil response"
     (let [handler (wrap-content-type (constantly nil))]
       (is (nil? (handler {:uri "/foo/bar.txt"}))))))
+
+(deftest content-type-response-test
+  (is (fn? content-type-response)))

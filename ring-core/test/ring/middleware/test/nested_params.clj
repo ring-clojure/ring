@@ -30,3 +30,5 @@
         {"a.b.c" "d"}    {"a" {"b" {"c" "d"}}}
         {"a" "b", "c" "d"} {"a" "b", "c" "d"}))))
 
+(deftest nested-params-request-test
+  (is (fn? nested-params-request)))

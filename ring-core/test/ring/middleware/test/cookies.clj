@@ -158,3 +158,9 @@
   (let [req {:headers {"cookie" "a=b; c=d,e=f"}}]
     (is (= {"a" {:value "b"}, "c" {:value "d"}, "e" {:value "f"}}
            ((cookies-request req) :cookies)))))
+
+(deftest cookies-response-test
+  (is (fn? cookies-response)))
+
+(deftest cookies-request-test
+  (is (fn? cookies-request)))

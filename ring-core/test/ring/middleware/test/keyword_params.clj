@@ -18,3 +18,6 @@
     {:foo "bar"}
     {"foo" {:bar "baz"}}
     {:foo {:bar "baz"}}))
+
+(deftest keyword-params-request-test
+  (is (fn? keyword-params-request)))
