@@ -14,3 +14,9 @@
   (let [resp ((wrap-head handler) {:request-method :post})]
     (is (= (:body resp) "Foobar"))
     (is (= "post" (get-in resp [:headers "X-method"])))))
+
+(deftest head-request-test
+  (is (fn? head-request)))
+
+(deftest head-response-test
+  (is (fn? head-response)))

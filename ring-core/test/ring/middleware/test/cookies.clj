@@ -148,3 +148,19 @@
                       :max-age (date-time 2015 12 31)}}
         handler (constantly {:cookies cookies})]
     (is (thrown? AssertionError ((wrap-cookies handler) {})))))
+
+(deftest parse-cookies-on-request-basic-cookie
+  (let [req {:headers {"cookie" "a=b"}}]
+    (is (= {"a" {:value "b"}}
+           ((cookies-request req) :cookies)))))
+
+(deftest parse-cookies-on-request-multiple-cookies
+  (let [req {:headers {"cookie" "a=b; c=d,e=f"}}]
+    (is (= {"a" {:value "b"}, "c" {:value "d"}, "e" {:value "f"}}
+           ((cookies-request req) :cookies)))))
+
+(deftest cookies-response-test
+  (is (fn? cookies-response)))
+
+(deftest cookies-request-test
+  (is (fn? cookies-request)))

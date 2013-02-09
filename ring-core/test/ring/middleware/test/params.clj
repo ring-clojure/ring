@@ -44,3 +44,9 @@
         resp (wrapped-echo req)]
     (is (= (:params resp) {"hello" "world"}))
     (is (= (:form-params resp) {"hello" "world"}))))
+
+(deftest params-request-test
+  (is (fn? params-request)))
+
+(deftest assoc-form-params-test
+  (is (fn? assoc-form-params)))

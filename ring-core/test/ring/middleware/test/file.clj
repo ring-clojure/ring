@@ -48,3 +48,6 @@
     (is (= 200 status))
     (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
     (is (= foo-html body))))
+
+(deftest file-request-test
+  (is (fn? file-request)))

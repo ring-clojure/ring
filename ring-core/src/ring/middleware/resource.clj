@@ -4,6 +4,14 @@
            [ring.util.response :as response]
            [ring.util.request :as request]))
 
+(defn resource-request
+  "If request matches a static resource, returns it in a response map.
+ Otherwise returns nil."
+  [request root-path]
+  (when (= :get (:request-method request))
+    (let [path (subs (codec/url-decode (request/path-info request)) 1)]
+      (response/resource-response path {:root root-path}))))
+
 (defn wrap-resource
   "Middleware that first checks to see whether the request map matches a static
   resource. If it does, the resource is returned in a response map, otherwise
@@ -11,8 +19,5 @@
   added to the beginning of the resource path."
   [handler root-path]
   (fn [request]
-    (if-not (= :get (:request-method request))
-      (handler request)
-      (let [path (subs (codec/url-decode (request/path-info request)) 1)]
-        (or (response/resource-response path {:root root-path})
-            (handler request))))))
+    (or (resource-request request root-path)
+        (handler request))))

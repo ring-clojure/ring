@@ -132,6 +132,20 @@
                (doall (write-cookies cookies)))
     response))
 
+(defn cookies-request
+  "Parses cookies in the request map."
+  [request]
+  (if (request :cookies)
+    request
+    (assoc request :cookies (parse-cookies request))))
+
+(defn cookies-response
+  "For responses with :cookies, adds Set-Cookie header and returns response without :cookies."
+  [response]
+  (-> response
+      (set-cookies)
+      (dissoc :cookies)))
+
 (defn wrap-cookies
   "Parses the cookies in the request map, then assocs the resulting map
   to the :cookies key on the request.
@@ -154,9 +168,7 @@
   :http-only - set to true if the cookie is valid for HTTP only"
   [handler]
   (fn [request]
-    (let [request (if (request :cookies)
-                    request
-                    (assoc request :cookies (parse-cookies request)))]
-      (-> (handler request)
-        (set-cookies)
-        (dissoc :cookies)))))
+    (-> request
+        cookies-request
+        handler
+        cookies-response)))

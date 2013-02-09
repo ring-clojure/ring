@@ -59,3 +59,6 @@
       (handler {}))
     (is (< (count (all-threads))
            100))))
+
+(deftest multipart-params-request-test
+  (is (fn? multipart-params-request)))
