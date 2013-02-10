@@ -34,3 +34,17 @@
   [request]
   (or (:path-info request)
       (:uri request)))
+
+(defn in-context?
+  "Returns true if the URI of the request is a subpath of the supplied context."
+  [request context]
+  (.startsWith ^String (:uri request) context))
+
+(defn set-context
+  "Associate a context and path-info with the  request. The request URI must be
+  a subpath of the supplied context."
+  [request ^String context]
+  {:pre [(in-context? request context)]}
+  (assoc request
+    :context context
+    :path-info (subs (:uri request) (.length context))))

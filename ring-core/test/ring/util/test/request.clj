@@ -31,3 +31,14 @@
       (.delete f)))
   (testing "input-stream body"
     (is (= (body-string {:body (string-input-stream "baz")}) "baz"))))
+
+(deftest test-in-context?
+  (is (in-context? {:uri "/foo/bar"} "/foo"))
+  (is (not (in-context? {:uri "/foo/bar"} "/bar"))))
+
+(deftest test-set-context
+  (is (= (set-context {:uri "/foo/bar"} "/foo")
+         {:uri "/foo/bar"
+          :context "/foo"
+          :path-info "/bar"}))
+  (is (thrown? AssertionError (set-context {:uri "/foo/bar"} "/bar"))))
