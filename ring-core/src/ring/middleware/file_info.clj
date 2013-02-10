@@ -29,6 +29,7 @@
 
 (defn file-info-response
   "Adds headers to response as described in wrap-file-info."
+  {:deprecated "1.2"}
   [{:keys [body] :as response} req & [mime-types]]
   (if (instance? File body)
     (let [file-type   (guess-mime-type body mime-types)
@@ -54,6 +55,7 @@
   modification date of the file, a 304 Not Modified response is returned.
   If two arguments are given, the second is taken to be a map of file extensions
   to content types that will supplement the default, built-in map."
+  {:deprecated "1.2"}
   [app & [mime-types]]
   (fn [req]
     (-> req
