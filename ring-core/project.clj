@@ -1,4 +1,4 @@
-(defproject ring/ring-core "1.2.0-SNAPSHOT"
+(defproject ring/ring-core "1.2.0-beta1"
   :description "Ring core libraries."
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
