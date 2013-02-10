@@ -1,6 +1,8 @@
 (defproject ring "1.2.0-SNAPSHOT"
   :description "A Clojure web applications library."
   :url "https://github.com/ring-clojure/ring"
+  :license {:name "The MIT License"
+            :url "http://opensource.org/licenses/MIT"}
   :dependencies
     [[ring/ring-core "1.2.0-SNAPSHOT"]
      [ring/ring-devel "1.2.0-SNAPSHOT"]

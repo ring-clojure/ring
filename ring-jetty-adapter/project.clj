@@ -1,6 +1,8 @@
 (defproject ring/ring-jetty-adapter "1.2.0-SNAPSHOT"
   :description "Ring Jetty adapter."
   :url "https://github.com/ring-clojure/ring"
+  :license {:name "The MIT License"
+            :url "http://opensource.org/licenses/MIT"}
   :dependencies [[ring/ring-core "1.2.0-SNAPSHOT"]
                  [ring/ring-servlet "1.2.0-SNAPSHOT"]
                  [org.eclipse.jetty/jetty-server "7.6.8.v20121106"]]

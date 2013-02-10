@@ -1,6 +1,8 @@
 (defproject ring/ring-devel "1.2.0-SNAPSHOT"
   :description "Ring development and debugging libraries."
   :url "https://github.com/ring-clojure/ring"
+  :license {:name "The MIT License"
+            :url "http://opensource.org/licenses/MIT"}
   :dependencies [[ring/ring-core "1.2.0-SNAPSHOT"]
                  [hiccup "1.0.0"]
                  [clj-stacktrace "0.2.5"]
