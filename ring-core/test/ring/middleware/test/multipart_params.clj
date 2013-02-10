@@ -54,9 +54,26 @@
   (.keySet (Thread/getAllStackTraces)))
 
 (deftest test-multipart-threads
-  (let [handler (wrap-multipart-params identity)]
-    (dotimes [_ 200]
-      (handler {}))
+  (testing "no thread leakage when handler called"
+    (let [handler (wrap-multipart-params identity)]
+      (dotimes [_ 200]
+        (handler {}))
+      (is (< (count (all-threads))
+             100))))
+
+  (testing "no thread leakage from default store"
+    (let [form-body (str "--XXXX\r\n"
+                         "Content-Disposition: form-data;"
+                         "name=\"upload\"; filename=\"test.txt\"\r\n"
+                         "Content-Type: text/plain\r\n\r\n"
+                         "foo\r\n"
+                         "--XXXX--")]
+      (dotimes [_ 200]
+        (let [handler (wrap-multipart-params identity)
+              request {:content-type "multipart/form-data; boundary=XXXX"
+                       :content-length (count form-body)
+                       :body (string-input-stream form-body)}]
+          (handler request))))
     (is (< (count (all-threads))
            100))))
 

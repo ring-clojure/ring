@@ -63,17 +63,16 @@
   (require (symbol (namespace sym)))
   (find-var sym))
 
-(defn default-store
-  "Loads and returns a temporary file store."
-  []
-  (let [store 'ring.middleware.multipart-params.temp-file/temp-file-store
-        func  (load-var store)]
-    (func)))
+(def ^:private default-store
+  (delay
+   (let [store 'ring.middleware.multipart-params.temp-file/temp-file-store
+         func  (load-var store)]
+     (func))))
 
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request."
   [request & [opts]]
-  (let [store    (or (:store opts) (default-store))
+  (let [store    (or (:store opts) @default-store)
         encoding (or (:encoding opts)
                      (:character-encoding request)
                      "UTF-8")
