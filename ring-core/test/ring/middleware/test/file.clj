@@ -51,3 +51,9 @@
 
 (deftest file-request-test
   (is (fn? file-request)))
+
+(deftest test-head-request
+  (let [{:keys [status headers body]} (app {:request-method :head :uri "/foo.html"})]
+    (is (= 200 status))
+    (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
+    (is (nil? body))))

@@ -2,7 +2,8 @@
   "Middleware for serving static resources."
   (require [ring.util.codec :as codec]
            [ring.util.response :as response]
-           [ring.util.request :as request]))
+           [ring.util.request :as request]
+           [ring.middleware.head :as head]))
 
 (defn resource-request
   "If request matches a static resource, returns it in a response map.
@@ -19,5 +20,5 @@
   added to the beginning of the resource path."
   [handler root-path]
   (fn [request]
-    (or (resource-request request root-path)
+    (or ((head/wrap-head #(resource-request % root-path)) request)
         (handler request))))

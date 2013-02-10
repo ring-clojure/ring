@@ -3,7 +3,8 @@
   (:import java.io.File)
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response]
-            [ring.util.request :as request]))
+            [ring.util.request :as request]
+            [ring.middleware.head :as head]))
 
 (defn- ensure-dir
   "Ensures that a directory exists at the given path, throwing if one does not."
@@ -30,5 +31,5 @@
   [handler ^String root-path & [opts]]
   (ensure-dir root-path)
   (fn [req]
-    (or (file-request req root-path opts)
+    (or ((head/wrap-head #(file-request % root-path opts)) req)
         (handler req))))

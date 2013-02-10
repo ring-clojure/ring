@@ -21,3 +21,9 @@
 
 (deftest resource-request-test
   (is (fn? resource-request)))
+
+(deftest test-head-request
+  (let [handler  (wrap-resource test-handler "/ring/assets")
+        response (handler {:request-method :head :uri "/foo.html"})]
+    (is (= 200 (:status response)))
+    (is (nil? (:body response)))))
