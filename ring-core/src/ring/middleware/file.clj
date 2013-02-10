@@ -21,14 +21,14 @@
         (response/file-response path opts)))))
 
 (defn wrap-file
-  "Wrap an app such that the directory at the given root-path is checked for a
-  static file with which to respond to the request, proxying the request to the
-  wrapped app if such a file does not exist.
+  "Wrap an handler such that the directory at the given root-path is checked for
+  a static file with which to respond to the request, proxying the request to
+  the wrapped handler if such a file does not exist.
 
   An map of options may be optionally specified. These options will be passed
   to the ring.util.response/file-response function."
-  [app ^String root-path & [opts]]
+  [handler ^String root-path & [opts]]
   (ensure-dir root-path)
   (fn [req]
     (or (file-request req root-path opts)
-        (app req))))
+        (handler req))))
