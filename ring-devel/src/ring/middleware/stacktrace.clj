@@ -45,7 +45,7 @@
               [:tbody (map elem-partial (:trace-elems ex))]]]]])))
 
 (defn- js-ex-response [e]
-  (-> (response (pst-str e))
+  (-> (response (with-out-str (pst e)))
       (status 500)
       (content-type "text/javascript")))
 
