@@ -4,6 +4,7 @@
 (def default-mime-types
   {"7z"    "application/x-7z-compressed"
    "aac"   "audio/aac"
+   "manifest" "text/cache-manifest"
    "ai"    "application/postscript"
    "asc"   "text/plain"
    "atom"  "application/atom+xml"
