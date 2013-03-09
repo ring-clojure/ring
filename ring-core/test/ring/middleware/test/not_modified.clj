@@ -21,36 +21,29 @@
   {:headers {"if-modified-since" modified-date}})
 
 (deftest test-wrap-not-modified
-  (testing "etags"
-    (let [h (wrap-not-modified (handler-etag "\"12345\""))]
-      (is (= 304 (:status (h (etag-request "\"12345\"")))))
-      (is (= 200 (:status (h (etag-request "\"abcde\"")))))))
-  (testing "last-modified"
-    (let [h (wrap-not-modified (handler-modified "Sun, 23 Sep 2012 10:52:50 GMT"))]
-      (is (= 304 (:status (h (modified-request "Sun, 23 Sep 2012 10:00:00 GMT")))))
-      (is (= 200 (:status (h (modified-request "Sun, 23 Sep 2012 11:00:00 GMT")))))))
-  (testing "no modified info"
-    (let [h (wrap-not-modified (constantly {:status 200 :headers {} :body ""}))]
-      (is (= 200 (:status (h (etag-request "\"12345\"")))))
-      (is (= 200 (:status (h (modified-request "Sun, 23 Sep 2012 10:00:00 GMT"))))))))
+  (with-redefs [ring.middleware.not-modified/not-modified-response #(vector %1 %2)]
+    (let [req (modified-request "Sun, 23 Sep 2012 11:00:00 GMT")
+          handler (handler-modified "Jan, 23 Sep 2012 11:00:00 GMT")]
+      (is (= [(handler req) req] ; Not modified since is called with expected args
+             ((wrap-not-modified handler) req))))))
 
-(deftest not-modified-response-etag-match
-  (let [req  {:headers {"if-none-match" "match"}}
-        h-resp {:status 200 :headers {"etag" "match"} :body ""}]
-    (is (= 304 (:status (not-modified-response h-resp req))))))
-
-(deftest not-modified-response-etag-no-match
-  (let [req  {:headers {"if-none-match" "match"}}
-        h-resp {:status 200 :headers {"etag" "no-match"} :body ""}]
-    (is (= 200 (:status (not-modified-response h-resp req))))))
-
-(deftest not-modified-response-expired
-  (let [req    {:headers {"if-modified-since"         "Sun, 23 Sep 2012 10:52:50 GMT"}}
-        h-resp {:status 200 :headers {"last-modified" "Sun, 23 Sep 2012 10:00:00 GMT"} :body ""}]
-    (is (= 200 (:status (not-modified-response h-resp req))))))
-
-(deftest not-modified-response-current
-  (let [req    {:headers {"if-modified-since"         "Sun, 23 Sep 2012 10:52:50 GMT"}}
-        h-resp {:status 200 :headers {"last-modified" "Sun, 23 Sep 2012 11:00:00 GMT"} :body ""}]
-    (is (= 304 (:status (not-modified-response h-resp req))))))
-
+(deftest test-not-modified-response  
+  (testing "etag match"
+           (let [known-etag "known-etag"
+                 request {:headers {"if-none-match" known-etag}}
+                 handler-resp #(hash-map :status 200 :headers {"etag" %} :body "")]
+             (is (= 304 (:status (not-modified-response (handler-resp known-etag) request))))
+             (is (= 200 (:status (not-modified-response (handler-resp "unknown-etag") request))))))
+  
+  (testing "not modified"
+           (let [req #(hash-map :headers {"if-modified-since" %})
+                 last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
+                 h-resp {:status 200 :headers {"Last-Modified" last-modified} :body ""}]
+             (is (= 304 (:status (not-modified-response h-resp (req last-modified)))))
+             (is (= 304 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 11:52:50 GMT")))))
+             (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:50 GMT")))))))
+  
+  (testing "no modification info"
+           (let [response {:status 200 :headers {} :body ""}]
+             (is (= 200 (:status (not-modified-response response (etag-request "\"12345\"")))))
+             (is (= 200 (:status (not-modified-response response (modified-request "Sun, 23 Sep 2012 10:00:00 GMT"))))))))
