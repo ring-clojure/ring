@@ -31,6 +31,7 @@
    "flac"  "audio/flac"
    "gif"   "image/gif"
    "gz"    "application/gzip"
+   "hbs"   "text/x-handlebars"
    "htm"   "text/html"
    "html"  "text/html"
    "ico"   "image/x-icon"
