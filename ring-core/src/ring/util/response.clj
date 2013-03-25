@@ -199,3 +199,25 @@
                  (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
       (url-response resource))))
+
+(defn get-header
+  "Lookup a header in a request or response. It's mainly for responses, because
+  users are allowed to return headers in arbitrary case."
+  [req ^String header-name]
+  (some (fn [[k v]]
+          (and (.equalsIgnoreCase header-name k)
+               v))
+        (:headers req)))
+
+(comment
+  ;; This more efficient version requires clojure 1.5
+  ;; Enable, as soon as we get conditional compilation
+  ;; or 1.5 is min-requirement for ring, whichever happens first
+  (defn get-header
+    "Lookup a header in a request or response. It's mainly for responses, because
+  users are allowed to return headers in arbitrary case."
+    [req ^String header-name]
+    (reduce-kv (fn [_ k v]
+                 (when (.equalsIgnoreCase header-name k)
+                   (reduced v)))
+               nil (:headers req))))
