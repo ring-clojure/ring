@@ -33,7 +33,13 @@
 
   (testing "nil response"
     (let [handler (wrap-content-type (constantly nil))]
-      (is (nil? (handler {:uri "/foo/bar.txt"}))))))
+      (is (nil? (handler {:uri "/foo/bar.txt"})))))
+
+  (testing "case tolerance of response header name"
+    (let [response {:headers {"CoNteNt-typE" "application/x-overridden"}}
+          handler (wrap-content-type (constantly response))]
+      (is (= (handler {:uri "/foo/bar.png"})
+             {:headers {"CoNteNt-typE" "application/x-overridden"}})))))
 
 (deftest content-type-response-test
   (is (fn? content-type-response)))
