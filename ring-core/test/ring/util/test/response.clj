@@ -138,3 +138,13 @@
   (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar" :http-only true}}}
          (set-cookie {:status 200 :headers {}}
                      "Foo" "Bar" {:http-only true}))))
+
+(deftest test-get-header
+  (is (= (get-header {:headers {"Content-Type" "text/plain"}} "Content-Type")
+         "text/plain"))
+  (is (= (get-header {:headers {"content-type" "text/plain"}} "Content-Type")
+         "text/plain"))
+  (is (= (get-header {:headers {"Content-typE" "text/plain"}} "content-type")
+         "text/plain"))
+  (is (= (get-header {:headers {"Content-Type" "text/plain"}} "content-length")
+         nil)))

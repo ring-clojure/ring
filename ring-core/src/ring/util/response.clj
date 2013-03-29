@@ -199,3 +199,10 @@
                  (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
       (url-response resource))))
+
+(defn get-header
+  "Look up a header in a Ring response (or request) case insensitively,
+  returning the value of the header."
+  [resp ^String header-name]
+  (some (fn [[k v]] (if (.equalsIgnoreCase header-name k) v))
+        (:headers resp)))
