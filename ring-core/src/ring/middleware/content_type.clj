@@ -6,7 +6,7 @@
 (defn content-type-response
   "Adds a content-type header to response."
   [resp req & [opts]]
-  (if (get-in resp [:headers "Content-Type"])
+  (if (get-header resp "Content-Type")
     resp
     (let [mime-type (ext-mime-type (:uri req) (:mime-types opts))]
       (content-type resp (or mime-type "application/octet-stream")))))

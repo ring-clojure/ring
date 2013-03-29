@@ -138,3 +138,7 @@
   (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar" :http-only true}}}
          (set-cookie {:status 200 :headers {}}
                      "Foo" "Bar" {:http-only true}))))
+
+(deftest test-set-header
+  (is (= "Header Value" (get-header {:headers {"hEaDeR-NaMe" "Header Value"}}
+                                    "header-name"))))

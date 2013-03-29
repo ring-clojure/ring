@@ -47,3 +47,12 @@
            (let [response {:status 200 :headers {} :body ""}]
              (is (= 200 (:status (not-modified-response response (etag-request "\"12345\"")))))
              (is (= 200 (:status (not-modified-response response (modified-request "Sun, 23 Sep 2012 10:00:00 GMT"))))))))
+
+(deftest header-name-case
+  (let [h-resp {:status 200 :headers {"LasT-ModiFied" "Sun, 23 Sep 2012 11:00:00 GMT"
+                                      "EtAg"          "\"12345\""} }]
+    (is (= 304 (:status (not-modified-response
+                         h-resp {:headers {"if-modified-since"
+                                           "Sun, 23 Sep 2012 11:00:00 GMT"}}))))
+    (is (= 304 (:status (not-modified-response
+                         h-resp {:headers {"if-none-match" "\"12345\""}}))))))

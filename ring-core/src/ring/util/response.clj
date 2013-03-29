@@ -1,7 +1,8 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
   (:import java.io.File java.util.Date java.net.URL)
-  (:use [ring.util.time :only (format-date)])
+  (:use [ring.util.time :only (format-date)]
+        [ring.util.cond-compile :only (cond-compile resolve-clojure)])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -199,3 +200,21 @@
                  (.replaceAll "^/" ""))]
     (if-let [resource (io/resource path)]
       (url-response resource))))
+
+(defn get-header
+  "Lookup a header in a request or response. It's mainly for responses, because
+  users are allowed to return headers in arbitrary case."
+  [req ^String header-name]
+  (cond-compile
+   (and (resolve-clojure 'reduce-kv)
+        (resolve-clojure 'reduced))
+   (reduce-kv (fn [_ k v]
+                (when (.equalsIgnoreCase header-name k)
+                  (reduced v)))
+              nil (:headers req))
+
+   :else
+   (some (fn [[k v]]
+           (and (.equalsIgnoreCase header-name k)
+                v))
+         (:headers req))))
