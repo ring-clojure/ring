@@ -41,7 +41,7 @@
   (let [secret-key (#'cookie/secure-random-bytes 16)
         store      (cookie-store {:key secret-key})
         session    (seal-code-injection secret-key `(+ 1 1))]
-    (is (thrown? RuntimeException (read-session store session)))))
+    (is (thrown? Exception (read-session store session)))))
 
 (deftest cookie-session-keyword-injection
   (let [store    (cookie-store)

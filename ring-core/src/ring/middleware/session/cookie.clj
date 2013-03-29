@@ -1,7 +1,8 @@
 (ns ring.middleware.session.cookie
   "Encrypted cookie session storage."
   (:use ring.middleware.session.store)
-  (:require [ring.util.codec :as codec])
+  (:require [ring.util.codec :as codec]
+            [clojure.tools.reader.edn :as edn])
   (:import java.security.SecureRandom
            (javax.crypto Cipher Mac)
            (javax.crypto.spec SecretKeySpec IvParameterSpec)))
@@ -72,7 +73,7 @@
     (secure-random-bytes 16)))
 
 (defn- serialize [x]
-  {:post [(= x (binding [*read-eval* false] (read-string %)))]}
+  {:post [(= x (edn/read-string %))]}
   (pr-str x))
 
 (defn- seal
@@ -93,8 +94,7 @@
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
     (if (secure-compare mac (hmac key data))
-      (binding [*read-eval* false]
-        (read-string (decrypt key data))))))
+      (edn/read-string (decrypt key data)))))
 
 (deftype CookieStore [secret-key]
   SessionStore

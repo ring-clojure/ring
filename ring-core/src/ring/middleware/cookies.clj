@@ -1,6 +1,7 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
-  (:require [ring.util.codec :as codec])
+  (:require [ring.util.codec :as codec]
+            [clojure.tools.reader.edn :as edn])
   (:use [clj-time.core :only (in-secs)]
         [clj-time.format :only (formatters unparse)])
   (:import (org.joda.time Interval DateTime)))
@@ -52,7 +53,7 @@
     (for [[name value] cookies]
       (if-let [value (codec/form-decode-str value)]
         (if (.startsWith ^String value "\"")
-          [name (binding [*read-eval* false] (read-string value))]
+          [name (edn/read-string value)]
           [name value])))))
 
 (defn- get-cookie
