@@ -15,3 +15,8 @@
     (let [{:keys [status headers]} (app js-req)]
       (is (= 500 status))
       (is (= {"Content-Type" "text/javascript"} headers)))))
+
+(deftest includes-absolute-path-to-css
+  (binding [*err* (java.io.StringWriter.)]
+    (let [{:keys [status headers body] :as response} (app html-req)]
+      (is (.contains body "/__ring/css/stacktrace.css")))))
