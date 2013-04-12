@@ -113,6 +113,17 @@
     (set-headers headers)
     (set-body body)))
 
+(defmacro async-response
+  [& forms]
+  (fn [async-context#]
+    (if-let [response-map# (do ~@forms)]
+      (do
+        (update-servlet-response (.getResponse async-context#) response-map#)
+        (.complete async-context#))
+      (do
+        (.complete async-context#)
+        (throw (NullPointerException. "async handler returned nil"))))))
+
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the
   same return value as the service method in the HttpServlet class."
@@ -121,11 +132,17 @@
        ^HttpServletRequest request
        ^HttpServletResponse response]
     (let [request-map (-> request
-                        (build-request-map)
-                        (merge-servlet-keys servlet request response))]
-      (if-let [response-map (handler request-map)]
-        (update-servlet-response response response-map)
-        (throw (NullPointerException. "Handler returned nil"))))))
+                          (build-request-map)
+                          (merge-servlet-keys servlet request response))]
+      (let [response-ret (handler request-map)]
+        (cond
+          (fn? response-ret)
+            (let [async-context (.startAsync request request response)]
+              (.start response-ret)
+          (nil? response-ret)
+            (throw (NullPointerException. "Handler returned nil"))
+          :else
+            (update-servlet-response response response-ret)))))))
 
 (defn servlet
   "Create a servlet from a Ring handler.."
