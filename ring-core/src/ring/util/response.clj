@@ -72,7 +72,7 @@
       #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
        (.listFiles dir))))
 
-(defn- safely-find-file [path opts]
+(defn- safely-find-file [^String path opts]
   (if-let [^String root (:root opts)]
     (if (or (safe-path? root path)
             (and (:allow-symlinks? opts) (not (directory-transversal? path))))
@@ -158,26 +158,26 @@
        (integer? (:status resp))
        (map? (:headers resp))))
 
-(defn- connection-content-length [resp conn]
+(defn- connection-content-length [resp ^java.net.URLConnection conn]
   (let [content-length (.getContentLength conn)]
     (if (neg? content-length)
       resp
       (header resp "Content-Length" content-length))))
 
-(defn- connection-last-modified [resp conn]
+(defn- connection-last-modified [resp ^java.net.URLConnection conn]
   (let [last-modified (.getLastModified conn)]
     (if (zero? last-modified)
       resp
       (header resp "Last-Modified" (format-date (Date. last-modified))))))
 
-(defn- file-url [url]
+(defn- file-url [^java.net.URL url]
   (if (= "file" (.getProtocol url))
     (url-as-file url)))
 
 (defn url-response
   "Return a response for the supplied URL."
   [^URL url]
-  (if-let [file (file-url url)]
+  (if-let [^File file (file-url url)]
     (if-not (.isDirectory file)
       (-> (response file)
           (file-content-length)

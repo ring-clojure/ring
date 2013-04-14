@@ -38,7 +38,7 @@
         (include-css "__ring/css/stacktrace.css")]
       [:body
         [:div#exception
-          [:h1 (h (.getName (:class ex)))]
+          [:h1 (h (.getName ^Class (:class ex)))]
           [:div.message (h (:message ex))]
           [:div.trace       
             [:table
