@@ -79,7 +79,7 @@
    "txt"   "text/plain"
    "webm"  "video/webm"
    "wmv"   "video/x-ms-wmv"
-   "woff"  "application/x-font-woff"
+   "woff"  "application/font-woff"
    "xbm"   "image/x-xbitmap"
    "xls"   "application/vnd.ms-excel"
    "xml"   "text/xml"
