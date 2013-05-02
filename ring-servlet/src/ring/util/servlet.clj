@@ -46,6 +46,7 @@
    :content-length     (get-content-length request)
    :character-encoding (.getCharacterEncoding request)
    :ssl-client-cert    (get-client-cert request)
+   :locales            (map str (enumeration-seq (.getLocales request)))
    :body               (.getInputStream request)})
 
 (defn merge-servlet-keys
