@@ -90,7 +90,8 @@
 (defn- filename-ext
   "Returns the file extension of a filename or filepath."
   [filename]
-  (second (re-find #"\.([^./\\]+)$" filename)))
+  (when-let [ext (second (re-find #"\.([^./\\]+)$" filename))]            |
+    (.toLowerCase ^String ext)))
 
 (defn ext-mime-type
   "Get the mimetype from the filename extension. Takes an optional map of
