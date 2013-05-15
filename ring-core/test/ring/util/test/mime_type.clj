@@ -12,4 +12,6 @@
     (is (= (ext-mime-type "foo.bar" {"bar" "application/bar"})
            "application/bar"))
     (is (= (ext-mime-type "foo.txt" {"txt" "application/text"})
-           "application/text"))))
+           "application/text")))
+  (testing "case insensitivity"
+    (is (= (ext-mime-type "FOO.TXT") "text/plain"))))

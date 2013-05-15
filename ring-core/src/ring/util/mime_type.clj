@@ -1,5 +1,6 @@
 (ns ring.util.mime-type
-  "Utility functions for finding out the mime-type of a file.")
+  "Utility functions for finding out the mime-type of a file."
+  (require [clojure.string :as str]))
 
 (def default-mime-types
   {"7z"    "application/x-7z-compressed"
@@ -90,7 +91,8 @@
 (defn- filename-ext
   "Returns the file extension of a filename or filepath."
   [filename]
-  (second (re-find #"\.([^./\\]+)$" filename)))
+  (if-let [ext (second (re-find #"\.([^./\\]+)$" filename))]
+    (str/lower-case ext)))
 
 (defn ext-mime-type
   "Get the mimetype from the filename extension. Takes an optional map of
