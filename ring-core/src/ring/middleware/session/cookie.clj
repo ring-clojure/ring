@@ -83,10 +83,10 @@
     (str (codec/base64-encode data) "--" (hmac key data))))
 
 (defn- secure-compare [^String a ^String b]
-  (if (and a b (= (.length a) (.length b)))
-    (zero? (reduce bit-or
-                   (map bit-xor (.getBytes a) (.getBytes b))))
-    false))
+  (let [a (map int a), b (map int b)]
+    (if (and a b (= (count a) (count b)))
+      (zero? (reduce bit-or (map bit-xor a b)))
+      false)))
 
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
