@@ -3,7 +3,7 @@
   (:use [ring.util.codec :only (assoc-conj)])
   (:import [org.apache.commons.fileupload.util Streams]
            [org.apache.commons.fileupload
-             RequestContext
+             UploadContext
              FileItemIterator
              FileItemStream
              FileUpload]))
@@ -15,12 +15,13 @@
     (.startsWith content-type "multipart/form-data")))
 
 (defn- request-context
-  "Create a RequestContext object from a request map."
-  {:tag RequestContext}
+  "Create an UploadContext object from a request map."
+  {:tag UploadContext}
   [request encoding]
-  (reify RequestContext
+  (reify UploadContext
     (getContentType [this]       (:content-type request))
     (getContentLength [this]     (or (:content-length request) -1))
+    (contentLength [this]        (or (:content-length request) -1))
     (getCharacterEncoding [this] encoding)
     (getInputStream [this]       (:body request))))
 

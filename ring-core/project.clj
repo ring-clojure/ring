@@ -7,7 +7,7 @@
                  [org.clojure/tools.reader "0.7.3"]
                  [ring/ring-codec "1.0.0"]
                  [commons-io "2.4"]
-                 [commons-fileupload "1.2.2"]
+                 [commons-fileupload "1.3"]
                  [javax.servlet/servlet-api "2.5"]
                  [clj-time "0.4.4"]]
   :profiles
