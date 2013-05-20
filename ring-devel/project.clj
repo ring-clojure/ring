@@ -1,9 +1,9 @@
-(defproject ring/ring-devel "1.2.0-beta2"
+(defproject ring/ring-devel "1.2.0-beta3"
   :description "Ring development and debugging libraries."
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[ring/ring-core "1.2.0-beta2"]
+  :dependencies [[ring/ring-core "1.2.0-beta3"]
                  [hiccup "1.0.3"]
                  [clj-stacktrace "0.2.5"]
                  [ns-tracker "0.2.1"]]
