@@ -31,4 +31,4 @@
     (when-let [resp (-> request
                         flash-request
                         handler)]
-      (flash-response resp request))))
+      (flash-response resp (flash-request request)))))
