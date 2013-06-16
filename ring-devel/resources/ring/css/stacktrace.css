@@ -58,6 +58,14 @@ h1 {
     margin-bottom: 1.5em;
 }
 
+.trace table tr.clojure {
+    color: #222;
+}
+
+.trace table tr.java {
+    color: #6a6a6a;
+}
+
 .trace td {
     padding-top: 0.4em;
     padding-bottom: 0.4em;
