@@ -35,12 +35,14 @@
                             (store/write-session store session-key session)
                             (if session-key
                               (store/delete-session store session-key))))
-        response (dissoc response :session)
-        cookie   {cookie-name
-                  (merge cookie-attrs
-                         (response :session-cookie-attrs)
-                         {:value new-session-key})}]
-    (if (and new-session-key (not= session-key new-session-key))
+        session-attrs (:session-cookie-attrs response)
+        cookie {cookie-name
+                (merge cookie-attrs
+                       session-attrs
+                       {:value (or new-session-key session-key)})}
+        response (dissoc response :session :session-cookie-attrs)]
+    (if (or (and new-session-key (not= session-key new-session-key))
+            (and session-attrs (or new-session-key session-key)))
       (assoc response :cookies (merge (response :cookies) cookie))
       response)))
 

@@ -142,3 +142,20 @@
 
 (deftest session-response-test
   (is (fn? session-response)))
+
+(deftest session-cookie-attrs-change
+  (let [a-resp   (atom {:session {:foo "bar"}})
+        handler  (wrap-session (fn [req] @a-resp))
+        response (handler {})
+        sess-key (->> (get-in response [:headers "Set-Cookie"])
+                      (first)
+                      (re-find #"(?<==)[^;]+"))]
+    (is (not (nil? sess-key)))
+    (reset! a-resp {:session-cookie-attrs {:max-age 3600}})
+
+    (testing "Session cookie attrs with no active session"
+      (is (= (handler {}) {})))
+
+    (testing "Session cookie attrs with active session"
+      (let [response (handler {:foo "bar" :cookies {"ring-session" {:value sess-key}}})]
+        (is (get-in response [:headers "Set-Cookie"]))))))
