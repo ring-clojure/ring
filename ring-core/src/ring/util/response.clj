@@ -1,7 +1,8 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
   (:import java.io.File java.util.Date java.net.URL)
-  (:use [ring.util.time :only (format-date)])
+  (:use [ring.util.time :only (format-date)]
+        [ring.util.io :only (last-modified-date)])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -93,7 +94,7 @@
 
 (defn- file-last-modified [resp]
   (let [file ^File (:body resp)]
-    (header resp "Last-Modified" (format-date (Date. (.lastModified file))))))
+    (header resp "Last-Modified" (format-date (last-modified-date file)))))
 
 (defn file-response
   "Returns a Ring response to serve a static file, or nil if an appropriate

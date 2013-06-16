@@ -1,7 +1,8 @@
 (ns ring.middleware.file-info
   "Augment Ring File responses."
   (:require [ring.util.response :as res])
-  (:use [ring.util.mime-type :only (ext-mime-type)])
+  (:use [ring.util.mime-type :only (ext-mime-type)]
+        [ring.util.io :only (last-modified-date)])
   (:import java.io.File
            (java.util Date Locale TimeZone)
            java.text.SimpleDateFormat))
@@ -34,7 +35,7 @@
   (if (instance? File body)
     (let [file-type   (guess-mime-type body mime-types)
           file-length (.length ^File body)
-          lmodified   (Date. (.lastModified ^File body))
+          lmodified   (last-modified-date body)
           response    (-> response
                           (res/content-type file-type)
                           (res/header

@@ -4,6 +4,7 @@
   (:import [java.io PipedInputStream
                     PipedOutputStream
                     ByteArrayInputStream
+                    File
                     Closeable
                     IOException]))
 
@@ -39,3 +40,11 @@
     (try
       (.close ^java.io.Closeable stream)
       (catch IOException _ nil))))
+
+(defn last-modified-date
+  "Returns the last modified date for a file, rounded down to the nearest
+  second."
+  [^File file]
+  (-> (.lastModified file)
+      (/ 1000) (long) (* 1000)
+      (java.util.Date.)))
