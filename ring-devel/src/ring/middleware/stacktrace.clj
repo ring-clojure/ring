@@ -8,7 +8,9 @@
         ring.util.response))
 
 (defn wrap-stacktrace-log
-  "Wrap a handler such that exceptions are logged to *err* and then rethrown."
+  "Wrap a handler such that exceptions are logged to *err* and then rethrown.
+  Accepts the following options:
+    :color? - apply ANSI colors to stacktrace"
   [handler & [{color? :color?}]]
   (fn [request]
     (try
@@ -81,7 +83,9 @@
 
 (defn wrap-stacktrace
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
-  logged to *err*, and a helpful debugging web response is returned."
+  logged to *err*, and a helpful debugging web response is returned. Accepts the
+  following option:
+    :color? - apply ANSI colors to terminal stacktrace"
   [handler & [{:as options}]]
   (-> handler
       (wrap-stacktrace-log options)
