@@ -1,3 +1,19 @@
+## 1.2.0 (TBD)
+
+* Refactor of middleware to support async systems like Pedestal
+* Added wrap-not-modified middleware
+* Deprecated wrap-file-info middleware
+* Added ring.util.request namespace
+* file-response and resource-response include content-length and last-modifed headers
+* Use of dedicated EDN reader for security
+* Prettier wrap-stacktrace middleware
+* Support for :path-info and :context keys
+* Factored out encoding/decoding of data into ring-codec library
+* Fixed bug with :session-cookie-attrs not working if cookie not set
+* Fixed bug with last-modified dates on Windows
+* Fixed case-sensitivity issues in middleware handling headers
+* Added get-header, created and url-response to ring.util.response
+
 ## 1.1.8 (2013-01-20)
 
 * Updated ns-tracker dependency to fix issue with Clojure 1.5.0
