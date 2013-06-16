@@ -31,6 +31,20 @@ h1 {
     margin-bottom: 1em;
 }
 
+#causes h2 {
+    font-size: 22pt;
+    text-align: center;
+    margin-bottom: 0.3em;
+}
+
+#causes h2 .class {
+    color: #800;
+}
+
+#causes .message {
+    font-size: 14pt;
+}
+
 .trace {
     width: 90%;
     margin: auto;

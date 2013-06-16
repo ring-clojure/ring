@@ -30,7 +30,7 @@
       [:td.method (h (java-method-str elem))]]))
 
 (defn- html-exception [ex]
-  (let [ex (parse-exception ex)]
+  (let [[ex & causes] (iterate :cause (parse-exception ex))]
     (html5
       [:head
         [:title "Ring: Stacktrace"]
@@ -41,7 +41,14 @@
           [:div.message (h (:message ex))]
           [:div.trace
             [:table
-              [:tbody (map elem-partial (:trace-elems ex))]]]]])))
+              [:tbody (map elem-partial (:trace-elems ex))]]]
+         (for [cause causes :while cause]
+           [:div#causes
+             [:h2 "Caused by " [:span.class (h (.getName ^Class (:class cause)))]]
+             [:div.message (h (:message cause))]
+             [:div.trace
+               [:table
+                 [:tbody (map elem-partial (:trace-elems cause))]]]])]])))
 
 (defn- js-ex-response [e]
   (-> (response (with-out-str (pst e)))
