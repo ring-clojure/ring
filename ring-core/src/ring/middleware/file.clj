@@ -17,7 +17,7 @@
   "If request matches a static file, returns it in a response. Otherwise returns nil."
   [req root-path & [opts]]
   (let [opts (merge {:root root-path, :index-files? true, :allow-symlinks? false} opts)]
-    (when (= :get (:request-method req))
+    (if (= :get (:request-method req))
       (let [path (subs (codec/url-decode (request/path-info req)) 1)]
         (response/file-response path opts)))))
 

@@ -28,7 +28,5 @@
   This is useful for small messages that persist across redirects."
   [handler]
   (fn [request]
-    (when-let [resp (-> request
-                        flash-request
-                        handler)]
+    (if-let [resp (handler (flash-request request))]
       (flash-response resp (flash-request request)))))

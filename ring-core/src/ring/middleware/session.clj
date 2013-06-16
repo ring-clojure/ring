@@ -30,10 +30,10 @@
 
 (defn- bare-session-response
   [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
-  (let [new-session-key (when (contains? response :session)
+  (let [new-session-key (if (contains? response :session)
                           (if-let [session (response :session)]
                             (store/write-session store session-key session)
-                            (when session-key
+                            (if session-key
                               (store/delete-session store session-key))))
         response (dissoc response :session)
         cookie   {cookie-name
@@ -47,7 +47,7 @@
 (defn session-response
   "Updates session based on :session key in response."
   [response request & [opts]]
-  (when response
+  (if response
     (-> response
         (bare-session-response request opts)
         cookies/cookies-response)))
@@ -80,6 +80,5 @@
      (let [options (session-options options)]
        (fn [request]
          (let [new-request (session-request request options)]
-           (-> new-request
-               handler
+           (-> (handler new-request)
                (session-response new-request options)))))))

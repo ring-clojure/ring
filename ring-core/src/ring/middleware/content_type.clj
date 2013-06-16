@@ -23,5 +23,5 @@
                   ring.util.mime-types/default-mime-types"
   [handler & [opts]]
   (fn [req]
-    (when-let [resp (handler req)]
-        (content-type-response resp req opts))))
+    (if-let [resp (handler req)]
+      (content-type-response resp req opts))))

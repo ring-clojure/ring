@@ -9,7 +9,7 @@
   "If request matches a static resource, returns it in a response map.
  Otherwise returns nil."
   [request root-path]
-  (when (= :get (:request-method request))
+  (if (= :get (:request-method request))
     (let [path (subs (codec/url-decode (request/path-info request)) 1)]
       (response/resource-response path {:root root-path}))))
 
