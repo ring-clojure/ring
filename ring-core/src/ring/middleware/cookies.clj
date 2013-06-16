@@ -162,7 +162,6 @@
   :value     - the new value of the cookie
   :path      - the subpath the cookie is valid for
   :domain    - the domain the cookie is valid for
-  :port      - the port the cookie is valid for
   :max-age   - the maximum age in seconds of the cookie
   :expires   - a date string at which the cookie will expire
   :secure    - set to true if the cookie is valid for HTTPS only
