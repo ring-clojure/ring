@@ -104,9 +104,4 @@
           (is (= (:scheme request-map) :http))
           (is (= (:server-name request-map) "localhost"))
           (is (= (:server-port request-map) 4347))
-          (is (= (:ssl-client-cert request-map) nil))))))
-
-  (testing "don't start"
-    (let [server (run-jetty hello-world {:port 4347 :join? false :start? false})]
-      (is (not (.isRunning server)))
-      (.stop server))))
+          (is (= (:ssl-client-cert request-map) nil)))))))

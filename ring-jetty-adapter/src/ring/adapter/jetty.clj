@@ -65,7 +65,6 @@
   :configurator - a function called with the Jetty Server instance
   :port         - the port to listen on (defaults to 80)
   :host         - the hostname to listen on
-  :start?       - starts the server (defaults to true)
   :join?        - blocks the thread until server ends (defaults to true)
   :daemon?      - use daemon threads (defaults to false)
   :ssl?         - allow connections over HTTPS
@@ -87,8 +86,7 @@
       (.setThreadPool p))
     (when-let [configurator (:configurator options)]
       (configurator s))
-    (when (:start? options true)
-      (.start s))
+    (.start s)
     (when (:join? options true)
       (.join s))
     s))
