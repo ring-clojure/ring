@@ -20,6 +20,12 @@
           (servlet/update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
+(defn add-handler
+  "Adds a Ring handler to the provided Jetty Server instance."
+  [server handler]
+  (.setHandler server (proxy-handler handler))
+  server)
+
 (defn- ssl-context-factory
   "Creates a new SslContextFactory instance from a map of options."
   [options]
@@ -81,9 +87,8 @@
         ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
     (when (:daemon? options false)
       (.setDaemon p true))
-    (doto s
-      (.setHandler (proxy-handler handler))
-      (.setThreadPool p))
+    (add-handler s handler)
+    (.setThreadPool s p)
     (when-let [configurator (:configurator options)]
       (configurator s))
     (.start s)
