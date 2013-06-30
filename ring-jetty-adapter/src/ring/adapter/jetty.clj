@@ -64,6 +64,37 @@
       (.addConnector server (ssl-connector options)))
     server))
 
+(defn ^Server jetty-server
+  "Creates and returns a stopped Jetty Server instance according to the
+  supplied options:
+
+  :handler      - a Ring handler to serve
+  :configurator - a function called with the Jetty Server instance
+  :port         - the port to listen on (defaults to 80)
+  :host         - the hostname to listen on
+  :daemon?      - use daemon threads (defaults to false)
+  :ssl?         - allow connections over HTTPS
+  :ssl-port     - the SSL port to listen on (defaults to 443, implies :ssl?)
+  :keystore     - the keystore to use for SSL connections
+  :key-password - the password to the keystore
+  :truststore   - a truststore to use for SSL connections
+  :trust-password - the password to the truststore
+  :max-threads  - the maximum number of threads to use (default 50)
+  :client-auth  - SSL client certificate authenticate, may be set to :need,
+                  :want or :none (defaults to :none)"
+  [options]
+  (let [^Server s (create-server (dissoc options :handler :configurator))
+        ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))
+        {:keys [handler]} options]
+    (when (:daemon? options false)
+      (.setDaemon p true))
+    (when handler
+      (add-handler s handler))
+    (.setThreadPool s p)
+    (when-let [configurator (:configurator options)]
+      (configurator s))
+    s))
+
 (defn ^Server run-jetty
   "Start a Jetty webserver to serve the given handler according to the
   supplied options:
@@ -83,14 +114,7 @@
   :client-auth  - SSL client certificate authenticate, may be set to :need,
                   :want or :none (defaults to :none)"
   [handler options]
-  (let [^Server s (create-server (dissoc options :configurator))
-        ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
-    (when (:daemon? options false)
-      (.setDaemon p true))
-    (add-handler s handler)
-    (.setThreadPool s p)
-    (when-let [configurator (:configurator options)]
-      (configurator s))
+  (let [^Server s (jetty-server (assoc options :handler handler))]
     (.start s)
     (when (:join? options true)
       (.join s))
