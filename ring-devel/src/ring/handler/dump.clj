@@ -48,7 +48,7 @@
 
 (defn handle-dump
   "Returns a response tuple corresponding to an HTML dump of the request
-  req as it was recieved by this app."
+  req as it was received by this app."
   [req]
   (pprint/pprint req)
   (println)

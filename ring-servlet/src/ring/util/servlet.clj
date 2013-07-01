@@ -27,7 +27,7 @@
     (if (>= length 0) length)))
 
 (defn get-client-cert
-  "Returns the SSL client certificate of the reqest, if one exists."
+  "Returns the SSL client certificate of the request, if one exists."
   [^HttpServletRequest request]
   (first (.getAttribute request "javax.servlet.request.X509Certificate")))
 
