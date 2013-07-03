@@ -43,14 +43,16 @@
   [options]
   (doto (SslSelectChannelConnector. (ssl-context-factory options))
     (.setPort (options :ssl-port 443))
-    (.setHost (options :host))))
+    (.setHost (options :host))
+    (.setMaxIdleTime (options :max-idle-time 200000))))
 
 (defn- create-server
   "Construct a Jetty Server instance."
   [options]
   (let [connector (doto (SelectChannelConnector.)
                     (.setPort (options :port 80))
-                    (.setHost (options :host)))
+                    (.setHost (options :host))
+                    (.setMaxIdleTime (options :max-idle-time 200000)))
         server    (doto (Server.)
                     (.addConnector connector)
                     (.setSendDateHeader true))]
@@ -74,6 +76,7 @@
   :truststore   - a truststore to use for SSL connections
   :trust-password - the password to the truststore
   :max-threads  - the maximum number of threads to use (default 50)
+  :max-idle-time  - the maximum idle time in milliseconds for a connection (default 200000)
   :client-auth  - SSL client certificate authenticate, may be set to :need,
                   :want or :none (defaults to :none)"
   [handler options]
