@@ -98,6 +98,21 @@
       (is (= 200000 (. (second connectors) getMaxIdleTime)))
       (.stop server)))
 
+  (testing "setting min-threads"
+    (let [server (run-jetty hello-world {:port 4347
+                                         :min-threads 3
+                                         :join? false})
+          thread-pool (. server getThreadPool)]
+      (is (= 3 (. thread-pool getMinThreads)))
+      (.stop server)))
+
+  (testing "default min-threads"
+    (let [server (run-jetty hello-world {:port 4347
+                                         :join? false})
+          thread-pool (. server getThreadPool)]
+      (is (= 8 (. thread-pool getMinThreads)))
+      (.stop server)))
+
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port 4347}
       (let [response (http/get "http://localhost:4347")]
