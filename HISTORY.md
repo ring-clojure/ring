@@ -1,4 +1,4 @@
-## 1.2.0 (TBD)
+## 1.2.0 (2013-07-08)
 
 * Refactor of middleware to support async systems like Pedestal
 * Added wrap-not-modified middleware

@@ -1,4 +1,4 @@
-(defproject ring/ring-core "1.2.0-RC1"
+(defproject ring/ring-core "1.2.0"
   :description "Ring core libraries."
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
