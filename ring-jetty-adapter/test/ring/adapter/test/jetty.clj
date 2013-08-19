@@ -90,7 +90,7 @@
 
   (testing "request translation"
     (with-server echo-handler {:port 4347}
-      (let [response (http/get "http://localhost:4347/foo/bar/baz?surname=jones&age=123" {:body "hello"})]
+      (let [response (http/post "http://localhost:4347/foo/bar/baz?surname=jones&age=123" {:body "hello"})]
         (is (= (:status response) 200))
         (is (= (:body response) "hello"))
         (let [request-map (read-string (get-in response [:headers "request-map"]))]
@@ -98,7 +98,7 @@
           (is (= (:uri request-map) "/foo/bar/baz"))
           (is (= (:content-length request-map) 5))
           (is (= (:character-encoding request-map) "UTF-8"))
-          (is (= (:request-method request-map) :get))
+          (is (= (:request-method request-map) :post))
           (is (= (:content-type request-map) "text/plain; charset=UTF-8"))
           (is (= (:remote-addr request-map) "127.0.0.1"))
           (is (= (:scheme request-map) :http))
