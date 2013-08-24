@@ -15,7 +15,7 @@
   (fn [request]
     (try
       (handler request)
-      (catch Exception ex
+      (catch Throwable ex
         (pst-on *err* color? ex)
         (throw ex)))))
 
@@ -78,7 +78,7 @@
   (fn [request]
     (try
       (handler request)
-      (catch Exception ex
+      (catch Throwable ex
         (ex-response request ex)))))
 
 (defn wrap-stacktrace
