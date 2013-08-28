@@ -16,6 +16,14 @@
   (is (= {:status 404 :headers {} :body "Not found"}
          (not-found "Not found"))))
 
+(deftest test-created
+  (testing "with location and without body"
+    (is (= {:status 201 :headers {"Location" "foobar/location"} :body nil}
+           (created "foobar/location"))))
+  (testing "with body and with location"
+    (is (= {:status 201 :headers {"Location" "foobar/location"} :body "foobar"}
+           (created "foobar/location" "foobar")))))
+
 (deftest test-response
   (is (= {:status 200 :headers {} :body "foobar"}
          (response "foobar"))))
