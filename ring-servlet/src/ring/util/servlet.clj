@@ -128,7 +128,7 @@
         (throw (NullPointerException. "Handler returned nil"))))))
 
 (defn servlet
-  "Create a servlet from a Ring handler.."
+  "Create a servlet from a Ring handler."
   [handler]
   (proxy [HttpServlet] []
     (service [request response]
