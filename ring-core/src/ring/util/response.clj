@@ -1,6 +1,7 @@
 (ns ring.util.response
   "Generate and augment Ring responses."
-  (:import java.io.File java.util.Date java.net.URL)
+  (:import java.io.File java.util.Date java.net.URL
+           java.net.URLDecoder java.net.URLEncoder)
   (:use [ring.util.time :only (format-date)]
         [ring.util.io :only (last-modified-date)])
   (:require [clojure.java.io :as io]
@@ -115,20 +116,20 @@
 ;;
 ;; See: http://dev.clojure.org/jira/browse/CLJ-885
 ;;
-;; As a work-around, we'll backport the fix from the Clojure master
-;; branch into url-as-file.
+;; In Clojure 1.5.1, the as-file function does not correctly decode
+;; UTF-8 byte sequences.
+;;
+;; See: http://dev.clojure.org/jira/browse/CLJ-1177
+;;
+;; As a work-around, we'll backport the fix from CLJ-1177 into
+;; url-as-file.
 
 (defn- ^File url-as-file [^java.net.URL u]
-  (io/as-file
-   (str/replace
-    (.replace (.getFile u) \/ File/separatorChar)
-    #"%.."
-    (fn [^String escape]
-      (-> escape
-          (.substring 1 3)
-          (Integer/parseInt 16)
-          (char)
-          (str))))))
+  (-> (.getFile u)
+      (str/replace \/ File/separatorChar)
+      (str/replace "+" (URLEncoder/encode "+" "UTF-8"))
+      (URLDecoder/decode "UTF-8")
+      io/as-file))
 
 (defn content-type
   "Returns an updated Ring response with the a Content-Type header corresponding
