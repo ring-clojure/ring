@@ -110,19 +110,18 @@
       (is (= (slurp (:body resp))
              "Hello World\n"))))
 
-  ;; This test requires the ability to have file names in the source
-  ;; tree with non-ASCII characters in them encoded as UTF-8.  That
-  ;; may be platform-specific.  Comment out for now.
-
-  ;; If this fails on Mac OS X, try again with the command line:
-  ;; LC_CTYPE="UTF-8" lein test
-;;  (testing "resource is a file with UTF-8 characters in path"
-;;    (let [resp (resource-response "/ring/assets/abcíe.txt")]
-;;      (is (= (:body resp)
-;;             (.getAbsoluteFile (File. "test/ring/assets/abcíe.txt"))))
-;;      (is (.contains (slurp (:body resp))
-;;                     "UTF-8"))))
-  )
+  (comment
+    ;; This test requires the ability to have file names in the source
+    ;; tree with non-ASCII characters in them encoded as UTF-8.  That
+    ;; may be platform-specific.  Comment out for now.
+    
+    ;; If this fails on Mac OS X, try again with the command line:
+    ;; LC_CTYPE="UTF-8" lein test
+    (testing "resource is a file with UTF-8 characters in path"
+      (let [resp (resource-response "/ring/assets/abcíe.txt")]
+        (is (= (:body resp)
+               (.getAbsoluteFile (File. "test/ring/assets/abcíe.txt"))))
+        (is (.contains (slurp (:body resp)) "UTF-8"))))))
 
 (deftest test-file-response
   (testing "response map"
