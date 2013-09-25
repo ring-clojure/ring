@@ -23,10 +23,11 @@
 
 (defn created
   "Returns a Ring response for a HTTP 201 created response."
-  [url]
-  {:status  201
-   :headers {"Location" url}
-   :body    ""})
+  ([url] (created url nil))
+  ([url body]
+     {:status  201
+      :headers {"Location" url}
+      :body    body}))
 
 (defn not-found
   "Returns a 404 'not found' response."
