@@ -56,10 +56,11 @@
    ^HttpServletRequest request
    ^HttpServletResponse response]
   (merge request-map
-    {:servlet          servlet
-     :servlet-request  request
-     :servlet-response response
-     :servlet-context  (.getServletContext servlet)}))
+         {:servlet              servlet
+          :servlet-request      request
+          :servlet-response     response
+          :servlet-context      (.getServletContext servlet)
+          :servlet-context-path (.getContextPath request)}))
 
 (defn set-status
   "Update a HttpServletResponse with a status code."

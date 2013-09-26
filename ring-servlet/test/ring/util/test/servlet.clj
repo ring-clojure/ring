@@ -17,6 +17,7 @@
       (getRemoteAddr [] (request :remote-addr))
       (getRequestURI [] (request :uri))
       (getQueryString [] (request :query-string))
+      (getContextPath [] (request :servlet-context-path))
       (getScheme [] (name (request :scheme)))
       (getMethod [] (-> request :request-method name .toUpperCase))
       (getHeaderNames [] (enumeration (keys (request :headers))))
@@ -62,6 +63,7 @@
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
+                 :servlet-context-path "/foo"
                  :ssl-client-cert cert
                  :body            body}
           response (atom {})]
@@ -80,6 +82,7 @@
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
+                 :servlet-context-path "/foo"
                  :ssl-client-cert cert
                  :body            body)
                {:status 200, :headers {}})]
