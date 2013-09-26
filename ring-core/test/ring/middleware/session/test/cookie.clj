@@ -2,7 +2,8 @@
   (:use clojure.test
         [ring.middleware.session store cookie])
   (:require [ring.middleware.session.cookie :as cookie]
-            [ring.util.codec :as codec]))
+            [ring.util.codec :as codec]
+            [crypto.random :as random]))
 
 (deftest cookie-session-read-not-exist
   (let [store (cookie-store)]
@@ -38,7 +39,7 @@
     (str (codec/base64-encode data) "--" (#'cookie/hmac key data))))
 
 (deftest cookie-session-code-injection
-  (let [secret-key (#'cookie/secure-random-bytes 16)
+  (let [secret-key (random/bytes 16)
         store      (cookie-store {:key secret-key})
         session    (seal-code-injection secret-key `(+ 1 1))]
     (is (thrown? Exception (read-session store session)))))

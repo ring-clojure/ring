@@ -2,15 +2,12 @@
   "Encrypted cookie session storage."
   (:use ring.middleware.session.store)
   (:require [ring.util.codec :as codec]
-            [clojure.tools.reader.edn :as edn])
+            [clojure.tools.reader.edn :as edn]
+            [crypto.random :as random]
+            [crypto.equality :as crypto])
   (:import java.security.SecureRandom
            (javax.crypto Cipher Mac)
            (javax.crypto.spec SecretKeySpec IvParameterSpec)))
-
-(def ^{:private true
-       :doc "Algorithm to seed random numbers."}
-  seed-algorithm
-  "SHA1PRNG")
 
 (def ^{:private true
        :doc "Algorithm to generate a HMAC."}
@@ -27,13 +24,6 @@
   crypt-algorithm
   "AES/CBC/PKCS5Padding")
 
-(defn- secure-random-bytes
-  "Returns a random byte array of the specified size."
-  [size]
-  (let [seed (byte-array size)]
-    (.nextBytes (SecureRandom/getInstance seed-algorithm) seed)
-    seed))
-
 (defn- hmac
   "Generates a Base64 HMAC with the supplied key on a string of data."
   [key data]
@@ -46,7 +36,7 @@
   [key data]
   (let [cipher     (Cipher/getInstance crypt-algorithm)
         secret-key (SecretKeySpec. key crypt-type)
-        iv         (secure-random-bytes (.getBlockSize cipher))]
+        iv         (random/bytes (.getBlockSize cipher))]
     (.init cipher Cipher/ENCRYPT_MODE secret-key (IvParameterSpec. iv))
     (->> (.doFinal cipher data)
       (concat iv)
@@ -70,7 +60,7 @@
     (if (string? secret-key)
       (.getBytes ^String secret-key)
       secret-key)
-    (secure-random-bytes 16)))
+    (random/bytes 16)))
 
 (defn- serialize [x]
   {:post [(= x (edn/read-string %))]}
@@ -82,18 +72,12 @@
   (let [data (encrypt key (.getBytes (serialize data)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
-(defn- secure-compare [^String a ^String b]
-  (let [a (map int a), b (map int b)]
-    (if (and a b (= (count a) (count b)))
-      (zero? (reduce bit-or (map bit-xor a b)))
-      false)))
-
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
   [key ^String string]
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
-    (if (secure-compare mac (hmac key data))
+    (if (crypto/eq? mac (hmac key data))
       (edn/read-string (decrypt key data)))))
 
 (deftype CookieStore [secret-key]
