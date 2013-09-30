@@ -28,7 +28,10 @@
       (.setKeyStorePath context (options :keystore))
       (.setKeyStore context ^java.security.KeyStore (options :keystore)))
     (.setKeyStorePassword context (options :key-password))
-    (when (options :truststore)
+    (cond
+      (string? (options :truststore))
+      (.setTrustStore context ^String (options :truststore))
+      (instance? java.security.KeyStore (options :truststore))
       (.setTrustStore context ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
       (.setTrustStorePassword context (options :trust-password)))
