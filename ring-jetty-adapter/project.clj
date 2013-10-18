@@ -5,7 +5,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[ring/ring-core "1.2.0"]
                  [ring/ring-servlet "1.2.0"]
-                 [org.eclipse.jetty/jetty-server "7.6.8.v20121106"]]
+                 [org.eclipse.jetty/jetty-server "7.6.13.v20130916"]]
   :profiles
   {:dev {:dependencies [[clj-http "0.6.4"]]}
    :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}

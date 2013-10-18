@@ -77,6 +77,7 @@
   :trust-password - the password to the truststore
   :max-threads  - the maximum number of threads to use (default 50)
   :min-threads  - the minimum number of threads to use (default 8)
+  :max-queued   - the maximum number of requests to queue (default unbounded)
   :max-idle-time  - the maximum idle time in milliseconds for a connection (default 200000)
   :client-auth  - SSL client certificate authenticate, may be set to :need,
                   :want or :none (defaults to :none)"
@@ -84,6 +85,8 @@
   (let [^Server s (create-server (dissoc options :configurator))
         ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
     (.setMinThreads p (options :min-threads 8))
+    (when-let [max-queued (:max-queued options)]
+      (.setMaxQueued p max-queued))
     (when (:daemon? options false)
       (.setDaemon p true))
     (doto s
