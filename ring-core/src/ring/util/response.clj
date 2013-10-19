@@ -176,6 +176,9 @@
   (if (= "file" (.getProtocol url))
     (url-as-file url)))
 
+(defn- directory-url? [^java.net.URL url]
+  (-> (str url) (.endsWith "/")))
+
 (defn url-response
   "Return a response for the supplied URL."
   [^URL url]
@@ -184,11 +187,12 @@
       (-> (response file)
           (file-content-length)
           (file-last-modified)))
-    (let [conn (.openConnection url)]
-      (if-let [stream (.getInputStream conn)]
-        (-> (response stream)
-            (connection-content-length conn)
-            (connection-last-modified conn))))))
+    (when-not (directory-url? url)
+      (let [conn (.openConnection url)]
+        (if-let [stream (.getInputStream conn)]
+          (-> (response stream)
+              (connection-content-length conn)
+              (connection-last-modified conn)))))))
 
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the
