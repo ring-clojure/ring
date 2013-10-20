@@ -2,7 +2,8 @@
   (:use clojure.test
         ring.util.response)
   (:import [java.io File InputStream]
-           org.apache.commons.io.FileUtils))
+           org.apache.commons.io.FileUtils)
+  (:require [clojure.java.io :as io]))
 
 (deftest test-redirect
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
@@ -72,6 +73,19 @@
         (finally
           (.setContextClassLoader current-thread# original-loader#)))))
 
+(defn- make-jar-url [jar-path res-path]
+  (io/as-url (str "jar:file:" jar-path "!/" res-path)))
+
+(deftest test-url-response
+  (testing "resources from a jar file"
+    (let [base-path (.getPath (io/resource "ring/assets/test-resource.jar"))
+          root-url (make-jar-url base-path "public/")
+          empty-resource (make-jar-url base-path "public/empty-resource")
+          non-empty-resource (make-jar-url base-path "public/hi-resource")]
+      (is (nil? (url-response root-url)))
+      (is (slurp (:body (url-response empty-resource))) "")
+      (is (slurp (:body (url-response non-empty-resource))) "hi"))))
+
 (deftest test-resource-response
   (testing "response map"
     (let [resp (resource-response "/ring/assets/foo.html")]
@@ -122,7 +136,7 @@
     ;; This test requires the ability to have file names in the source
     ;; tree with non-ASCII characters in them encoded as UTF-8.  That
     ;; may be platform-specific.  Comment out for now.
-    
+
     ;; If this fails on Mac OS X, try again with the command line:
     ;; LC_CTYPE="UTF-8" lein test
     (testing "resource is a file with UTF-8 characters in path"
@@ -149,7 +163,7 @@
       (is (= (into #{} (keys (resp :headers))) #{"Content-Length" "Last-Modified"}))
       (is (= (get-in resp [:headers "Content-Length"]) "3"))
       (is (= (slurp (resp :body)) "foo")))
-    
+
     (is (nil? (file-response "backlink/foo.html" {:root "test/ring/assets/bars"})))))
 
 (deftest test-set-cookie
