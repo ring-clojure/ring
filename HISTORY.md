@@ -1,7 +1,7 @@
 ## 1.2.1 (2013-10-28)
 
 * Fix for resources in jar files created with Leiningen 2.3.3 or above
-* Fix for UTF-8 characters in refilenames
+* Fix for UTF-8 characters in resource filenames
 * javax.servlet now a provided dependency
 
 ## 1.2.0 (2013-07-08)
