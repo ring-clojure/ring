@@ -34,9 +34,13 @@
 
 (defn- file-item-seq
   "Create a seq of FileItem instances from a request context."
-  [context]
+  [{:keys [max-file-size max-request-size]
+    :or {max-file-size -1, max-request-size -1}} context]
   (file-item-iterator-seq
-    (.getItemIterator (FileUpload.) context)))
+    (.getItemIterator (doto (FileUpload.)
+                        (.setFileSizeMax max-file-size)
+                        (.setSizeMax max-request-size))
+                      context)))
 
 (defn- parse-file-item
   "Parse a FileItemStream into a key-value pair. If the request is a file the
@@ -51,9 +55,9 @@
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
-  [request encoding store]
+  [opts request encoding store]
   (->> (request-context request encoding)
-       (file-item-seq)
+       (file-item-seq opts)
        (map #(parse-file-item % store))
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
@@ -78,7 +82,7 @@
                      (:character-encoding request)
                      "UTF-8")
         params   (if (multipart-form? request)
-                   (parse-multipart-params request encoding store)
+                   (parse-multipart-params opts request encoding store)
                    {})]
     (merge-with merge request
                 {:multipart-params params}
@@ -100,7 +104,11 @@
                 expect a map with :filename, content-type and :stream keys,
                 and its return value will be used as the value for the
                 parameter in the multipart parameter map. The default storage
-                function is the temp-file-store."
+                function is the temp-file-store.
+
+    :max-request-size - maximum allowed size of the request in bytes.
+
+    :max-file-size - maximum allowed size of a single uploaded file in bytes."
   [handler & [opts]]
   (fn [request]
     (-> request
