@@ -72,7 +72,7 @@
       secret-key)
     (secure-random-bytes 16)))
 
-(defn- serialize [x]
+(defn- ^String serialize [x]
   {:post [(= x (edn/read-string %))]}
   (pr-str x))
 
