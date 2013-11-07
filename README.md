@@ -13,6 +13,20 @@ complete description of the Ring interface.
 
 [1]: https://github.com/ring-clojure/ring/blob/master/SPEC
 
+## Upgrade Notice
+
+From version 1.2.1 onward, the ring/ring-core package no longer comes
+with the `javax.servlet/servlet-api` package as a dependency (see
+issue [#89][2]).
+
+If you are using the `ring/ring-core` namespace on its own, you may
+run into errors when executing tests or running alternative adapters.
+To resolve this, include the following dependency in your dev profile:
+
+    [javax.servlet/servlet-api "2.5"]
+
+[2]: https://github.com/ring-clojure/ring/pull/89
+
 ## Libraries
 
 * ring-core - essential functions for handling parameters, cookies and more
