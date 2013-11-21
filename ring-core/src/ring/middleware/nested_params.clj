@@ -1,6 +1,8 @@
 (ns ring.middleware.nested-params
   "Convert a single-depth map of parameters to a nested map.")
 
+(def nested-param-pattern #"\[|\.")
+
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index
   notation. e.g.
@@ -39,11 +41,16 @@
   parameters, using the function parse to split the parameter names
   into keys."
   [params parse]
-  (reduce
-    (fn [m [k v]]
-      (assoc-nested m (parse k) v))
-    {}
-    (param-pairs params)))
+  (let [{nested-params true other-params false}
+        (group-by (fn [[k _]] (boolean (re-find nested-param-pattern k))) params)
+        nested-params (into {} nested-params)
+        other-params (into {} other-params)]
+    (merge other-params
+           (reduce
+            (fn [m [k v]]
+              (assoc-nested m (parse k) v))
+            {}
+            (param-pairs nested-params)))))
 
 (defn nested-params-request
   "Converts a request with a flat map of parameters to a nested map."

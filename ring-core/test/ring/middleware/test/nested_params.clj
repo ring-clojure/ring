@@ -30,5 +30,12 @@
         {"a.b.c" "d"}    {"a" {"b" {"c" "d"}}}
         {"a" "b", "c" "d"} {"a" "b", "c" "d"}))))
 
+(deftest nested-params-test-with-non-nested-list
+  (let [handler (wrap-nested-params :params
+                                    {:key-parser #(string/split % #"\.")})]
+    (testing ":key-parser option"
+      (are [p r] (= (handler {:params p}) r)
+           {"foo" ["bar" "baz"]} {"foo" ["bar" "baz"]}))))
+
 (deftest nested-params-request-test
   (is (fn? nested-params-request)))
