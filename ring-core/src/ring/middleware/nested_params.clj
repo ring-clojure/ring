@@ -1,7 +1,7 @@
 (ns ring.middleware.nested-params
   "Convert a single-depth map of parameters to a nested map.")
 
-(def nested-param-pattern #"\[|\.")
+(def nested-param-pattern #"\]$|\.")
 
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index
