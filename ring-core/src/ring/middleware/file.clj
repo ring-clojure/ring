@@ -1,22 +1,22 @@
 (ns ring.middleware.file
   "Static file serving."
-  (:import java.io.File)
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response]
             [ring.util.request :as request]
-            [ring.middleware.head :as head]))
+            [ring.middleware.head :as head]
+            [clojure.java.io :as io]))
 
 (defn- ensure-dir
   "Ensures that a directory exists at the given path, throwing if one does not."
-  [^String dir-path]
-  (let [dir (File. dir-path)]
+  [dir-path]
+  (let [dir (io/file dir-path)]
     (if-not (.exists dir)
       (throw (Exception. (format "Directory does not exist: %s" dir-path))))))
 
 (defn file-request
   "If request matches a static file, returns it in a response. Otherwise returns nil."
   [req root-path & [opts]]
-  (let [opts (merge {:root root-path, :index-files? true, :allow-symlinks? false} opts)]
+  (let [opts (merge {:root (str root-path), :index-files? true, :allow-symlinks? false} opts)]
     (if (= :get (:request-method req))
       (let [path (subs (codec/url-decode (request/path-info req)) 1)]
         (response/file-response path opts)))))
@@ -28,7 +28,7 @@
 
   An map of options may be optionally specified. These options will be passed
   to the ring.util.response/file-response function."
-  [handler ^String root-path & [opts]]
+  [handler root-path & [opts]]
   (ensure-dir root-path)
   (fn [req]
     (or ((head/wrap-head #(file-request % root-path opts)) req)
