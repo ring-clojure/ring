@@ -57,3 +57,14 @@
     (is (= 200 status))
     (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
     (is (nil? body))))
+
+(deftest test-wrap-file-with-java-io-file
+  (let [app (wrap-file (constantly :response) (File. public-dir))]
+    (let [{:keys [status headers body]} (app {:request-method :get :uri "/"})]
+      (is (= 200 status))
+      (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
+      (is (= index-html body)))
+    (let [{:keys [status headers body]} (app {:request-method :get :uri "/foo.html"})]
+      (is (= 200 status))
+      (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
+      (is (= foo-html body)))))

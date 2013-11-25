@@ -9,7 +9,7 @@
 (defn- ensure-dir
   "Ensures that a directory exists at the given path, throwing if one does not."
   [dir-path]
-  (let [dir (io/file dir-path)]
+  (let [dir (io/as-file dir-path)]
     (if-not (.exists dir)
       (throw (Exception. (format "Directory does not exist: %s" dir-path))))))
 
