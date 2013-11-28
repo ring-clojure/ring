@@ -1,8 +1,6 @@
 (ns ring.middleware.nested-params
   "Convert a single-depth map of parameters to a nested map.")
 
-(def nested-param-pattern #"\]$|\.")
-
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index
   notation. e.g.
@@ -13,18 +11,26 @@
         keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
     (cons k keys)))
 
+(defn- merge-with-union
+  "Merge maps, lists & keywords preserving the values of any maps
+   with the same key"
+  [& vals]
+  (if (every? map? vals)
+    (apply merge-with merge-with-union vals)
+    (distinct (mapcat #(if (sequential? %) % [%]) vals))))
+
 (defn- assoc-nested
   "Similar to assoc-in, but treats values of blank keys as elements in a
   list."
   [m [k & ks] v]
-  (conj m
-        (if k
-          (if-let [[j & js] ks]
-            (if (= j "")
-              {k (assoc-nested (get m k []) js v)}
-              {k (assoc-nested (get m k {}) ks v)})
-            {k v})
-          v)))
+  (merge-with-union m
+                    (if k
+                      (if-let [[j & js] ks]
+                        (if (= j "")
+                          {k (assoc-nested (get m k []) js v)}
+                          {k (assoc-nested (get m k {}) ks v)})
+                        {k v})
+                      v)))
 
 (defn- param-pairs
   "Return a list of name-value pairs for a parameter map."
@@ -41,16 +47,11 @@
   parameters, using the function parse to split the parameter names
   into keys."
   [params parse]
-  (let [{nested-params true other-params false}
-        (group-by (fn [[k _]] (boolean (re-find nested-param-pattern k))) params)
-        nested-params (into {} nested-params)
-        other-params (into {} other-params)]
-    (merge other-params
-           (reduce
-            (fn [m [k v]]
-              (assoc-nested m (parse k) v))
-            {}
-            (param-pairs nested-params)))))
+  (reduce
+    (fn [m [k v]]
+      (assoc-nested m (parse k) v))
+    {}
+    (param-pairs params)))
 
 (defn nested-params-request
   "Converts a request with a flat map of parameters to a nested map."
