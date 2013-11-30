@@ -19,6 +19,7 @@
    "css"   "text/css"
    "csv"   "text/csv"
    "deb"   "application/x-deb"
+   "dart"  "application/dart"
    "dll"   "application/octet-stream"
    "dmg"   "application/octet-stream"
    "dms"   "application/octet-stream"
