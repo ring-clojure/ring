@@ -13,11 +13,10 @@
   "Returns an Jetty Handler implementation for the given Ring handler."
   [handler]
   (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request response]
-      (let [request-map  (servlet/build-request-map request)
-            response-map (handler request-map)]
-        (when response-map
-          (servlet/update-servlet-response response response-map)
+    (handle [_ ^Request base-request servlet-request servlet-response]
+      (let [handler (servlet/wrap-servlet-request handler)]
+        (when-let [response-map (handler servlet-request)]
+          (servlet/update-servlet-response servlet-response response-map)
           (.setHandled base-request true))))))
 
 (defn- ssl-context-factory

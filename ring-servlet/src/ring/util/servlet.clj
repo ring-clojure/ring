@@ -136,6 +136,22 @@
       ((make-service-method handler)
          this request response))))
 
+(defn wrap-servlet-request
+  "Transforms a handler that takes a standard ring request-map and returns a standard ring
+  response-map into a handler that expects an HttpServletRequest instead.
+
+  Handlers are wrapped using this by default, but there are cases where middleware needs the
+  underlying HttpServletRequest. In this case, simply add {:servlet-request true} to your handler's
+  metadata to prevent double wrapping."
+  [handler]
+  (if (:servlet-request (meta handler))
+    handler
+    (with-meta
+      (fn [^HttpServletRequest servlet-request]
+        (let [request (build-request-map servlet-request)]
+          (handler request)))
+      {:servlet-request true})))
+
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
   genclass to compile a HttpServlet class.
