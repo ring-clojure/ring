@@ -1,5 +1,6 @@
 (ns ring.middleware.nested-params
-  "Convert a single-depth map of parameters to a nested map.")
+  "Convert a single-depth map of parameters to a nested map."
+  (:use [ring.util.codec :only (assoc-conj)]))
 
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index
@@ -11,18 +12,22 @@
         keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
     (cons k keys)))
 
+(defn- assoc-vec [m k v]
+  (let [m (if (contains? m k) m (assoc m k []))]
+    (assoc-conj m k v)))
+
 (defn- assoc-nested
   "Similar to assoc-in, but treats values of blank keys as elements in a
   list."
   [m [k & ks] v]
-  (conj m
-        (if k
-          (if-let [[j & js] ks]
-            (if (= j "")
-              {k (assoc-nested (get m k []) js v)}
-              {k (assoc-nested (get m k {}) ks v)})
-            {k v})
-          v)))
+  (if k
+    (if ks
+      (let [[j & js] ks]
+        (if (= j "")
+          (assoc-vec m k (assoc-nested {} js v))
+          (assoc m k (assoc-nested (get m k {}) ks v))))
+      (assoc-conj m k v))
+    v))
 
 (defn- param-pairs
   "Return a list of name-value pairs for a parameter map."
