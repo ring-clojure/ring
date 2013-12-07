@@ -11,18 +11,26 @@
         keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
     (cons k keys)))
 
+(defn- merge-with-union
+  "Merge maps, lists & keywords preserving the values of any maps
+   with the same key"
+  [& vals]
+  (if (every? map? vals)
+    (apply merge-with merge-with-union vals)
+    (distinct (mapcat #(if (sequential? %) % [%]) vals))))
+
 (defn- assoc-nested
   "Similar to assoc-in, but treats values of blank keys as elements in a
   list."
   [m [k & ks] v]
-  (conj m
-        (if k
-          (if-let [[j & js] ks]
-            (if (= j "")
-              {k (assoc-nested (get m k []) js v)}
-              {k (assoc-nested (get m k {}) ks v)})
-            {k v})
-          v)))
+  (merge-with-union m
+                    (if k
+                      (if-let [[j & js] ks]
+                        (if (= j "")
+                          {k (assoc-nested (get m k []) js v)}
+                          {k (assoc-nested (get m k {}) ks v)})
+                        {k v})
+                      v)))
 
 (defn- param-pairs
   "Return a list of name-value pairs for a parameter map."
