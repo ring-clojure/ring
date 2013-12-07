@@ -164,8 +164,9 @@
   :domain    - the domain the cookie is valid for
   :max-age   - the maximum age in seconds of the cookie
   :expires   - a date string at which the cookie will expire
-  :secure    - set to true if the cookie is valid for HTTPS only
-  :http-only - set to true if the cookie is valid for HTTP only"
+  :secure    - set to true if the cookie requires HTTPS, prevent HTTP access
+  :http-only - set to true if the cookie is valid for HTTP and HTTPS only
+               (ie. prevent JavaScript access)"
   [handler]
   (fn [request]
     (-> request
