@@ -67,13 +67,18 @@
       (set)
       (contains? "..")))
 
+(defn- sort-named-file-to-first 
+  [filename]
+  (partial sort (fn [x _] (if (= filename(.getName x)) -1 1))))
+
 (defn- find-index-file
-  "Search the directory for an index file."
+  "Search the directory for an index file. Preferring index.html."
   [^File dir]
   (first
+   ((sort-named-file-to-first "index.html")
     (filter
-      #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
-       (.listFiles dir))))
+     #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
+     (.listFiles dir)))))
 
 (defn- safely-find-file [^String path opts]
   (if-let [^String root (:root opts)]
