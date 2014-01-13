@@ -2,7 +2,7 @@
   "Convert param keys to keywords.")
 
 (defn- keyword-syntax? [s]
-  (re-matches #"[A-Za-z*+!_?-][A-Za-z0-9*+!_?-]*" s))
+  (re-matches #"[A-Za-z*+!_?-][A-Za-z0-9*+!_?/-]*" s))
 
 (defn- keyify-params [target]
   (cond
