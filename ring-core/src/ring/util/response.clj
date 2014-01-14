@@ -3,7 +3,8 @@
   (:import java.io.File java.util.Date java.net.URL
            java.net.URLDecoder java.net.URLEncoder)
   (:use [ring.util.time :only (format-date)]
-        [ring.util.io :only (last-modified-date)])
+        [ring.util.io :only (last-modified-date)]
+        [ring.util.codec :only (assoc-conj)])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -52,7 +53,9 @@
 (defn header
   "Returns an updated Ring response with the specified header added."
   [resp name value]
-  (assoc-in resp [:headers name] (str value)))
+  (if (contains? (:headers resp) name)
+    (assoc-in resp [:headers] (assoc-conj (:headers resp) name (str value)))
+    (assoc-in resp [:headers name] (str value))))
 
 (defn- safe-path?
   "Is a filepath safe for a particular root?"

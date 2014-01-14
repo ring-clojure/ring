@@ -51,7 +51,11 @@
 
 (deftest test-header
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
-         (header {:status 200 :headers {}} "X-Foo" "Bar"))))
+         (header {:status 200 :headers {}} "X-Foo" "Bar")))
+  (is (= {:status 200 :headers {"X-Foo" ["Foo" "Bar"]}}
+         (header {:status 200 :headers {"X-Foo" "Foo"}} "X-Foo" "Bar"))
+  (is (= {:status 200 :headers {"X-Foo" ["Foo" "Bar" "Baz"]}}
+         (header {:status 200 :headers {"X-Foo" ["Foo" "Bar"]}} "X-Foo" "Baz")))))
 
 (deftest test-response?
   (is (response? {:status 200, :headers {}}))
