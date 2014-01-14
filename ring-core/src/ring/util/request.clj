@@ -1,5 +1,5 @@
 (ns ring.util.request
-  "Devive information from a request map.")
+  "Derive information from a request map.")
 
 (defn request-url
   "Return the full URL of the request."
