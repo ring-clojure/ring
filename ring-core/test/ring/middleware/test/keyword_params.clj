@@ -18,8 +18,10 @@
     {:foo "bar"}
     {"foo" {:bar "baz"}}
     {:foo {:bar "baz"}}
-    {"ns/foo" "bar"}
-    {:ns/foo "bar"}))
+    {"ns/foo" "bar" "ns/wtf/foo" "baz"}
+    {:ns/foo "bar" "ns/wtf/foo" "baz"}
+    {"dotted.ns/foo" "bar"}
+    {:dotted.ns/foo "bar"}))
 
 (deftest keyword-params-request-test
   (is (fn? keyword-params-request)))
