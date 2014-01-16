@@ -25,6 +25,7 @@
    "dms"   "application/octet-stream"
    "doc"   "application/msword"
    "dvi"   "application/x-dvi"
+   "edn"   "application/edn"
    "eot"   "application/vnd.ms-fontobject"
    "eps"   "application/postscript"
    "etx"   "text/x-setext"
