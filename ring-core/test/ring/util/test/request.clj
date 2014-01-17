@@ -19,6 +19,15 @@
                        :headers {"host" "www.example.com"}})
          "https://www.example.com/index.html")))
 
+(deftest test-content-type
+  (testing "no content-type"
+    (is (= (content-type {:headers {}}) nil)))
+  (testing "content type with no charset"
+    (is (= (content-type {:headers {"content-type" "text/plain"}}) "text/plain")))
+  (testing "content type with charset"
+    (is (= (content-type {:headers {"content-type" "text/plain; charset=UTF-8"}})
+           "text/plain"))))
+
 (deftest test-body-string
   (testing "nil body"
     (is (= (body-string {:body nil}) nil)))

@@ -11,6 +11,12 @@
        (if-let [query (:query-string request)]
          (str "?" query))))
 
+(defn content-type
+  "Return the content-type of the request."
+  [request]
+  (if-let [header (get-in request [:headers "content-type"])]
+    (second (re-find #"^(.*?)(;|$)" header))))
+
 (defmulti body-string
   "Return the request body as a string."
   (comp class :body))
