@@ -3,23 +3,9 @@
   (:require [ring.util.codec :as codec]
             [clojure.tools.reader.edn :as edn])
   (:use [clj-time.core :only (in-secs)]
-        [clj-time.format :only (formatters unparse)])
+        [clj-time.format :only (formatters unparse)]
+        [ring.util.parsing :only (re-token re-value)])
   (:import (org.joda.time Interval DateTime)))
-
-(def ^{:private true
-       :doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"}
-  re-token
-  #"[!#$%&'*\-+.0-9A-Z\^_`a-z\|~]+")
-
-(def ^{:private true
-       :doc "HTTP quoted-string: <\"> *<any TEXT except \"> <\">. See RFC2068."}
-  re-quoted
-  #"\"(\\\"|[^\"])*\"")
-
-(def ^{:private true
-       :doc "HTTP value: token | quoted-string. See RFC2109"}
-  re-value
-  (str re-token "|" re-quoted))
 
 (def ^{:private true
        :doc "HTTP cookie-value: NAME \"=\" VALUE"}
