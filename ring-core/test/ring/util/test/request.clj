@@ -41,6 +41,8 @@
     (is (= (character-encoding {:headers {"content-type" "text/plain"}}) nil)))
   (testing "content-type with charset"
     (is (= (character-encoding {:headers {"content-type" "text/plain; charset=UTF-8"}})
+           "UTF-8"))
+    (is (= (character-encoding {:headers {"content-type" "text/plain;charset=UTF-8"}})
            "UTF-8"))))
 
 (deftest test-body-string

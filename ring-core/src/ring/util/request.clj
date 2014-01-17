@@ -25,7 +25,7 @@
     (Long. length)))
 
 (def ^:private charset-pattern
-  (re-pattern (str ";.*\\s(?i:charset)=(" re-value ")\\s*(?:;|$)")))
+  (re-pattern (str ";(?:.*\\s)?(?i:charset)=(" re-value ")\\s*(?:;|$)")))
 
 (defn character-encoding
   "Return the character encoding for the request, or nil if it is not set."
