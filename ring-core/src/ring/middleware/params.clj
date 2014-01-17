@@ -33,7 +33,7 @@
 
 (defn params-request [request & [opts]]
   (let [encoding (or (:encoding opts)
-                     (:character-encoding request)
+                     (req/character-encoding request)
                      "UTF-8")
         request  (if (:form-params request)
                    request

@@ -38,8 +38,7 @@
     (is (= {} (:params resp)))))
 
 (deftest wrap-params-encoding
-  (let [req  {:character-encoding "UTF-16"
-              :headers {"content-type" "application/x-www-form-urlencoded;charset=UTF-16"}
+  (let [req  {:headers {"content-type" "application/x-www-form-urlencoded;charset=UTF-16"}
               :body (string-input-stream "hello=world" "UTF-16")}
         resp (wrapped-echo req)]
     (is (= (:params resp) {"hello" "world"}))

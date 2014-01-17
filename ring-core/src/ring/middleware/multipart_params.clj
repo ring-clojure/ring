@@ -75,7 +75,7 @@
   [request & [opts]]
   (let [store    (or (:store opts) @default-store)
         encoding (or (:encoding opts)
-                     (:character-encoding request)
+                     (req/character-encoding request)
                      "UTF-8")
         params   (if (multipart-form? request)
                    (parse-multipart-params request encoding store)
