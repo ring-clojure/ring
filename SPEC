@@ -61,8 +61,8 @@ corresponding values:
 
 :request-method 
   (Required, Keyword) 
-  The HTTP request method, must be one of :get, :head, :options, :put, :post, or 
-  :delete.
+  The HTTP request method, must be a lowercase keyword corresponding to a HTTP
+  request method, such as :get or :post.
 
 :content-type
   (Optional, String)
