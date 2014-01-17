@@ -14,7 +14,7 @@
 
 (deftest wrap-params-query-and-form-params
   (let [req  {:query-string "foo=bar"
-              :content-type "application/x-www-form-urlencoded"
+              :headers      {"content-type" "application/x-www-form-urlencoded"}
               :body         (string-input-stream "biz=bat%25")}
         resp (wrapped-echo req)]
     (is (= {"foo" "bar"}  (:query-params resp)))
@@ -22,15 +22,15 @@
     (is (= {"foo" "bar" "biz" "bat%"} (:params resp)))))
 
 (deftest wrap-params-not-form-encoded
-  (let [req  {:content-type "application/json"
-              :body         (string-input-stream "{foo: \"bar\"}")}
+  (let [req  {:headers {"content-type" "application/json"}
+              :body    (string-input-stream "{foo: \"bar\"}")}
         resp (wrapped-echo req)]
     (is (empty? (:form-params resp)))
     (is (empty? (:params resp)))))
 
 (deftest wrap-params-always-assocs-maps
   (let [req  {:query-string ""
-              :content-type "application/x-www-form-urlencoded"
+              :headers      {"content-type" "application/x-www-form-urlencoded"}
               :body         (string-input-stream "")}
         resp (wrapped-echo req)]
     (is (= {} (:query-params resp)))
@@ -39,7 +39,7 @@
 
 (deftest wrap-params-encoding
   (let [req  {:character-encoding "UTF-16"
-              :content-type "application/x-www-form-urlencoded"
+              :headers {"content-type" "application/x-www-form-urlencoded;charset=UTF-16"}
               :body (string-input-stream "hello=world" "UTF-16")}
         resp (wrapped-echo req)]
     (is (= (:params resp) {"hello" "world"}))

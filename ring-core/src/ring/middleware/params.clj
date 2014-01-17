@@ -1,6 +1,7 @@
 (ns ring.middleware.params
   "Parse form and query params."
-  (:require [ring.util.codec :as codec]))
+  (:require [ring.util.codec :as codec]
+            [ring.util.request :as req]))
 
 (defn- parse-params [params encoding]
   (let [params (codec/form-decode params encoding)]
@@ -18,7 +19,7 @@
 (defn- urlencoded-form?
   "Does a request have a urlencoded form?"
   [request]
-  (if-let [^String type (:content-type request)]
+  (if-let [^String type (req/content-type request)]
     (.startsWith type "application/x-www-form-urlencoded")))
 
 (defn assoc-form-params

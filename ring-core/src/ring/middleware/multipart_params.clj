@@ -1,6 +1,7 @@
 (ns ring.middleware.multipart-params
   "Parse multipart upload into params."
   (:use [ring.util.codec :only (assoc-conj)])
+  (:require [ring.util.request :as req])
   (:import [org.apache.commons.fileupload.util Streams]
            [org.apache.commons.fileupload
              UploadContext
@@ -11,15 +12,14 @@
 (defn- multipart-form?
   "Does a request have a multipart form?"
   [request]
-  (if-let [^String content-type (:content-type request)]
-    (.startsWith content-type "multipart/form-data")))
+  (= (req/content-type request) "multipart/form-data"))
 
 (defn- request-context
   "Create an UploadContext object from a request map."
   {:tag UploadContext}
   [request encoding]
   (reify UploadContext
-    (getContentType [this]       (:content-type request))
+    (getContentType [this]       (get-in request [:headers "content-type"]))
     (getContentLength [this]     (or (:content-length request) -1))
     (contentLength [this]        (or (:content-length request) -1))
     (getCharacterEncoding [this] encoding)
