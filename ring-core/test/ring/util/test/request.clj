@@ -34,6 +34,15 @@
   (testing "a content-length header"
     (is (= (content-length {:headers {"content-length" "1337"}}) 1337))))
 
+(deftest test-character-encoding
+  (testing "no content-type"
+    (is (= (character-encoding {:headers {}}) nil)))
+  (testing "content-type with no charset"
+    (is (= (character-encoding {:headers {"content-type" "text/plain"}}) nil)))
+  (testing "content-type with charset"
+    (is (= (character-encoding {:headers {"content-type" "text/plain; charset=UTF-8"}})
+           "UTF-8"))))
+
 (deftest test-body-string
   (testing "nil body"
     (is (= (body-string {:body nil}) nil)))

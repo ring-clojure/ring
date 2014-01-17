@@ -1,5 +1,6 @@
 (ns ring.util.request
-  "Derive information from a request map.")
+  "Derive information from a request map."
+  (:use [ring.util.parsing :only (re-value)]))
 
 (defn request-url
   "Return the full URL of the request."
@@ -14,14 +15,23 @@
 (defn content-type
   "Return the content-type of the request, or nil if no content-type is set."
   [request]
-  (if-let [header (get-in request [:headers "content-type"])]
-    (second (re-find #"^(.*?)(;|$)" header))))
+  (if-let [type (get-in request [:headers "content-type"])]
+    (second (re-find #"^(.*?)(?:;|$)" type))))
 
 (defn content-length
   "Return the content-length of the request, or nil no content-length is set."
   [request]
   (if-let [length (get-in request [:headers "content-length"])]
     (Long. length)))
+
+(def ^:private charset-pattern
+  (re-pattern (str ";.*\\s(?i:charset)=(" re-value ")\\s*(?:;|$)")))
+
+(defn character-encoding
+  "Return the character encoding for the request, or nil if it is not set."
+  [request]
+  (if-let [type (get-in request [:headers "content-type"])]
+    (second (re-find charset-pattern type))))
 
 (defmulti body-string
   "Return the request body as a string."
