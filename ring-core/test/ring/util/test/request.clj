@@ -28,6 +28,12 @@
     (is (= (content-type {:headers {"content-type" "text/plain; charset=UTF-8"}})
            "text/plain"))))
 
+(deftest test-content-length
+  (testing "no content-length header"
+    (is (= (content-length {:headers {}}) nil)))
+  (testing "a content-length header"
+    (is (= (content-length {:headers {"content-length" "1337"}}) 1337))))
+
 (deftest test-body-string
   (testing "nil body"
     (is (= (body-string {:body nil}) nil)))

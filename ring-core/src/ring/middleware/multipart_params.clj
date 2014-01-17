@@ -20,8 +20,8 @@
   [request encoding]
   (reify UploadContext
     (getContentType [this]       (get-in request [:headers "content-type"]))
-    (getContentLength [this]     (or (:content-length request) -1))
-    (contentLength [this]        (or (:content-length request) -1))
+    (getContentLength [this]     (or (req/content-length request) -1))
+    (contentLength [this]        (or (req/content-length request) -1))
     (getCharacterEncoding [this] encoding)
     (getInputStream [this]       (:body request))))
 

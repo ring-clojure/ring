@@ -12,10 +12,16 @@
          (str "?" query))))
 
 (defn content-type
-  "Return the content-type of the request."
+  "Return the content-type of the request, or nil if no content-type is set."
   [request]
   (if-let [header (get-in request [:headers "content-type"])]
     (second (re-find #"^(.*?)(;|$)" header))))
+
+(defn content-length
+  "Return the content-length of the request, or nil no content-length is set."
+  [request]
+  (if-let [length (get-in request [:headers "content-length"])]
+    (Long. length)))
 
 (defmulti body-string
   "Return the request body as a string."

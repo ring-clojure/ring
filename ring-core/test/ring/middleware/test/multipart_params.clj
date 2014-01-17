@@ -20,8 +20,8 @@
                        "qux\r\n"
                        "--XXXX--")
         handler (wrap-multipart-params identity {:store string-store})
-        request {:content-length (count form-body)
-                 :headers {"content-type" "multipart/form-data; boundary=XXXX"}
+        request {:headers {"content-type" "multipart/form-data; boundary=XXXX"
+                           "content-length" (str (count form-body))}
                  :params {"foo" "bar"}
                  :body (string-input-stream form-body)}
         response (handler request)]
@@ -43,8 +43,8 @@
                        "baz\r\n"
                        "--XXXX--")
         handler (wrap-multipart-params identity {:store string-store})
-        request {:content-length (count form-body)
-                 :headers {"content-type" "multipart/form-data; boundary=XXXX"}
+        request {:headers {"content-type" "multipart/form-data; boundary=XXXX"
+                           "content-length" (str (count form-body))}
                  :body (string-input-stream form-body)}
         response (handler request)]
     (is (= (get-in response [:params "foo"])
@@ -70,8 +70,8 @@
                          "--XXXX--")]
       (dotimes [_ 200]
         (let [handler (wrap-multipart-params identity)
-              request {:content-length (count form-body)
-                       :headers {"content-type" "multipart/form-data; boundary=XXXX"}
+              request {:headers {"content-type" "multipart/form-data; boundary=XXXX"
+                                 "content-length" (str (count form-body))}
                        :body (string-input-stream form-body)}]
           (handler request))))
     (is (< (count (all-threads))
