@@ -91,7 +91,8 @@ corresponding values:
 
 
 == Response Map
-A response map is a Clojure map containing at least the following keys and corresponding values:
+A response map is a Clojure map containing at least the following keys and
+corresponding values:
 
 :status
   (Required, Integer)
