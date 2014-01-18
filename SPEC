@@ -64,15 +64,15 @@ corresponding values:
   The HTTP request method, must be a lowercase keyword corresponding to a HTTP
   request method, such as :get or :post.
 
-:content-type
+:content-type [DEPRECATED]
   (Optional, String)
   The MIME type of the request body, if known.
 
-:content-length
+:content-length [DEPRECATED]
   (Optional, Integer)
   The number of bytes in the request body, if known.
 
-:character-encoding
+:character-encoding [DEPRECATED]
   (Optional, String)
   The name of the character encoding used in the request body, if known.
 
