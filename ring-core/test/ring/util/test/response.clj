@@ -29,6 +29,10 @@
   (is (= {:status 200 :headers {} :body "foobar"}
          (response "foobar"))))
 
+(deftest test-ok
+  (is (= {:status 200 :headers {} :body "foobar"}
+         (ok "foobar"))))
+
 (deftest test-status
   (is (= {:status 200 :body ""} (status {:status nil :body ""} 200))))
 
