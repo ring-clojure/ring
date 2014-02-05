@@ -77,5 +77,49 @@
     (is (< (count (all-threads))
            100))))
 
+(defn- form-body-with-size [sz]
+  {:pre [(> sz 113)]}
+  (str "--XXXX\r\n"
+       "Content-Disposition: form-data;"
+       "name=\"upload\"; filename=\"test.txt\"\r\n"
+       "Content-Type: text/plain\r\n\r\n"
+       (apply str (repeat (- sz 113) "1")) "\r\n"
+       "--XXXX--"))
+
+(defn- request-of [form-body]
+  {:content-type "multipart/form-data; boundary=XXXX"
+   :content-length (count form-body)
+   :body (string-input-stream form-body)})
+
+(defn- root-cause [e]
+  (let [cause (.getCause e)]
+    (if (and cause (not (= java.io.IOException (type cause))))
+      (recur cause)
+      e)))
+
+(deftest test-max-size-settings
+  (testing "Respects max request size in bytes"
+    (let [handler (wrap-multipart-params identity {:max-request-size 300, :store string-store})]
+
+      (let [response (handler (request-of (form-body-with-size 300)))]
+        (is (= (get-in response [:params "upload" :filename]) "test.txt")))
+
+      (is (thrown? org.apache.commons.fileupload.FileUploadBase$SizeLimitExceededException
+                   (handler (request-of (form-body-with-size 500)))))))
+
+  (testing "Respects max file size in bytes"
+    (let [handler (wrap-multipart-params identity {:max-file-size 300, :store string-store})]
+
+      ; Actual file size is less than 300
+      (let [response (handler (request-of (form-body-with-size 400)))]
+        (is (= (get-in response [:params "upload" :filename]) "test.txt")))
+
+      (try
+        (handler (request-of (form-body-with-size 500)))
+        (is false "Should fail with exception!")
+        (catch Exception e
+          (is (instance? org.apache.commons.fileupload.FileUploadBase$FileSizeLimitExceededException
+                         (root-cause e))))))))
+
 (deftest multipart-params-request-test
   (is (fn? multipart-params-request)))
