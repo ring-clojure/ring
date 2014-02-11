@@ -77,19 +77,19 @@
   ; Some headers must be set through specific methods
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type))
-  ;; added by me
+  ; Flush after headers
   (.flushBuffer response))
 
-(defn copy [in output]
+(defn copy-and-flush [in output]
   (let [buffer (make-array Byte/TYPE 1024)]
     (loop []
       (let [av (.available in)]
         (if (pos? av)
           (let [size (.read in buffer 0 (min av (alength buffer)))]
-            (if (pos? size)
-              (do (.write output buffer 0 size)
-                  (.flush output)
-                  (recur))))
+            (when (pos? size)
+              (.write output buffer 0 size)
+              (.flush output)
+              (recur)))
           (let [b (.read in)] ;; block
             (.write output b)
             (recur)))))))
@@ -108,7 +108,7 @@
           (.flush writer)))
     (instance? InputStream body)
       (with-open [^InputStream b body]
-        (copy b (.getOutputStream response)))
+        (copy-and-flush b (.getOutputStream response)))
     (instance? File body)
       (let [^File f body]
         (with-open [stream (FileInputStream. f)]
