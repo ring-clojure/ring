@@ -1,7 +1,6 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string])
+  (:require [clojure.string :as string])
   (:import (java.io File InputStream FileInputStream)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
