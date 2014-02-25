@@ -13,11 +13,17 @@
     {"foo" 1}
     {:foo  1}
     {"foo" 1 "1bar" 2 "baz*" 3 "quz-buz" 4 "biz.bang" 5}
-    {:foo 1 "1bar" 2 :baz* 3 :quz-buz 4 "biz.bang" 5}
+    {:foo 1 "1bar" 2 :baz* 3 :quz-buz 4 :biz.bang 5}
     {:foo "bar"}
     {:foo "bar"}
     {"foo" {:bar "baz"}}
-    {:foo {:bar "baz"}}))
+    {:foo {:bar "baz"}}
+    {"foo/bar" "baz"}
+    {:foo/bar "baz"}
+    {"foo.bar/baz" "quux"}
+    {:foo.bar/baz "quux"}
+    {"foo/bar/baz" "quux"}
+    {"foo/bar/baz" "quux"}))
 
 (deftest keyword-params-request-test
   (is (fn? keyword-params-request)))
