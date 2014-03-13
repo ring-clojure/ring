@@ -1,61 +1,81 @@
 (ns ring.middleware.multipart-params
   "Parse multipart upload into params."
-  (:use [ring.util.codec :only (assoc-conj)])
-  (:require [ring.util.request :as req])
-  (:import [org.apache.commons.fileupload.util Streams]
-           [org.apache.commons.fileupload
-             UploadContext
-             FileItemIterator
-             FileItemStream
-             FileUpload]))
+  (:import [java.io InputStream BufferedInputStream])
+  (:use [ring.util.codec :only (assoc-conj)]
+        [ring.util.parsing :onlt (re-value)])
+  (:require [ring.util.request :as req]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [substream.core :as sub]))
 
 (defn- multipart-form?
   "Does a request have a multipart form?"
   [request]
   (= (req/content-type request) "multipart/form-data"))
 
-(defn- request-context
-  "Create an UploadContext object from a request map."
-  {:tag UploadContext}
-  [request encoding]
-  (reify UploadContext
-    (getContentType [this]       (get-in request [:headers "content-type"]))
-    (getContentLength [this]     (or (req/content-length request) -1))
-    (contentLength [this]        (or (req/content-length request) -1))
-    (getCharacterEncoding [this] encoding)
-    (getInputStream [this]       (:body request))))
+(defn- end-of-stream? [^BufferedInputStream stream]
+  (.mark stream 1)
+  (let [end? (= (.read stream) -1)]
+    (.reset stream)
+    end?))
 
-(defn- file-item-iterator-seq
-  "Create a lazy seq from a FileItemIterator instance."
-  [^FileItemIterator it]
-  (lazy-seq
-    (if (.hasNext it)
-      (cons (.next it) (file-item-iterator-seq it)))))
+(def re-boundary
+  (re-pattern (str "boundary=(" re-value ")")))
 
-(defn- file-item-seq
-  "Create a seq of FileItem instances from a request context."
-  [context]
-  (file-item-iterator-seq
-    (.getItemIterator (FileUpload.) context)))
+(defn- multipart-boundary
+  "Find the boundary of a multipart request."
+  [request]
+  (->> (get-in request [:headers "content-type"])
+       (re-find re-boundary)
+       (second)))
 
-(defn- parse-file-item
-  "Parse a FileItemStream into a key-value pair. If the request is a file the
-  supplied store function is used to save it."
-  [^FileItemStream item store]
-  [(.getFieldName item)
-   (if (.isFormField item)
-     (Streams/asString (.openStream item))
-     (store {:filename     (.getName item)
-             :content-type (.getContentType item)
-             :stream       (.openStream item)}))])
+(defn- byte->int [b]
+  (bit-and b 0xff))
 
-(defn- parse-multipart-params
-  "Parse a map of multipart parameters from the request."
-  [request encoding store]
-  (->> (request-context request encoding)
-       (file-item-seq)
-       (map #(parse-file-item % store))
-       (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
+(defn- stream-until-boundary [^BufferedInputStream stream boundary]
+  (let [b-size (count boundary)]
+    (.mark stream b-size)
+    (sub/input-stream
+     #(loop [i 0]
+        (let [b1 (.read stream)
+              b2 (byte->int (aget boundary i))]
+          (if (= i b-size)
+            (do (.read stream) (.read stream) -1)
+            (if (= b1 b2)
+              (recur (inc i))
+              (do (doto stream .reset .read (.mark b-size)) b1))))))))
+
+(def ^:private CR (byte 13))
+(def ^:private LF (byte 10))
+
+(defn- read-headers [stream]
+  (let [boundary (byte-array [CR LF CR LF])
+        stream   (stream-until-boundary stream boundary)]
+    (->> (line-seq (io/reader stream))
+         (map #(str/split % #":" 1))
+         (reduce (fn [m [k v]] (assoc m (str/lower-case k) (str/trim v))) {}))))
+
+(def re-disposition
+  (re-pattern (str "(" re-token ")=(" re-value ")\\s*[;,]?")))
+
+(defn- parse-disposition [disposition]
+  
+  (let [disposition (headers "conten")]))
+
+(defn- parse-multipart-params [request encoding store]
+  (let [boundary (-> (multipart-bounday request) (.getBytes encoding))]
+    (with-open [stream (BufferedInputStream. (:body request))]
+      (loop [params {}]
+        (if (end-of-stream? stream)
+          params
+          (let [stream      (stream-until-boundary stream boundary)
+                headers     (read-headers stream)
+                disposition (parse-disposition (headers "content-disposition"))]
+            (assoc-conj params
+              (:name disposition)
+              {:filename     (:filename disposition)
+               :content-type (headers "content-type")
+               :stream       stream})))))))
 
 (defn- load-var
   "Returns the var named by the supplied symbol, or nil if not found. Attempts

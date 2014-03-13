@@ -7,10 +7,10 @@
                  [org.clojure/tools.reader "0.8.1"]
                  [ring/ring-codec "1.0.0"]
                  [commons-io "2.4"]
-                 [commons-fileupload "1.3"]
                  [clj-time "0.4.4"]
                  [crypto-random "1.1.0"]
-                 [crypto-equality "0.1.0"]]
+                 [crypto-equality "0.1.0"]
+                 [substream "0.1.0"]]
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}
