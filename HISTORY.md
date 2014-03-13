@@ -1,3 +1,9 @@
+## 1.2.2 (2014-03-13)
+
+* Cookie middleware now adheres to RFC 6265
+* Fix for wrap-nested-params middleware
+* Update tools.reader version
+
 ## 1.2.1 (2013-10-28)
 
 * Fix for resources in jar files created with Leiningen 2.3.3 or above
