@@ -1,30 +1,29 @@
 (ns ring.middleware.cookies
   "Cookie manipulation."
   (:require [ring.util.codec :as codec]
-            [clojure.tools.reader.edn :as edn])
+            [clojure.string :as str])
   (:use [clj-time.core :only (in-secs)]
         [clj-time.format :only (formatters unparse)]
         [ring.util.parsing :only (re-token re-value)])
   (:import (org.joda.time Interval DateTime)))
 
-(def ^{:private true
-       :doc "HTTP cookie-value: NAME \"=\" VALUE"}
+(def ^{:private true, :doc "RFC6265 cookie-octet"}
+  re-cookie-octet
+  #"[!#$%&'()*+\-./0-9:<=>?@A-Z\[\]\^_`a-z\{\|\}~]")
+
+(def ^{:private true, :doc "RFC6265 cookie-value"}
+  re-cookie-value
+  (re-pattern (str "\"" re-cookie-octet "*\"|" re-cookie-octet "*")))
+
+(def ^{:private true, :doc "RFC6265 set-cookie-string"}
   re-cookie
-  (re-pattern (str "\\s*(" re-token ")=(" re-value ")\\s*[;,]?")))
+  (re-pattern (str "\\s*(" re-token ")=(" re-cookie-value ")\\s*[;,]?")))
 
 (def ^{:private true
-       :doc "Special attributes defined by RFC2109 and RFC2965 that apply to the
-             Cookie header."}
-  cookie-attrs
-  {"$Path" :path, "$Domain" :domain, "$Port" :port})
-
-(def ^{:private true
-       :doc "Attributes defined by RFC2109 and RFC2965 that apply to the
-             Set-Cookie header."}
+       :doc "Attributes defined by RFC6265 that apply to the Set-Cookie header."}
   set-cookie-attrs
-  {:comment "Comment", :comment-url "CommentURL", :discard "Discard",
-   :domain "Domain", :max-age "Max-Age", :path "Path", :port "Port",
-   :secure "Secure", :version "Version", :expires "Expires", :http-only "HttpOnly"})
+  {:domain "Domain", :max-age "Max-Age", :path "Path"
+   :secure "Secure", :expires "Expires", :http-only "HttpOnly"})
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
@@ -32,44 +31,25 @@
   (for [[_ name value] (re-seq re-cookie header)]
     [name value]))
 
-(defn- normalize-quoted-strs
-  "Turn quoted strings into normal Clojure strings using read-string."
-  [cookies]
-  (remove nil?
-    (for [[name value] cookies]
-      (if-let [value (codec/form-decode-str value)]
-        (if (.startsWith ^String value "\"")
-          [name (edn/read-string value)]
-          [name value])))))
+(defn- strip-quotes
+  "Strip quotes from a cookie value."
+  [value]
+  (str/replace value #"^\"|\"$" ""))
 
-(defn- get-cookie
-  "Get a single cookie from a sequence of cookie-values"
-  [[[name value] & cookie-values]]
-  {name (reduce
-          (fn [m [k v]] (assoc m (cookie-attrs k) v))
-          {:value value}
-          (take-while (comp cookie-attrs first) cookie-values))})
-
-(defn- to-cookie-map
-  "Turn a sequence of cookie-values into a cookie map."
-  [values]
-  (loop [values values, cookie-map {}]
-    (if (seq values)
-      (let [cookie (get-cookie values)]
-        (recur
-          (drop (-> cookie first val count) values)
-          (merge cookie-map cookie)))
-        cookie-map)))
+(defn- decode-values [cookies]
+  (for [[name value] cookies]
+    (if-let [value (codec/form-decode-str (strip-quotes value))]
+      [name {:value value}])))
 
 (defn- parse-cookies
   "Parse the cookies from a request map."
   [request]
   (if-let [cookie (get-in request [:headers "cookie"])]
-    (-> cookie
-      parse-cookie-header
-      normalize-quoted-strs
-      to-cookie-map
-      (dissoc "$Version"))
+    (->> cookie
+         parse-cookie-header
+         decode-values
+         (remove nil?)
+         (into {}))
     {}))
 
 (defn- write-value

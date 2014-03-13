@@ -16,21 +16,9 @@
            resp))))
 
 (deftest wrap-cookies-quoted-cookies
-  (let [req  {:headers {"cookie" "a=\"b=c;e=f\""}}
+  (let [req  {:headers {"cookie" "a=\"b\""}}
         resp ((wrap-cookies :cookies) req)]
-    (is (= {"a" {:value "b=c;e=f"}}
-           resp))))
-
-(deftest wrap-cookies-escaped-quotes
-  (let [req  {:headers {"cookie" "a=\"\\\"b\\\"\""}}
-        resp ((wrap-cookies :cookies) req)]
-    (is (= {"a" {:value "\"b\""}}
-           resp))))
-
-(deftest wrap-cookies-extra-attrs
-  (let [req  {:headers {"cookie" "a=b;$Path=\"/\";$Domain=localhost"}}
-        resp ((wrap-cookies :cookies) req)]
-    (is (= {"a" {:value "b", :path "/", :domain "localhost"}}
+    (is (= {"a" {:value "b"}}
            resp))))
 
 (deftest wrap-cookies-set-basic-cookie
@@ -158,6 +146,10 @@
   (let [req {:headers {"cookie" "a=b; c=d,e=f"}}]
     (is (= {"a" {:value "b"}, "c" {:value "d"}, "e" {:value "f"}}
            ((cookies-request req) :cookies)))))
+
+(deftest parse-cookies-url-encoding
+  (let [req {:headers {"cookie" "a=%22/test%22"}}]
+    (is (= {"a" {:value "\"/test\""}} ((cookies-request req) :cookies)))))
 
 (deftest cookies-response-test
   (is (fn? cookies-response)))
