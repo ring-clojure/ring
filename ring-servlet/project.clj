@@ -1,9 +1,9 @@
-(defproject ring/ring-servlet "1.2.1"
+(defproject ring/ring-servlet "1.2.2"
   :description "Ring servlet utilities."
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[ring/ring-core "1.2.1"]]
+  :dependencies [[ring/ring-core "1.2.2"]]
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}

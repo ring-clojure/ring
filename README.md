@@ -25,11 +25,11 @@ complete description of the Ring interface.
 To include one of the above libraries, for example `ring-core`, add
 the following to your `:dependencies`:
 
-    [ring/ring-core "1.2.1"]
+    [ring/ring-core "1.2.2"]
 
 To include all of them:
 
-    [ring "1.2.1"]
+    [ring "1.2.2"]
 
 ## Documentation
 
