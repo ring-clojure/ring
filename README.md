@@ -61,4 +61,6 @@ thanks to those communities for their work.
 
 ## License
 
-Copyright © 2009-2013 Mark McGranaghan and released under an MIT license.
+Copyright © 2009-2014 Mark McGranaghan, James Reeves & contributors.
+
+Released under the MIT license.
