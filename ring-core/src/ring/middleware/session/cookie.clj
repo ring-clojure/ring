@@ -90,7 +90,11 @@
     (seal secret-key {})))
 
 (defn cookie-store
-  "Creates an encrypted cookie storage engine."
+  "Creates an encrypted cookie storage engine. Takes an optional map options
+   which takes the following key:
+   - key: The secret key to encrypt the session cookie. Must be exactly 16 bytes
+   If no key is provided then a random key will be generated. Note that in that
+   case a server restart will invalidate all existing session cookies."
   ([] (cookie-store {}))
   ([options]
     (CookieStore. (get-secret-key options))))
