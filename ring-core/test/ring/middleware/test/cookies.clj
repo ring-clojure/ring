@@ -21,6 +21,12 @@
     (is (= {"a" {:value "b"}}
            resp))))
 
+(deftest wrap-cookies-quoted-cookies-no-urlencode
+  (let [req  {:headers {"cookie" "a=U3VwIFdpenpvcmxkCg%3D%3D"}}
+        resp ((wrap-cookies :cookies {:decoder identity}) req)]
+    (is (= {"a" {:value "U3VwIFdpenpvcmxkCg%3D%3D"}}
+           resp))))
+
 (deftest wrap-cookies-set-basic-cookie
   (let [handler (constantly {:cookies {"a" "b"}})
         resp    ((wrap-cookies handler) {})]
@@ -60,10 +66,28 @@
         resp ((wrap-cookies :cookies) req)]
     (is (= {"a" {:value "hello world"}} resp))))
 
+(deftest wrap-cookies-no-urlencode
+  (let [req {:headers {"cookie" "a=hello+world"}}
+        resp ((wrap-cookies :cookies {:decoder identity}) req)]
+    (is (= {"a" {:value "hello+world"}} resp))))
+
+(deftest wrap-cookies-no-urlencode-base64
+  (let [req {:headers {"cookie" "a=U3VwIFdpenpvcmxkCg=="}}
+        resp ((wrap-cookies :cookies {:decoder identity}) req)]
+    (is (= {"a" {:value "U3VwIFdpenpvcmxkCg=="}} resp))))
+
 (deftest wrap-cookies-set-urlencoded-cookie
   (let [handler (constantly {:cookies {"a" "hello world"}})
         resp    ((wrap-cookies handler) {})]
     (is (= {"Set-Cookie" (list "a=hello+world")}
+           (:headers resp)))))
+
+(deftest wrap-cookies-set-no-urlencoded-cookie
+  (let [handler (constantly {:cookies {"a" "hello world"}})
+        resp    ((wrap-cookies handler {:encoder
+                                        (fn [m]
+                                          (apply format "%s=%s" (first (seq m))))}) {})]
+    (is (= {"Set-Cookie" (list "a=hello world")}
            (:headers resp)))))
 
 (deftest wrap-cookies-invalid-url-encoded

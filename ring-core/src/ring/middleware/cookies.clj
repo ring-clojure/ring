@@ -36,26 +36,26 @@
   [value]
   (str/replace value #"^\"|\"$" ""))
 
-(defn- decode-values [cookies]
+(defn- decode-values [cookies decoder]
   (for [[name value] cookies]
-    (if-let [value (codec/form-decode-str (strip-quotes value))]
+    (if-let [value (decoder (strip-quotes value))]
       [name {:value value}])))
 
 (defn- parse-cookies
   "Parse the cookies from a request map."
-  [request]
+  [request encoder]
   (if-let [cookie (get-in request [:headers "cookie"])]
     (->> cookie
          parse-cookie-header
-         decode-values
+         ((fn [c] (decode-values c encoder)))
          (remove nil?)
          (into {}))
     {}))
 
 (defn- write-value
   "Write the main cookie value."
-  [key value]
-  (codec/form-encode {key value}))
+  [key value encoder]
+  (encoder {key value}))
 
 (defn- valid-attr?
   "Is the attribute valid?"
@@ -82,40 +82,48 @@
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
-  [cookies]
+  [cookies encoder]
   (for [[key value] cookies]
     (if (map? value)
-      (apply str (write-value key (:value value))
+      (apply str (write-value key (:value value) encoder)
                  (write-attr-map (dissoc value :value)))
-      (write-value key value))))
+      (write-value key value encoder))))
 
 (defn- set-cookies
   "Add a Set-Cookie header to a response if there is a :cookies key."
-  [response]
+  [response encoder]
   (if-let [cookies (:cookies response)]
     (update-in response
                [:headers "Set-Cookie"]
                concat
-               (doall (write-cookies cookies)))
+               (doall (write-cookies cookies encoder)))
     response))
 
 (defn cookies-request
   "Parses cookies in the request map."
-  [request]
+  [request & [{:keys [decoder]
+               :or {decoder codec/form-decode-str}}]]
   (if (request :cookies)
     request
-    (assoc request :cookies (parse-cookies request))))
+    (assoc request :cookies (parse-cookies request decoder))))
 
 (defn cookies-response
   "For responses with :cookies, adds Set-Cookie header and returns response without :cookies."
-  [response]
+  [response & [{:keys [encoder]
+                :or {encoder codec/form-encode}}]]
   (-> response
-      (set-cookies)
+      (set-cookies encoder)
       (dissoc :cookies)))
 
 (defn wrap-cookies
   "Parses the cookies in the request map, then assocs the resulting map
   to the :cookies key on the request.
+
+  If you wish to override either the decoding or the encoding of the
+  cookie value you may do so by including a :decoder or :encoder
+  mapping to a function which takes a single argument which is a map
+  where the key is the cookie's name and the value is the value
+  portion. It is expected that this function returns a string.
 
   Each cookie is represented as a map, with its value being held in the
   :value key. A cookie may optionally contain a :path, :domain or :port
@@ -133,9 +141,11 @@
   :secure    - set to true if the cookie requires HTTPS, prevent HTTP access
   :http-only - set to true if the cookie is valid for HTTP and HTTPS only
                (ie. prevent JavaScript access)"
-  [handler]
+  [handler & [{:keys [decoder encoder]
+               :or {decoder codec/form-decode-str
+                    encoder codec/form-encode}}]]
   (fn [request]
     (-> request
-        cookies-request
+        (cookies-request {:decoder decoder})
         handler
-        cookies-response)))
+        (cookies-response {:encoder encoder}))))
