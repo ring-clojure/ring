@@ -113,9 +113,7 @@
     (reducible? body)
       (with-open [writer (.getWriter response)]
         (reduce (fn [_ chunk]
-                  (.print writer (str chunk))
-                  (when (.checkError writer)
-                    (throw (Exception. "Servlet print writer error"))))
+                  (.print writer (str chunk)))
                 nil body))
     :else
       (throw (Exception. ^String (format "Unrecognized body: %s" body)))))
