@@ -28,6 +28,12 @@
        ~@body
        (finally (.stop server#)))))
 
+(defn get-buffer-sizes [connector]
+  [(.getRequestHeaderSize connector)
+   (.getRequestBufferSize connector)
+   (.getResponseHeaderSize connector)
+   (.getResponseBufferSize connector)])
+
 (deftest test-run-jetty
   (testing "HTTP server"
     (with-server hello-world {:port 4347}
@@ -150,4 +156,54 @@
           (is (= (:scheme request-map) :http))
           (is (= (:server-name request-map) "localhost"))
           (is (= (:server-port request-map) 4347))
-          (is (= (:ssl-client-cert request-map) nil)))))))
+          (is (= (:ssl-client-cert request-map) nil))))))
+
+  (testing "configuring buffer-sizes"
+    (let [ref-server (run-jetty hello-world {:port 4345
+                                             :ssl-port 4346
+                                             :keystore "test/keystore.jks"
+                                             :key-password "password"
+                                             :join? false})
+          ref-conn-1 (first (.getConnectors ref-server))
+          ref-conn-2 (second (.getConnectors ref-server))
+          test-connector (fn [ref-connector connector should]
+                           (let [rbs (get-buffer-sizes connector)
+                                 cbs (get-buffer-sizes connector)]
+                             (are [n msg]
+                               (is (= (nth cbs n) (or (nth should n)
+                                                      (nth rbs n)))
+                                   msg)
+                               0 "Could not set request header size"
+                               1 "Could not set request buffer size"
+                               2 "Could not set response header size"
+                               3 "Could not set response buffer size")))]
+      (are [rqh rqb rsh rsb buffer-size]
+        (let [server (run-jetty hello-world {:port 4347
+                                             :buffer-size buffer-size
+                                             :ssl-port 4348
+                                             :keystore "test/keystore.jks"
+                                             :key-password "password"
+                                             :join? false})]
+          (test-connector ref-conn-1 (first (.getConnectors server))
+                          [rqh rqb rsh rsb])
+          (test-connector ref-conn-2 (first (.getConnectors server))
+                          [rqh rqb rsh rsb])
+          (.stop server)
+          true)
+        nil nil nil nil nil
+        128 nil nil nil {:request {:headers 128}}
+        nil 128 nil nil {:request {:body 128}}
+        128 128 nil nil {:request {:headers 128 :body 128}}
+        128 128 nil nil {:request 128}
+        nil nil 128 nil {:response {:headers 128}}
+        nil nil nil 128 {:response {:body 128}}
+        nil nil 128 128 {:response {:headers 128 :body 128}}
+        nil nil 128 128 {:response 128}
+        128 128 128 128 128
+        128 128 128 128 {:request 128 :response 128}
+        128 128 128 128 {:request {:headers 128 :body 128} :response 128}
+        128 128 128 128 {:request 128 :response {:headers 128 :body 128}}
+        128 nil nil 128 {:request {:headers 128} :response {:body 128}}
+        nil 128 128 nil {:request {:body 128} :response {:headers 128}}
+        128 nil 128 nil {:request {:headers 128} :response {:headers 128}}
+        nil 128 nil 128 {:request {:body 128} :response {:body 128}}))))

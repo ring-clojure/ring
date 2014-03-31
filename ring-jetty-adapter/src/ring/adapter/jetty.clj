@@ -1,6 +1,6 @@
 (ns ring.adapter.jetty
   "Adapter for the Jetty webserver."
-  (:import (org.eclipse.jetty.server Server Request)
+  (:import (org.eclipse.jetty.server Server Request Connector)
            (org.eclipse.jetty.server.handler AbstractHandler)
            (org.eclipse.jetty.server.nio SelectChannelConnector)
            (org.eclipse.jetty.server.ssl SslSelectChannelConnector)
@@ -41,13 +41,32 @@
       nil)
     context))
 
+(defn- parse-buffer-size [opt]
+  (if (number? opt)
+    (repeat 2 opt)
+    [(:headers opt) (:body opt)]))
+
+(defn- parse-buffer-sizes [opt]
+  (if (number? opt)
+    (repeat 4 opt)
+    (concat (parse-buffer-size (:request opt))
+            (parse-buffer-size (:response opt)))))
+
+(defn- configure-buffers [^Connector connector buffer-size]
+  (let [[rqh rqb rsh rsb] (parse-buffer-sizes buffer-size)]
+    (when rqh (.setRequestHeaderSize connector rqh))
+    (when rqb (.setRequestBufferSize connector rqb))
+    (when rsh (.setResponseHeaderSize connector rsh))
+    (when rsb (.setResponseBufferSize connector rsb))))
+
 (defn- ssl-connector
   "Creates a SslSelectChannelConnector instance."
   [options]
   (doto (SslSelectChannelConnector. (ssl-context-factory options))
     (.setPort (options :ssl-port 443))
     (.setHost (options :host))
-    (.setMaxIdleTime (options :max-idle-time 200000))))
+    (.setMaxIdleTime (options :max-idle-time 200000))
+    (configure-buffers (:buffer-size options))))
 
 (defn- create-server
   "Construct a Jetty Server instance."
@@ -55,7 +74,8 @@
   (let [connector (doto (SelectChannelConnector.)
                     (.setPort (options :port 80))
                     (.setHost (options :host))
-                    (.setMaxIdleTime (options :max-idle-time 200000)))
+                    (.setMaxIdleTime (options :max-idle-time 200000))
+                    (configure-buffers (:buffer-size options)))
         server    (doto (Server.)
                     (.addConnector connector)
                     (.setSendDateHeader true))]
@@ -83,7 +103,11 @@
   :max-queued   - the maximum number of requests to queue (default unbounded)
   :max-idle-time  - the maximum idle time in milliseconds for a connection (default 200000)
   :client-auth  - SSL client certificate authenticate, may be set to :need,
-                  :want or :none (defaults to :none)"
+                  :want or :none (defaults to :none)
+  :buffer-size     - {:request  {:headers number :body number}
+                      :response {:headers number :body number}}
+                     Set the request/response header/body buffer sizes in bytes.
+                     A number instead of a map sets every subordinate config key."
   [handler options]
   (let [^Server s (create-server (dissoc options :configurator))
         ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
