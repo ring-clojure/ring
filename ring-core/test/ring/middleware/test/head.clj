@@ -19,4 +19,5 @@
   (is (fn? head-request)))
 
 (deftest head-response-test
-  (is (fn? head-response)))
+  (is (fn? head-response))
+  (is (nil? (head-response nil {:request-method :head}))))
