@@ -1,6 +1,7 @@
 (defproject ring/ring-jetty-adapter "1.2.2"
   :description "Ring Jetty adapter."
   :url "https://github.com/ring-clojure/ring"
+  :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[ring/ring-core "1.2.2"]
