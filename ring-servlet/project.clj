@@ -3,7 +3,7 @@
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[ring/ring-core "1.2.2"]]
+  :dependencies [[org.clojure/clojure "1.3.0"]]
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}
