@@ -42,6 +42,14 @@
       (is (= 304 (:status (not-modified-response h-resp (req last-modified)))))
       (is (= 304 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 11:52:50 GMT")))))
       (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:50 GMT")))))))
+
+  (testing "not modified body and content-length"
+    (let [req   #(hash-map :headers {"if-modified-since" %})
+          last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
+          h-resp {:status 200 :headers {"Last-Modified" last-modified} :body ""}
+          resp   (not-modified-response h-resp (req last-modified))]
+      (is (nil? (:body resp)))
+      (is (= (get-in resp [:headers "Content-Length"]) "0"))))
   
   (testing "no modification info"
     (let [response {:status 200 :headers {} :body ""}]
