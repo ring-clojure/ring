@@ -14,8 +14,11 @@
     (testing "nested parameter lists"
       (are [p r] (= (handler {:params p}) r)
         {"foo[]" "bar"}         {"foo" ["bar"]}
-        {"foo[]" ["bar" "baz"]} {"foo" ["bar" "baz"]}
-        {"a[x][]" ["b"], "a[x][][y]" "c"} {"a" {"x" ["b" {"y" "c"}]}})
+        {"foo[]" ["bar" "baz"]} {"foo" ["bar" "baz"]})
+      (let [params (handler {:params {"a[x][]" ["b"], "a[x][][y]" "c"}})]
+        (is (= (keys params) ["a"]))
+        (is (= (keys (params "a")) ["x"]))
+        (is (= (set (get-in params ["a" "x"])) #{"b" {"y" "c"}})))
       (let [params (handler {:params {"a[][x]" "c", "a[][y]" "d"}})]
         (is (= (keys params) ["a"]))
         (is (= (set (params "a")) #{{"x" "c"} {"y" "d"}}))))
