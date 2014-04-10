@@ -4,3 +4,62 @@
 * Richard Newman
 * Seth Buntin
 * David Santiago
+* Aaron Bedra
+* Aaron France
+* Aku Kotkavuo
+* Alexander Solovyov
+* Allen Rohner
+* Andrew Cholakian
+* Andy Fingerhut
+* Antti Rasinen
+* Baishampayan Ghose
+* Bill Caputo
+* Christoffer Sawicki
+* Colin Jones
+* Daniel Janus
+* David Powell
+* Gabriel Horner
+* Giacomo Ritucci
+* Günter Glück
+* Herwig Hochleitner
+* Ignacio Thayer
+* Iwan van der Kleijn
+* Jesper André Lyngesen Pedersen
+* Joseph Wilk
+* Josh Comer
+* Jude Chao
+* Juergen Hoetzel
+* Kevin J. Lynagh
+* Kurman Karabukaev
+* Kushal Pisavadia
+* Lake Denman
+* Gabriel Horner
+* Marko Kocic
+* Marko Topolnik
+* Marshall Bockrath-Vandegrift
+* Matt Furden
+* Matthew Courtney
+* Max Riveiro
+* Nahuel Greco
+* Nate Young
+* Nick Zalabak
+* Oliver Powell
+* Paul Schorfheide
+* Pepijn de Vos
+* Peter Garbers
+* Petr Gladkikh
+* Pierre-Yves Ritschard
+* Roman Scherer
+* Ryan Fowler
+* Sebastián Bernardo Galkin
+* Steven Degutis
+* Stuart Halloway
+* Tero Parviainen
+* Tobias Löfgren
+* Tom Denley
+* Tommi Reiman
+* Trent Ogren
+* Trevor Wennblom
+* Tyler Hobbs
+* Vadim Platonov
+* Yuri Niyazov
