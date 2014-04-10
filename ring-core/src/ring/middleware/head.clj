@@ -11,7 +11,7 @@
 (defn head-response
   "Returns a nil body if original request was a HEAD."
   [response request]
-  (if (= :head (:request-method request))
+  (if (and response (= :head (:request-method request)))
     (assoc response :body nil)
     response))
 
