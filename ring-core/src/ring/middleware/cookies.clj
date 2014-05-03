@@ -2,7 +2,7 @@
   "Cookie manipulation."
   (:require [ring.util.codec :as codec]
             [clojure.string :as str])
-  (:use [clj-time.core :only (in-secs)]
+  (:use [clj-time.core :only (in-seconds)]
         [clj-time.format :only (formatters unparse)]
         [ring.util.parsing :only (re-token re-value)])
   (:import (org.joda.time Interval DateTime)))
@@ -74,7 +74,7 @@
   (for [[key value] attrs]
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
-       (instance? Interval value) (str ";" attr-name "=" (in-secs value))
+       (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
        (instance? DateTime value) (str ";" attr-name "=" (unparse (formatters :rfc822) value))
        (true? value)  (str ";" attr-name)
        (false? value) ""
