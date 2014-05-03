@@ -20,6 +20,15 @@
 (defn trace [f]
   (-> f meta :trace deref))
 
+(defn get-cookies [response]
+  (get-in response [:headers "Set-Cookie"]))
+
+(defn is-session-cookie? [c]
+  (.contains c "ring-session="))
+
+(defn get-session-cookie [response]
+  (first (filter is-session-cookie? (get-cookies response))))
+
 (deftest session-is-read
   (let [reader   (trace-fn (constantly {:bar "foo"}))
         writer   (trace-fn (constantly nil))
@@ -65,8 +74,7 @@
         handler (constantly {:session {:foo "bar"}})
         handler (wrap-session handler {:store store})
         response (handler {:cookies {}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-           ["ring-session=foo%3Abar;Path=/"]))))
+    (is (get-session-cookie response))))
 
 (deftest session-delete-outputs-cookie
   (let [store (make-store (constantly {:foo "bar"})
@@ -75,8 +83,8 @@
         handler (constantly {:session nil})
         handler (wrap-session handler {:store store})
         response (handler {:cookies {"ring-session" {:value "foo:bar"}}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-           ["ring-session=deleted;Path=/"]))))
+    (is (.contains (get-session-cookie response)
+                   "ring-session=deleted"))))
 
 (deftest session-cookie-has-attributes
   (let [store (make-store (constantly {})
@@ -85,9 +93,12 @@
 	handler (constantly {:session {:foo "bar"}})
 	handler (wrap-session handler {:store store
                                        :cookie-attrs {:max-age 5 :path "/foo"}})
-	response (handler {:cookies {}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Max-Age=5;Path=/foo"]))))
+	response (handler {:cookies {}})
+        session-cookie (get-session-cookie response)]
+    (is (and (.contains session-cookie "ring-session=foo%3Abar")
+             (.contains session-cookie "Max-Age=5")
+             (.contains session-cookie "Path=/foo")
+             (.contains session-cookie "HttpOnly")))))
 
 (deftest session-does-not-clobber-response-cookies
   (let [store (make-store (constantly {})
@@ -97,8 +108,8 @@
 			     :cookies {"cookie2" "value2"}})
 	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
 	response (handler {:cookies {}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Max-Age=5;Path=/" "cookie2=value2"]))))
+    (is (= (first (remove is-session-cookie? (get-cookies response)))
+           "cookie2=value2"))))
 
 (deftest session-root-can-be-set
   (let [store (make-store (constantly {})
@@ -107,8 +118,8 @@
 	handler (constantly {:session {:foo "bar"}})
 	handler (wrap-session handler {:store store, :root "/foo"})
 	response (handler {:cookies {}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Path=/foo"]))))
+    (is (.contains (get-session-cookie response)
+                   "Path=/foo"))))
 
 (deftest session-attrs-can-be-set-per-request
   (let [store (make-store (constantly {})
@@ -118,8 +129,18 @@
                              :session-cookie-attrs {:max-age 5}})
 	handler (wrap-session handler {:store store})
 	response (handler {:cookies {}})]
-    (is (= (get-in response [:headers "Set-Cookie"])
-	   ["ring-session=foo%3Abar;Max-Age=5;Path=/"]))))
+    (is (.contains (get-session-cookie response)
+                   "Max-Age=5"))))
+
+(deftest cookie-attrs-override-is-respected
+  (let [store (make-store (constantly {})
+                          (constantly {})
+                          (constantly nil))
+	handler (constantly {:session {}})
+	handler (wrap-session handler {:store store :cookie-attrs {:http-only false}})
+	response (handler {:cookies {}})]
+    (is (not (.contains (get-session-cookie response)
+                        "HttpOnly")))))
 
 (deftest session-response-is-nil
   (let [handler (wrap-session (constantly nil))]
@@ -158,4 +179,4 @@
 
     (testing "Session cookie attrs with active session"
       (let [response (handler {:foo "bar" :cookies {"ring-session" {:value sess-key}}})]
-        (is (get-in response [:headers "Set-Cookie"]))))))
+        (is (get-session-cookie response))))))
