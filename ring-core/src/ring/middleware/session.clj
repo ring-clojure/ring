@@ -8,7 +8,8 @@
   [options]
   {:store (options :store (mem/memory-store))
    :cookie-name (options :cookie-name "ring-session")
-   :cookie-attrs (merge {:path "/"}
+   :cookie-attrs (merge {:path "/"
+                         :http-only true}
                         (options :cookie-attrs)
                         (if-let [root (options :root)]
                           {:path root}))})
