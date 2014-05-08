@@ -247,12 +247,18 @@ h4.deprecated {
    margin-bottom: 20%;
 }
 
+.namespace {
+    margin-bottom: 30px;
+}
+
 .namespace:last-child {
     margin-bottom: 10%;
 }
 
 .index {
    padding: 0;
+   font-size: 80%;
+   margin: 15px 0;
 }
 
 .index * {
@@ -272,8 +278,13 @@ h4.deprecated {
    color: #008;
 }
 
-.doc {
-    margin-bottom: .5em;
+div.doc {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+pre.doc {
+    margin: 10px 0;
 }
 
 .src-link a {
