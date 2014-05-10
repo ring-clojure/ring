@@ -1,7 +1,7 @@
 ## 1.3.0 (TBA)
 
 * Deprecated :content-type, :content-length and :character-encoding keys in SPEC
-* Removed deprecated keys from source
+* Removed deprecated keys from source code
 * Added ring.util.request/character-encoding function
 * Added CollReduce to allowed response body types
 * Fixed 304 not-modified responses to set content-length header
@@ -9,7 +9,7 @@
 * Fixed wrap-head middleware when response is nil
 * Cryptography improvements; RNG faster under Linux
 * Jetty adapter accepts filepaths for :truststore option
-* Added :min-threads and :max-idle-time options to Jetty adapter
+* Added :min-threads, :max-queued and :max-idle-time options to Jetty adapter
 * Fixed stacktrace middleware to handle assertion errors
 * Added optional body to ring.util.response/created function
 * Added :servlet-context-path to requests from servlet containers

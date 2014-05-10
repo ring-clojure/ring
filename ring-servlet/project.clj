@@ -1,4 +1,4 @@
-(defproject ring/ring-servlet "1.3.0-beta1"
+(defproject ring/ring-servlet "1.3.0-beta2"
   :description "Ring servlet utilities."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
