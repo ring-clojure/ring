@@ -106,18 +106,16 @@ corresponding values:
   sent for each such String value.
 
 :body
-  (Optional, {String, File, InputStream, ISeq, CollReduce})
-  A representation of the response body, if a response body is appropriate for
-  the response's status code. The response body is handled according to its type
-  or satisfying protocol:
+  (Optional, {String, ISeq, File, InputStream})
+  A representation of the response body, if a response body is appropriate for 
+  the response's status code. The respond body is handled according to its type:
   String:
     Contents are sent to the client as-is.
+  ISeq:
+    Each element of the seq is sent to the client as a string.
   File:
     Contents at the specified location are sent to the client. The server may 
     use an optimized method to send the file if such a method is available.
   InputStream:
     Contents are consumed from the stream and sent to the client. When the
     stream is exhausted, it is .close'd.
-  ISeq or CollReduce (>=1.4, satisfies protocol):
-    The body is `reduce`d and each element produced is sent to the client as a
-    string.

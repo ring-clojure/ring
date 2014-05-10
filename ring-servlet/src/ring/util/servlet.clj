@@ -79,30 +79,17 @@
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type)))
 
-(defmacro ^:private compile-if
-  ([exp then] `(compile-if ~exp ~then nil))
-  ([exp then else]
-     (if (try (eval exp) (catch Throwable _ false))
-       `(do ~then)
-       `(do ~else))))
-
-(defn ^:no-doc reducible?
-  "True iff `x` is a `reduce`-ible value."
-  [x]
-  (compile-if clojure.core.protocols/CollReduce
-    (satisfies? clojure.core.protocols/CollReduce x)
-    (seq? x)))
-
 (defn- set-body
-  "Update a HttpServletResponse body with a String, File, InputStream, ISeq, or
-  CollReduce."
+  "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
   [^HttpServletResponse response, body]
   (cond
-    (nil? body)
-      nil
     (string? body)
       (with-open [writer (.getWriter response)]
         (.print writer body))
+    (seq? body)
+      (with-open [writer (.getWriter response)]
+        (doseq [chunk body]
+          (.print writer (str chunk))))
     (instance? InputStream body)
       (with-open [^InputStream b body]
         (io/copy b (.getOutputStream response)))
@@ -110,11 +97,8 @@
       (let [^File f body]
         (with-open [stream (FileInputStream. f)]
           (set-body response stream)))
-    (reducible? body)
-      (with-open [writer (.getWriter response)]
-        (reduce (fn [_ chunk]
-                  (.print writer (str chunk)))
-                nil body))
+    (nil? body)
+      nil
     :else
       (throw (Exception. ^String (format "Unrecognized body: %s" body)))))
 
