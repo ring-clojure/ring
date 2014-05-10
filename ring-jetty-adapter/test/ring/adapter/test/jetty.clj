@@ -113,6 +113,14 @@
       (is (= 8 (. thread-pool getMinThreads)))
       (.stop server)))
 
+  (testing "setting max-queued"
+    (let [server (run-jetty hello-world {:port 4347
+                                         :max-queued 7
+                                         :join? false})
+          thread-pool (. server getThreadPool)]
+      (is (= 7 (. thread-pool getMaxQueued)))
+      (.stop server)))
+
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port 4347}
       (let [response (http/get "http://localhost:4347")]
