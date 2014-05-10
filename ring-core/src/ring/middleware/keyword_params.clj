@@ -1,5 +1,5 @@
 (ns ring.middleware.keyword-params
-  "Convert param keys to keywords.")
+  "Middleware that converts parameter keys in the request to keywords.")
 
 (defn- keyword-syntax? [s]
   (re-matches #"[A-Za-z*+!_?-][A-Za-z0-9*+!_?-]*" s))
@@ -19,16 +19,16 @@
       target))
 
 (defn keyword-params-request
-  "Converts string keys in :params map to keywords."
-  [req]
-  (update-in req [:params] keyify-params))
+  "Converts string keys in :params map to keywords. See: wrap-keyword-params."
+  [request]
+  (update-in request [:params] keyify-params))
 
 (defn wrap-keyword-params
-  "Middleware that converts the string-keyed :params map to one with keyword
-  keys before forwarding the request to the given handler.
-  Does not alter the maps under :*-params keys; these are left with strings."
+  "Middleware that converts the any string keys in the :params map to keywords.
+  Only keys that can be turned into valid keywords are converted.
+
+  This middleware does not alter the maps under :*-params keys. These are left
+  as strings."
   [handler]
-  (fn [req]
-    (-> req
-        keyword-params-request
-        handler)))
+  (fn [request]
+    (handler (keyword-params-request request))))

@@ -1,5 +1,6 @@
 (ns ring.middleware.params
-  "Parse form and query params."
+  "Middleware to parse url-encoded parameters from the query string and request
+  body."
   (:require [ring.util.codec :as codec]
             [ring.util.request :as req]))
 
@@ -31,7 +32,10 @@
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
 
-(defn params-request [request & [opts]]
+(defn params-request
+  "Adds parameters from the query string and the request body to the request
+  map. See: wrap-params."
+  [request & [opts]]
   (let [encoding (or (:encoding opts)
                      (req/character-encoding request)
                      "UTF-8")
@@ -44,17 +48,19 @@
 
 (defn wrap-params
   "Middleware to parse urlencoded parameters from the query string and form
-  body (if the request is a urlencoded form). Adds the following keys to
+  body (if the request is a url-encoded form). Adds the following keys to
   the request map:
-    :query-params - a map of parameters from the query string
-    :form-params  - a map of parameters from the body
-    :params       - a merged map of all types of parameter
-  Takes an optional configuration map. Recognized keys are:
-    :encoding - encoding to use for url-decoding. If not specified, uses
-                the request character encoding, or \"UTF-8\" if no request
-                character encoding is set."
-  [handler & [opts]]
+
+  :query-params - a map of parameters from the query string
+  :form-params  - a map of parameters from the body
+  :params       - a merged map of all types of parameter
+
+  Accepts the following options:      
+
+  :encoding - encoding to use for url-decoding. If not specified, uses
+              the request character encoding, or \"UTF-8\" if no request
+              character encoding is set."
+  {:arglists '([handler] [handler options])}
+  [handler & [options]]
   (fn [request]
-    (-> request
-        (params-request opts)
-        handler)))
+    (handler (params-request request options))))

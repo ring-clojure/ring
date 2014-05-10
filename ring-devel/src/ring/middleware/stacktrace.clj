@@ -1,5 +1,9 @@
 (ns ring.middleware.stacktrace
-  "Catch exceptions and render web and log stacktraces for debugging."
+  "Middleware that catches exceptions thrown by the handler, and reports the
+  error and stacktrace via a webpage and STDERR log.
+
+  This middleware is for debugging purposes, and should be limited to
+  development environments."
   (:require [clojure.java.io :as io])
   (:use hiccup.core
         hiccup.page
@@ -10,7 +14,9 @@
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown.
   Accepts the following options:
-    :color? - apply ANSI colors to stacktrace"
+
+  :color? - if true, apply ANSI colors to stacktrace (default false)"
+  {:arglists '([handler] [handler options])}
   [handler & [{color? :color?}]]
   (fn [request]
     (try
@@ -72,8 +78,8 @@
       (html-ex-response ex))))
 
 (defn wrap-stacktrace-web
-  "Wrap a handler such that exceptions are caught and a helpful debugging
-   response is returned."
+  "Wrap a handler such that exceptions are caught and a response containing
+  a HTML representation of the exception and stacktrace is returned."
   [handler]
   (fn [request]
     (try
@@ -83,9 +89,13 @@
 
 (defn wrap-stacktrace
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
-  logged to *err*, and a helpful debugging web response is returned. Accepts the
-  following option:
-    :color? - apply ANSI colors to terminal stacktrace"
+  logged to *err*, and a HTML representation of the stacktrace is returned as a
+  response.
+
+  Accepts the following option:
+
+  :color? - if true, apply ANSI colors to terminal stacktrace (default false)"
+  {:arglists '([handler] [handler options])}
   [handler & [{:as options}]]
   (-> handler
       (wrap-stacktrace-log options)

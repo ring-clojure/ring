@@ -1,7 +1,9 @@
 (ns ring.middleware.session.store
-  "Common session store objects and functions.")
+  "Contains the protocol used to define all Ring session storage engines.")
 
 (defprotocol SessionStore
+  "An interface to a session storage engine. Implementing this protocol allows
+  Ring session data to be stored in different places."
   (read-session [store key]
     "Read a session map from the store. If the key is not found, an empty map
     is returned.")

@@ -1,5 +1,8 @@
 (ns ring.middleware.file
-  "Static file serving."
+  "Middleware to serve files from a directory.
+
+  Most of the time you should prefer ring.middleware.resource instead, as this
+  middleware will not work with files in jar or war files."
   (:import java.io.File)
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response]
@@ -14,7 +17,9 @@
       (throw (Exception. (format "Directory does not exist: %s" dir-path))))))
 
 (defn file-request
-  "If request matches a static file, returns it in a response. Otherwise returns nil."
+  "If request matches a static file, returns it in a response. Otherwise
+  returns nil. See: wrap-file."
+  {:arglists '([request root-path] [request root-path options])}
   [req root-path & [opts]]
   (let [opts (merge {:root root-path, :index-files? true, :allow-symlinks? false} opts)]
     (if (= :get (:request-method req))
@@ -26,8 +31,11 @@
   a static file with which to respond to the request, proxying the request to
   the wrapped handler if such a file does not exist.
 
-  An map of options may be optionally specified. These options will be passed
-  to the ring.util.response/file-response function."
+  Accepts the following options:
+
+  :index-files?    - look for index.* files in directories, defaults to true
+  :allow-symlinks? - serve files through symbolic links, defaults to false"
+  {:arglists '([handler root-path] [handler root-path options])}
   [handler ^String root-path & [opts]]
   (ensure-dir root-path)
   (fn [req]

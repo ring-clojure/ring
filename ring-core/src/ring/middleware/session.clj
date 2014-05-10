@@ -1,13 +1,20 @@
 (ns ring.middleware.session
-  "Session manipulation."
+  "Middleware for maintaining browser sessions using cookies.
+
+  Sessions are stored using types that adhere to the
+  ring.middleware.session.store/SessionStore protocol.
+  Ring comes with two stores included:
+
+    ring.middleware.session.memory/memory-store
+    ring.middleware.session.cookie/cookie-store"
   (:require [ring.middleware.cookies :as cookies]
             [ring.middleware.session.store :as store]
             [ring.middleware.session.memory :as mem]))
 
-(defn session-options
+(defn- session-options
   [options]
-  {:store (options :store (mem/memory-store))
-   :cookie-name (options :cookie-name "ring-session")
+  {:store        (options :store (mem/memory-store))
+   :cookie-name  (options :cookie-name "ring-session")
    :cookie-attrs (merge {:path "/"
                          :http-only true}
                         (options :cookie-attrs)
@@ -23,11 +30,13 @@
                     :session/key session-key})))
 
 (defn session-request
-  "Reads current HTTP session map and adds it to :session key of the request."
-  [request & [opts]]
+  "Reads current HTTP session map and adds it to :session key of the request.
+  See: wrap-session."
+  {:arglists '([request] [request options])}
+  [request & [options]]
   (-> request
       cookies/cookies-request
-      (bare-session-request opts)))
+      (bare-session-request options)))
 
 (defn- bare-session-response
   [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
@@ -48,11 +57,12 @@
       response)))
 
 (defn session-response
-  "Updates session based on :session key in response."
-  [response request & [opts]]
+  "Updates session based on :session key in response. See: wrap-session."
+  {:arglists '([response request] [response request options])}
+  [response request & [options]]
   (if response
     (-> response
-        (bare-session-response request opts)
+        (bare-session-response request options)
         cookies/cookies-response)))
 
 (defn wrap-session
@@ -61,22 +71,22 @@
   session is updated with the new value. If the value is nil, the session is
   deleted.
 
-  The following options are available:
-    :store
-      An implementation of the SessionStore protocol in the
-      ring.middleware.session.store namespace. This determines how the
-      session is stored. Defaults to in-memory storage
-      (ring.middleware.session.store.MemoryStore).
-    :root
-      The root path of the session. Any path above this will not be able to
-      see this session. Equivalent to setting the cookie's path attribute.
-      Defaults to \"/\".
-    :cookie-name
-      The name of the cookie that holds the session key. Defaults to
-      \"ring-session\"
-    :cookie-attrs
-      A map of attributes to associate with the session cookie. Defaults
-      to {}."
+  Accepts the following options:
+
+  :store        - An implementation of the SessionStore protocol in the
+                  ring.middleware.session.store namespace. This determines how
+                  the session is stored. Defaults to in-memory storage using
+                  ring.middleware.session.store/memory-store.
+
+  :root         - The root path of the session. Any path above this will not be
+                  able to see this session. Equivalent to setting the cookie's
+                  path attribute. Defaults to \"/\".
+
+  :cookie-name  - The name of the cookie that holds the session key. Defaults to
+                  \"ring-session\"
+
+  :cookie-attrs - A map of attributes to associate with the session cookie.
+                  Defaults to {}."
   ([handler]
      (wrap-session handler {}))
   ([handler options]

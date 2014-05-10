@@ -1,5 +1,5 @@
 (ns ring.util.io
-  "Utility functions for I/O in Ring."
+  "Utility functions for handling I/O."
   (:require [clojure.java.io :as io])
   (:import [java.io PipedInputStream
                     PipedOutputStream
@@ -13,9 +13,11 @@
   argument. The function will be executed in a separate thread. The stream
   will be automatically closed after the function finishes.
 
-  e.g. (piped-input-stream
-        (fn [ostream]
-          (spit ostream \"Hello\")))"
+  For example:
+
+    (piped-input-stream
+      (fn [ostream]
+        (spit ostream \"Hello\")))"
   [func]
   (let [input  (PipedInputStream.)
         output (PipedOutputStream.)]

@@ -1,5 +1,8 @@
 (ns ring.middleware.file-info
-  "Augment Ring File responses."
+  "Middleware to add Last-Modified and Content-Type headers to file responses.
+
+  This middleware is deprecated. Prefer the ring.middleware.content-type and
+  ring.middleware.not-modified middleware instead."
   (:require [ring.util.response :as res])
   (:use [ring.util.mime-type :only (ext-mime-type)]
         [ring.util.io :only (last-modified-date)])
@@ -14,7 +17,7 @@
   (or (ext-mime-type (.getPath file) mime-types)
       "application/octet-stream"))
 
-(defn ^SimpleDateFormat make-http-format
+(defn- ^SimpleDateFormat make-http-format
   "Formats or parses dates into HTTP date format (RFC 822/1123)."
   []
   ;; SimpleDateFormat is not threadsafe, so return a new instance each time
@@ -30,7 +33,8 @@
 
 (defn file-info-response
   "Adds headers to response as described in wrap-file-info."
-  {:deprecated "1.2"}
+  {:arglists '([response request] [response request mime-types])
+   :deprecated "1.2"}
   [{:keys [body] :as response} req & [mime-types]]
   (if (instance? File body)
     (let [file-type   (guess-mime-type body mime-types)
@@ -49,16 +53,17 @@
     response))
 
 (defn wrap-file-info
-  "Wrap an app such that responses with a file a body will have corresponding
+  "Wrap a handler such that responses with a file a body will have corresponding
   Content-Type, Content-Length, and Last Modified headers added if they can be
   determined from the file.
+
   If the request specifies a If-Modified-Since header that matches the last
   modification date of the file, a 304 Not Modified response is returned.
   If two arguments are given, the second is taken to be a map of file extensions
   to content types that will supplement the default, built-in map."
-  {:deprecated "1.2"}
-  [app & [mime-types]]
+  {:arglists '([handler] [handler mime-types])
+   :deprecated "1.2"}
+  [handler & [mime-types]]
   (fn [req]
-    (-> req
-        app
+    (-> (handler req)
         (file-info-response req mime-types))))

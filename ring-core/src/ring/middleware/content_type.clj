@@ -4,7 +4,8 @@
         ring.util.response))
 
 (defn content-type-response
-  "Adds a content-type header to response."
+  "Adds a content-type header to response. See: wrap-content-type."
+  {:arglists '([response request] [response request options])}
   [resp req & [opts]]
   (if (get-header resp "Content-Type")
     resp
@@ -18,9 +19,11 @@
   content-type can be found, it defaults to 'application/octet-stream'.
 
   Accepts the following options:
-    :mime-types - a map of filename extensions to mime-types that will be
-                  used in addition to the ones defined in
-                  ring.util.mime-types/default-mime-types"
+
+  :mime-types - a map of filename extensions to mime-types that will be
+                used in addition to the ones defined in
+                ring.util.mime-types/default-mime-types"
+  {:arglists '([handler] [handler options])}
   [handler & [opts]]
   (fn [req]
     (if-let [resp (handler req)]

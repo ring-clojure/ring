@@ -1,8 +1,9 @@
 (ns ring.util.mime-type
-  "Utility functions for finding out the mime-type of a file."
+  "Utility functions for determining the mime-types files."
   (require [clojure.string :as str]))
 
-(def default-mime-types
+(def ^{:doc "A map of file extensions to mime-types."}
+  default-mime-types
   {"7z"    "application/x-7z-compressed"
    "aac"   "audio/aac"
    "ai"    "application/postscript"
@@ -99,6 +100,8 @@
 (defn ext-mime-type
   "Get the mimetype from the filename extension. Takes an optional map of
   extensions to mimetypes that overrides values in the default-mime-types map."
-  [filename & [mime-types]]
-  (let [mime-types (merge default-mime-types mime-types)]
-    (mime-types (filename-ext filename))))
+  ([filename]
+     (ext-mime-type filename {}))
+  ([filename mime-types]
+     (let [mime-types (merge default-mime-types mime-types)]
+       (mime-types (filename-ext filename)))))

@@ -1,10 +1,13 @@
 (ns ring.middleware.nested-params
-  "Convert a single-depth map of parameters to a nested map."
+  "Middleware to convert a single-depth map of parameters to a nested map."
   (:use [ring.util.codec :only (assoc-conj)]))
 
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index
-  notation. e.g.
+  notation.
+
+  For example:
+
     \"foo[bar][][baz]\"
     => [\"foo\" \"bar\" \"\" \"baz\"]"
   [param-name]
@@ -51,26 +54,29 @@
     (param-pairs params)))
 
 (defn nested-params-request
-  "Converts a request with a flat map of parameters to a nested map."
+  "Converts a request with a flat map of parameters to a nested map.
+  See: wrap-nested-params."
   [request & [opts]]
   (let [parse (:key-parser opts parse-nested-keys)]
     (update-in request [:params] nest-params parse)))
 
 (defn wrap-nested-params
   "Middleware to converts a flat map of parameters into a nested map.
+  Accepts the following options:
 
-  Uses the function in the :key-parser option to convert parameter names
-  to a list of keys. Values in keys that are empty strings are treated
-  as elements in a list. Defaults to using the parse-nested-keys function.
+  :key-parser - the function to use to parse the parameter names into a list
+                of keys. Keys that are empty strings are treated as elements in
+                a vector, non-empty keys are treated as elements in a map.
+                Defaults to the parse-nested-keys function.
 
-  e.g.
+  For example:
+
     {\"foo[bar]\" \"baz\"}
     => {\"foo\" {\"bar\" \"baz\"}}
 
     {\"foo[]\" \"bar\"}
     => {\"foo\" [\"bar\"]}"
-  [handler & [opts]]
+  {:arglists '([handler] [handler options])}
+  [handler & [options]]
   (fn [request]
-    (-> request
-        (nested-params-request opts)
-        handler)))
+    (handler (nested-params-request request options))))

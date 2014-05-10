@@ -1,5 +1,5 @@
 (ns ring.util.request
-  "Derive information from a request map."
+  "Functions for augmenting and pulling information from request maps."
   (:use [ring.util.parsing :only (re-value)]))
 
 (defn request-url
@@ -35,6 +35,7 @@
 
 (defmulti body-string
   "Return the request body as a string."
+  {:arglists '([request])}
   (comp class :body))
 
 (defmethod body-string nil [_] nil)

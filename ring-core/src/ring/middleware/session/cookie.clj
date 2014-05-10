@@ -1,5 +1,5 @@
 (ns ring.middleware.session.cookie
-  "Encrypted cookie session storage."
+  "A session storage engine that stores session data in encrypted cookies."
   (:use ring.middleware.session.store)
   (:require [ring.util.codec :as codec]
             [clojure.tools.reader.edn :as edn]
@@ -89,12 +89,15 @@
   (delete-session [_ _]
     (seal secret-key {})))
 
+(ns-unmap *ns* '->CookieStore)
+
 (defn cookie-store
-  "Creates an encrypted cookie storage engine. Takes an optional map options
-   which takes the following key:
-   - key: The secret key to encrypt the session cookie. Must be exactly 16 bytes
-   If no key is provided then a random key will be generated. Note that in that
-   case a server restart will invalidate all existing session cookies."
+  "Creates an encrypted cookie storage engine. Accepts the following options:
+
+  :key - The secret key to encrypt the session cookie. Must be exactly 16 bytes
+         If no key is provided then a random key will be generated. Note that in
+         that case a server restart will invalidate all existing session
+         cookies."
   ([] (cookie-store {}))
   ([options]
     (CookieStore. (get-secret-key options))))

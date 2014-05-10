@@ -1,16 +1,14 @@
 (ns ring.handler.dump
-  "Reflect Ring requests into responses for debugging."
-  (:use hiccup.core
-        hiccup.page
-        hiccup.def
+  "A handler that displays the received request map.
+
+  This is useful for debugging new adapters."
+  (:use [hiccup core page def]
         ring.util.response)
   (:require [clojure.set :as set]
             [clojure.pprint :as pprint]
             [clojure.java.io :as io]))
 
-(declare css)
-
-(def ring-keys
+(def ^:no-doc ring-keys
   '(:server-port :server-name :remote-addr :uri :query-string :scheme
     :request-method :content-type :content-length :character-encoding
     :ssl-client-cert :headers :body))
@@ -24,7 +22,7 @@
       [:td.key  (h (str key))]
       [:td.val  (h (pr-str (key req)))]]))
 
-(defhtml template
+(defhtml ^:no-doc template
   [req]
   (doctype :xhtml-transitional)
   [:html {:xmlns "http://www.w3.org/1999/xhtml"}
@@ -47,10 +45,10 @@
                   (req-pair key req))]]]))]]])
 
 (defn handle-dump
-  "Returns a response tuple corresponding to an HTML dump of the request
-  req as it was received by this app."
-  [req]
-  (pprint/pprint req)
+  "Returns a HTML response that shows the information in the request map.
+  Also prints the request map to STDOUT."
+  [request]
+  (pprint/pprint request)
   (println)
-  (-> (response (template req))
+  (-> (response (template request))
       (content-type "text/html")))

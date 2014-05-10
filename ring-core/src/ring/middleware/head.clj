@@ -1,5 +1,8 @@
 (ns ring.middleware.head
-  "Middleware to simplify replying to HEAD requests.")
+  "Middleware to simplify replying to HEAD requests.
+
+  A response to a HEAD request should be identical to a GET request, with the
+  exception that a response to a HEAD request should have an empty body.")
 
 (defn head-request
   "Turns a HEAD request into a GET."

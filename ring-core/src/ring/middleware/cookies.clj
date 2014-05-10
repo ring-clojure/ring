@@ -1,5 +1,5 @@
 (ns ring.middleware.cookies
-  "Cookie manipulation."
+  "Middleware for parsing and generating cookies."
   (:require [ring.util.codec :as codec]
             [clojure.string :as str])
   (:use [clj-time.core :only (in-seconds)]
@@ -100,17 +100,18 @@
     response))
 
 (defn cookies-request
-  "Parses cookies in the request map."
-  [request & [{:keys [decoder]
-               :or {decoder codec/form-decode-str}}]]
+  "Parses cookies in the request map. See: wrap-cookies."
+  {:arglists '([request] [request options])}
+  [request & [{:keys [decoder] :or {decoder codec/form-decode-str}}]]
   (if (request :cookies)
     request
     (assoc request :cookies (parse-cookies request decoder))))
 
 (defn cookies-response
-  "For responses with :cookies, adds Set-Cookie header and returns response without :cookies."
-  [response & [{:keys [encoder]
-                :or {encoder codec/form-encode}}]]
+  "For responses with :cookies, adds Set-Cookie header and returns response
+  without :cookies. See: wrap-cookies."
+  {:arglists '([response] [response options])}
+  [response & [{:keys [encoder] :or {encoder codec/form-encode}}]]
   (-> response
       (set-cookies encoder)
       (dissoc :cookies)))
@@ -119,11 +120,14 @@
   "Parses the cookies in the request map, then assocs the resulting map
   to the :cookies key on the request.
 
-  If you wish to override either the decoding or the encoding of the
-  cookie value you may do so by including a :decoder or :encoder
-  mapping to a function which takes a single argument which is a map
-  where the key is the cookie's name and the value is the value
-  portion. It is expected that this function returns a string.
+  Accepts the following options:
+
+  :decoder - a function to decode the cookie value. Expects a function that
+             takes a string and returns a string. Defaults to URL-decoding.
+
+  :encoder - a function to encode the cookie name and value. Expects a
+             function that takes a name/value map and returns a string.
+             Defaults to URL-encoding.
 
   Each cookie is represented as a map, with its value being held in the
   :value key. A cookie may optionally contain a :path, :domain or :port
@@ -141,6 +145,7 @@
   :secure    - set to true if the cookie requires HTTPS, prevent HTTP access
   :http-only - set to true if the cookie is valid for HTTP and HTTPS only
                (ie. prevent JavaScript access)"
+  {:arglists '([handler] [handler options])}
   [handler & [{:keys [decoder encoder]
                :or {decoder codec/form-decode-str
                     encoder codec/form-encode}}]]

@@ -1,5 +1,5 @@
 (ns ring.middleware.session.memory
-  "In-memory session storage."
+  "A session storage engine that stores session data in memory."
   (:use ring.middleware.session.store)
   (:import java.util.UUID))
 
@@ -15,7 +15,10 @@
     (swap! session-map dissoc key)
     nil))
 
+(ns-unmap *ns* '->MemoryStore)
+
 (defn memory-store
-  "Creates an in-memory session storage engine."
+  "Creates an in-memory session storage engine. Accepts an atom as an optional
+  argument; if supplied, the atom is used to hold the session data."
   ([] (memory-store (atom {})))
   ([session-atom] (MemoryStore. session-atom)))

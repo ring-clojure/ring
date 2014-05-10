@@ -26,7 +26,7 @@
   (let [length (.getContentLength request)]
     (if (>= length 0) length)))
 
-(defn get-client-cert
+(defn- get-client-cert
   "Returns the SSL client certificate of the request, if one exists."
   [^HttpServletRequest request]
   (first (.getAttribute request "javax.servlet.request.X509Certificate")))
@@ -62,12 +62,12 @@
           :servlet-context      (.getServletContext servlet)
           :servlet-context-path (.getContextPath request)}))
 
-(defn set-status
+(defn- set-status
   "Update a HttpServletResponse with a status code."
   [^HttpServletResponse response, status]
   (.setStatus response status))
 
-(defn set-headers
+(defn- set-headers
   "Update a HttpServletResponse with a map of headers."
   [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
@@ -86,7 +86,7 @@
        `(do ~then)
        `(do ~else))))
 
-(defn reducible?
+(defn ^:no-doc reducible?
   "True iff `x` is a `reduce`-ible value."
   [x]
   (compile-if clojure.core.protocols/CollReduce
@@ -120,6 +120,7 @@
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
+  {:arglists '([response response-map])}
   [^HttpServletResponse response, {:keys [status headers body]}]
   (when-not response
     (throw (Exception. "Null response given.")))
@@ -137,8 +138,8 @@
        ^HttpServletRequest request
        ^HttpServletResponse response]
     (let [request-map (-> request
-                        (build-request-map)
-                        (merge-servlet-keys servlet request response))]
+                          (build-request-map)
+                          (merge-servlet-keys servlet request response))]
       (if-let [response-map (handler request-map)]
         (update-servlet-response response response-map)
         (throw (NullPointerException. "Handler returned nil"))))))
@@ -154,8 +155,11 @@
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
   genclass to compile a HttpServlet class.
-  e.g. (defservice my-handler)
-       (defservice \"my-prefix-\" my-handler)"
+
+  For example:
+
+    (defservice my-handler)
+    (defservice \"my-prefix-\" my-handler)"
   ([handler]
    `(defservice "-" ~handler))
   ([prefix handler]

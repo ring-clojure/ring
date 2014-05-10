@@ -1,5 +1,12 @@
 (ns ring.middleware.multipart-params
-  "Parse multipart upload into params."
+  "Middleware that parses multipart request bodies into parameters.
+
+  This middleware is necessary to handle file uploads from web browsers.
+
+  Ring comes with two different multipart storage engines included:
+
+    ring.middleware.multipart-params.byte-array/byte-array-store
+    ring.middleware.multipart-params.temp-file/temp-file-store"
   (:use [ring.util.codec :only (assoc-conj)])
   (:require [ring.util.request :as req])
   (:import [org.apache.commons.fileupload.util Streams]
@@ -71,10 +78,12 @@
      (func))))
 
 (defn multipart-params-request
-  "Adds :multipart-params and :params keys to request."
-  [request & [opts]]
-  (let [store    (or (:store opts) @default-store)
-        encoding (or (:encoding opts)
+  "Adds :multipart-params and :params keys to request.
+  See: wrap-multipart-params."
+  {:arglists '([request] [request options])}
+  [request & [options]]
+  (let [store    (or (:store options) @default-store)
+        encoding (or (:encoding options)
                      (req/character-encoding request)
                      "UTF-8")
         params   (if (multipart-form? request)
@@ -87,22 +96,22 @@
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
   following keys to the request map:
-    :multipart-params - a map of multipart parameters
-    :params           - a merged map of all types of parameter
 
-  This middleware takes an optional configuration map. Recognized keys are:
+  :multipart-params - a map of multipart parameters
+  :params           - a merged map of all types of parameter
 
-    :encoding - character encoding to use for multipart parsing. If not
-                specified, uses the request character encoding, or \"UTF-8\"
-                if no request character encoding is set.
+  The following options are accepted
 
-    :store    - a function that stores a file upload. The function should
-                expect a map with :filename, content-type and :stream keys,
-                and its return value will be used as the value for the
-                parameter in the multipart parameter map. The default storage
-                function is the temp-file-store."
-  [handler & [opts]]
+  :encoding - character encoding to use for multipart parsing. If not
+              specified, uses the request character encoding, or \"UTF-8\"
+              if no request character encoding is set.
+
+  :store    - a function that stores a file upload. The function should
+              expect a map with :filename, content-type and :stream keys,
+              and its return value will be used as the value for the
+              parameter in the multipart parameter map. The default storage
+              function is the temp-file-store."
+  {:arglists '([handler] [handler options])}
+  [handler & [options]]
   (fn [request]
-    (-> request
-        (multipart-params-request opts)
-        handler)))
+    (handler (multipart-params-request request options))))

@@ -1,5 +1,5 @@
 (ns ring.middleware.lint
-  "Lint Ring requests and responses."
+  "Middleware that checks Ring requests and responses for correctness."
   (:require [clojure.set :as set])
   (:import (java.io File InputStream)))
 
@@ -10,7 +10,8 @@
   [val spec message]
   (try
     (if-not (spec val)
-      (throw (Exception. (format "Ring lint error: specified %s, but %s was not" message (pr-str val)))))
+      (throw (Exception. (format "Ring lint error: specified %s, but %s was not"
+                                 message (pr-str val)))))
     (catch Exception e
       (if-not (re-find #"^Ring lint error: " (.getMessage e))
         (throw (Exception. (format
@@ -82,11 +83,12 @@
     ":body must a String, ISeq, File, or InputStream"))
 
 (defn wrap-lint
-  "Wrap an app to validate incoming requests and outgoing responses
-  according to the Ring spec."
-  [app]
+  "Wrap a handler to validate incoming requests and outgoing responses
+  according to the current Ring specification. An exception is raised if either
+  the request or response is invalid."
+  [handler]
   (fn [req]
     (check-req req)
-    (let [resp (app req)]
+    (let [resp (handler req)]
       (check-resp resp)
       resp)))

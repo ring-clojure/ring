@@ -1,5 +1,7 @@
 (ns ring.util.parsing
-  "Regular expressions for parsing HTTP.")
+  "Regular expressions for parsing HTTP.
+
+  For internal use.")
 
 (def ^{:doc "HTTP token: 1*<any CHAR except CTLs or tspecials>. See RFC2068"}
   re-token

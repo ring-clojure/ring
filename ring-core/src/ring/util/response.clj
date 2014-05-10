@@ -1,5 +1,5 @@
 (ns ring.util.response
-  "Generate and augment Ring responses."
+  "Functions for generating and augmenting response maps."
   (:import java.io.File java.util.Date java.net.URL
            java.net.URLDecoder java.net.URLEncoder)
   (:use [ring.util.time :only (format-date)]

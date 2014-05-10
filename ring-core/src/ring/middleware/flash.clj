@@ -1,5 +1,6 @@
 (ns ring.middleware.flash
-  "A session-based flash store that persists to the next request.")
+  "Middleware that adds session-based flash store that persists only to the
+  next request in the same session.")
 
 (defn flash-request
   "Adds :flash key to request from :_flash in session."
@@ -11,6 +12,7 @@
 
 (defn flash-response
   "If response has a :flash key, saves it in :_flash of session for next request."
+  {:arglists '([response request])}
   [response {:keys [session flash] :as request}]
   (let [session (if (contains? response :session)
                   (response :session)

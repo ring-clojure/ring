@@ -6,7 +6,7 @@
            java.util.TimeZone
            java.util.Locale))
 
-(def http-date-formats
+(def ^:no-doc http-date-formats
   {:rfc1123 "EEE, dd MMM yyyy HH:mm:ss zzz"
    :rfc1036 "EEEE, dd-MMM-yy HH:mm:ss zzz"
    :asctime "EEE MMM d HH:mm:ss yyyy"})
