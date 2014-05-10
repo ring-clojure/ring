@@ -1,7 +1,9 @@
 (ns ring.middleware.lint
   "Middleware that checks Ring requests and responses for correctness."
-  (:require [clojure.set :as set])
-  (:import (java.io File InputStream)))
+  (:require [clojure.set :as set]
+            [clojure.string :as str])
+  (:import [java.io File InputStream]
+           [java.security.cert X509Certificate]))
 
 (defn- lint
   "Asserts that spec applied to val returns logical truth, otherwise raises
@@ -20,10 +22,9 @@
         (throw e)))))
 
 (defn- check-req
-  "Validates the request, throwing an exception on violations of the spec"
+  "Validates the request, throwing an exception on violations of the spec."
   [req]
-  (lint req map?
-    "Ring request must a Clojure map")
+  (lint req map? "Ring request must a Clojure map")
 
   (lint (:server-port req) integer?
     ":server-port must be an Integer")
@@ -34,17 +35,19 @@
   (lint (:uri req) #(and (string? %) (.startsWith ^String % "/"))
     ":uri must be a String starting with \"/\"")
   (lint (:query-string req) #(or (nil? %) (string? %))
-    ":query-string must be nil or a non-blank String")
+    ":query-string must be nil or a String")
   (lint (:scheme req) #{:http :https}
     ":scheme must be one of :http or :https")
-  (lint (:request-method req) #{:get :head :options :put :post :delete}
-    ":request-method must be one of :get, :head, :options, :put, :post, or :delete")
+  (lint (:request-method req) #(and (keyword? %) (= (name %) (str/lower-case (name %))))
+    ":request-method must be a lowercase keyword")
   (lint (:content-type req) #(or (nil? %) (string? %))
     ":content-type must be nil or a String")
   (lint (:content-length req) #(or (nil? %) (integer? %))
     ":content-length must be nil or an Integer")
   (lint (:character-encoding req) #(or (nil? %) (string? %))
     ":character-encoding must be nil or a String")
+  (lint (:ssl-client-cert req) #(or (nil? %) (instance? X509Certificate %))
+    ":ssl-client-cert must be nil or an X509Certificate")
 
   (let [headers (:headers req)]
     (lint headers map?
@@ -76,9 +79,12 @@
       (lint hname string?
         "header names must Strings")
       (lint hval #(or (string? %) (every? string? %))
-        "header values must be Strings or colls of Strings")))
+        "header values must be Strings or collections of Strings")))
 
-  (lint (:body resp) #(or (nil? %) (string? %) (seq? %) (instance? File %)
+  (lint (:body resp) #(or (nil? %)
+                          (string? %)
+                          (seq? %)
+                          (instance? File %)
                           (instance? InputStream %))
     ":body must a String, ISeq, File, or InputStream"))
 

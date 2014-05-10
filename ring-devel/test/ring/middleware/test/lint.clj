@@ -90,8 +90,8 @@
   [nil "http"])
 
 (lints-req :request-method
-  [:get :head :options :put :post :delete]
-  [nil :foobar "get"])
+  [:get :head :options :put :patch :post :delete]
+  [nil :FOOBAR "get" 'get])
 
 (lints-req :content-type
   [nil "text/html"]
@@ -104,6 +104,10 @@
 (lints-req :character-encoding
   [nil "UTF-8"]
   [:utf-8])
+
+(lints-req :ssl-client-cert
+  [nil (proxy [java.security.cert.X509Certificate] [] (toString [] "X509Certificate"))]
+  ["01234567890ABCDEF"])
 
 (lints-req :headers
   [{"foo" "bar"} {"bat" "Biz"} {"whiz-bang" "high-low"}]
