@@ -2,6 +2,7 @@
   "Compatibility functions for turning a ring handler into a Java servlet."
   (:require [clojure.java.io :as io]
             [clojure.string :as string])
+  (:use [ring.util.compat :only (reducible?)])
   (:import (java.io File InputStream FileInputStream)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
@@ -78,20 +79,6 @@
   ; Some headers must be set through specific methods
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type)))
-
-(defmacro ^:private compile-if
-  ([exp then] `(compile-if ~exp ~then nil))
-  ([exp then else]
-     (if (try (eval exp) (catch Throwable _ false))
-       `(do ~then)
-       `(do ~else))))
-
-(defn ^:no-doc reducible?
-  "True iff `x` is a `reduce`-ible value."
-  [x]
-  (compile-if clojure.core.protocols/CollReduce
-    (satisfies? clojure.core.protocols/CollReduce x)
-    (seq? x)))
 
 (defn- set-body
   "Update a HttpServletResponse body with a String, File, InputStream, ISeq, or

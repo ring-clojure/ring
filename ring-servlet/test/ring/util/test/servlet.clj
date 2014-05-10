@@ -1,6 +1,7 @@
 (ns ring.util.test.servlet
   (:use clojure.test
-        ring.util.servlet)
+        ring.util.servlet
+        [ring.util.compat :only (reducible?)])
   (:import [java.io PrintWriter StringWriter]))
 
 (defn- enumeration [coll]
