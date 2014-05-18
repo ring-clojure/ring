@@ -3,7 +3,12 @@
 
 (defprotocol SessionStore
   "An interface to a session storage engine. Implementing this protocol allows
-  Ring session data to be stored in different places."
+  Ring session data to be stored in different places.
+
+  Session keys are exposed to end users via a cookie, and therefore must be
+  unguessable. A random UUID is a good choice for a session key.
+
+  Session stores should come with a mechanism for expiring old session data."
   (read-session [store key]
     "Read a session map from the store. If the key is not found, an empty map
     is returned.")
