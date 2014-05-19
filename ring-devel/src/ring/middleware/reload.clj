@@ -12,6 +12,7 @@
 
   :dirs - A list of directories that contain the source files.
           Defaults to [\"src\"]."
+  {:arglists '([handler] [handler options])}
   [handler & [options]]
   (let [source-dirs (:dirs options ["src"])
         modified-namespaces (ns-tracker source-dirs)]
