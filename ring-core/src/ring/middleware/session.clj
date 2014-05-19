@@ -88,7 +88,7 @@
                   \"ring-session\"
 
   :cookie-attrs - A map of attributes to associate with the session cookie.
-                  Defaults to {}."
+                  Defaults to {:http-only true}."
   ([handler]
      (wrap-session handler {}))
   ([handler options]
