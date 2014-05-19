@@ -8,8 +8,9 @@
   (let [params (codec/form-decode params encoding)]
     (if (map? params) params {})))
 
-(defn- assoc-query-params
+(defn assoc-query-params
   "Parse and assoc parameters from the query string with the request."
+  {:added "1.3"}
   [request encoding]
   (merge-with merge request
     (if-let [query-string (:query-string request)]
