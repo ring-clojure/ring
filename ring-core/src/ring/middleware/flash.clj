@@ -4,6 +4,7 @@
 
 (defn flash-request
   "Adds :flash key to request from :_flash in session."
+  {:added "1.2"}
   [request]
   (let [session (:session request)
         flash   (:_flash session)
@@ -12,7 +13,8 @@
 
 (defn flash-response
   "If response has a :flash key, saves it in :_flash of session for next request."
-  {:arglists '([response request])}
+  {:arglists '([response request])
+   :added "1.2"}
   [response {:keys [session flash] :as request}]
   (let [session (if (contains? response :session)
                   (response :session)

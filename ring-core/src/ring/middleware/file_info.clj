@@ -34,6 +34,7 @@
 (defn file-info-response
   "Adds headers to response as described in wrap-file-info."
   {:arglists '([response request] [response request mime-types])
+   :added "1.2"
    :deprecated "1.2"}
   [{:keys [body] :as response} req & [mime-types]]
   (if (instance? File body)

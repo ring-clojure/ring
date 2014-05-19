@@ -19,7 +19,8 @@
 (defn file-request
   "If request matches a static file, returns it in a response. Otherwise
   returns nil. See: wrap-file."
-  {:arglists '([request root-path] [request root-path options])}
+  {:arglists '([request root-path] [request root-path options])
+   :added "1.2"}
   [req root-path & [opts]]
   (let [opts (merge {:root root-path, :index-files? true, :allow-symlinks? false} opts)]
     (if (= :get (:request-method req))

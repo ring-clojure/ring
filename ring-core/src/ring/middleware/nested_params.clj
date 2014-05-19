@@ -56,6 +56,8 @@
 (defn nested-params-request
   "Converts a request with a flat map of parameters to a nested map.
   See: wrap-nested-params."
+  {:arglists '([request] [request options])
+   :added "1.2"}
   [request & [opts]]
   (let [parse (:key-parser opts parse-nested-keys)]
     (update-in request [:params] nest-params parse)))

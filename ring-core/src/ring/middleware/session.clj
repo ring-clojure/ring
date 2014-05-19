@@ -32,7 +32,8 @@
 (defn session-request
   "Reads current HTTP session map and adds it to :session key of the request.
   See: wrap-session."
-  {:arglists '([request] [request options])}
+  {:arglists '([request] [request options])
+   :added "1.2"}
   [request & [options]]
   (-> request
       cookies/cookies-request
@@ -58,7 +59,8 @@
 
 (defn session-response
   "Updates session based on :session key in response. See: wrap-session."
-  {:arglists '([response request] [response request options])}
+  {:arglists '([response request] [response request options])
+   :added "1.2"}
   [response request & [options]]
   (if response
     (-> response

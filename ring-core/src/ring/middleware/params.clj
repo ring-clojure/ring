@@ -25,6 +25,7 @@
 
 (defn assoc-form-params
   "Parse and assoc parameters from the request body with the request."
+  {:added "1.2"}
   [request encoding]
   (merge-with merge request
     (if-let [body (and (urlencoded-form? request) (:body request))]
@@ -35,6 +36,8 @@
 (defn params-request
   "Adds parameters from the query string and the request body to the request
   map. See: wrap-params."
+  {:arglists '([request] [request options])
+   :added "1.2"}
   [request & [opts]]
   (let [encoding (or (:encoding opts)
                      (req/character-encoding request)

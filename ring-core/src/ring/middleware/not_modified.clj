@@ -23,6 +23,7 @@
 (defn not-modified-response
   "Returns 304 or original response based on response and request.
   See: wrap-not-modified."
+  {:added "1.2"}
   [response request]
   (if (or (etag-match? request response)
           (not-modified-since? request response))
@@ -37,6 +38,7 @@
   "Middleware that returns a 304 Not Modified from the wrapped handler if the
   handler response has an ETag or Last-Modified header, and the request has a
   If-None-Match or If-Modified-Since header that matches the response."
+  {:added "1.2"}
   [handler]
   (fn [request]
     (-> (handler request)

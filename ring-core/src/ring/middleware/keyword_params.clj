@@ -20,6 +20,7 @@
 
 (defn keyword-params-request
   "Converts string keys in :params map to keywords. See: wrap-keyword-params."
+  {:added "1.2"}
   [request]
   (update-in request [:params] keyify-params))
 

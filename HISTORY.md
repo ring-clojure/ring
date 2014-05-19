@@ -2,7 +2,7 @@
 
 * Deprecated :content-type, :content-length and :character-encoding keys in SPEC
 * Removed deprecated keys from source code
-* Added ring.util.request/character-encoding function
+* Added content-length, content-type and character-encoding to ring.util.request
 * Fixed 304 not-modified responses to set content-length header
 * Added options to wrap-cookies to specify encoder and decoder functions
 * Fixed wrap-head middleware when response is nil

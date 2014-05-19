@@ -101,7 +101,8 @@
 
 (defn cookies-request
   "Parses cookies in the request map. See: wrap-cookies."
-  {:arglists '([request] [request options])}
+  {:arglists '([request] [request options])
+   :added "1.2"}
   [request & [{:keys [decoder] :or {decoder codec/form-decode-str}}]]
   (if (request :cookies)
     request
@@ -110,7 +111,8 @@
 (defn cookies-response
   "For responses with :cookies, adds Set-Cookie header and returns response
   without :cookies. See: wrap-cookies."
-  {:arglists '([response] [response options])}
+  {:arglists '([response] [response options])
+   :added "1.2"}
   [response & [{:keys [encoder] :or {encoder codec/form-encode}}]]
   (-> response
       (set-cookies encoder)

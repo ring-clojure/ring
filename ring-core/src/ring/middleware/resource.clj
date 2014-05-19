@@ -7,7 +7,8 @@
 
 (defn resource-request
   "If request matches a static resource, returns it in a response map.
- Otherwise returns nil."
+  Otherwise returns nil."
+  {:added "1.2"}
   [request root-path]
   (if (= :get (:request-method request))
     (let [path (subs (codec/url-decode (request/path-info request)) 1)]

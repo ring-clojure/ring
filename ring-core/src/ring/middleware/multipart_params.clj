@@ -80,7 +80,8 @@
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request.
   See: wrap-multipart-params."
-  {:arglists '([request] [request options])}
+  {:arglists '([request] [request options])
+   :added "1.2"}
   [request & [options]]
   (let [store    (or (:store options) @default-store)
         encoding (or (:encoding options)

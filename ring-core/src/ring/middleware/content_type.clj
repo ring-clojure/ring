@@ -5,7 +5,8 @@
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
-  {:arglists '([response request] [response request options])}
+  {:arglists '([response request] [response request options])
+   :added "1.2"}
   [resp req & [opts]]
   (if (get-header resp "Content-Type")
     resp

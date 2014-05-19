@@ -23,6 +23,7 @@
 
 (defn created
   "Returns a Ring response for a HTTP 201 created response."
+  {:added "1.2"}
   ([url] (created url nil))
   ([url body]
      {:status  201
@@ -31,6 +32,7 @@
 
 (defn not-found
   "Returns a 404 'not found' response."
+  {:added "1.1"}
   [body]
   {:status  404
    :headers {}
@@ -141,6 +143,7 @@
 (defn charset
   "Returns an updated Ring response with the supplied charset added to the
   Content-Type header."
+  {:added "1.1"}
   [resp charset]
   (update-in resp [:headers "Content-Type"]
     (fn [content-type]
@@ -151,11 +154,13 @@
 (defn set-cookie
   "Sets a cookie on the response. Requires the handler to be wrapped in the
   wrap-cookies middleware."
+  {:added "1.1"}
   [resp name value & [opts]]
   (assoc-in resp [:cookies name] (merge {:value value} opts)))
 
 (defn response?
   "True if the supplied value is a valid response map."
+  {:added "1.1"}
   [resp]
   (and (map? resp)
        (integer? (:status resp))
@@ -182,6 +187,7 @@
 
 (defn url-response
   "Return a response for the supplied URL."
+  {:added "1.2"}
   [^URL url]
   (if-let [^File file (file-url url)]
     (if-not (.isDirectory file)
@@ -210,6 +216,7 @@
 (defn get-header
   "Look up a header in a Ring response (or request) case insensitively,
   returning the value of the header."
+  {:added "1.2"}
   [resp ^String header-name]
   (some (fn [[k v]] (if (.equalsIgnoreCase header-name k) v))
         (:headers resp)))

@@ -4,6 +4,7 @@
 
 (defn request-url
   "Return the full URL of the request."
+  {:added "1.2"}
   [request]
   (str (-> request :scheme name)
        "://"
@@ -14,12 +15,14 @@
 
 (defn content-type
   "Return the content-type of the request, or nil if no content-type is set."
+  {:added "1.3"}
   [request]
   (if-let [type (get-in request [:headers "content-type"])]
     (second (re-find #"^(.*?)(?:;|$)" type))))
 
 (defn content-length
   "Return the content-length of the request, or nil no content-length is set."
+  {:added "1.3"}
   [request]
   (if-let [length (get-in request [:headers "content-length"])]
     (Long. length)))
@@ -29,13 +32,14 @@
 
 (defn character-encoding
   "Return the character encoding for the request, or nil if it is not set."
+  {:added "1.3"}
   [request]
   (if-let [type (get-in request [:headers "content-type"])]
     (second (re-find charset-pattern type))))
 
 (defmulti body-string
   "Return the request body as a string."
-  {:arglists '([request])}
+  {:arglists '([request]), :added "1.2"}
   (comp class :body))
 
 (defmethod body-string nil [_] nil)
@@ -54,18 +58,21 @@
 
 (defn path-info
   "Returns the relative path of the request."
+  {:added "1.2"}
   [request]
   (or (:path-info request)
       (:uri request)))
 
 (defn in-context?
   "Returns true if the URI of the request is a subpath of the supplied context."
+  {:added "1.2"}
   [request context]
   (.startsWith ^String (:uri request) context))
 
 (defn set-context
   "Associate a context and path-info with the  request. The request URI must be
   a subpath of the supplied context."
+  {:added "1.2"}
   [request ^String context]
   {:pre [(in-context? request context)]}
   (assoc request

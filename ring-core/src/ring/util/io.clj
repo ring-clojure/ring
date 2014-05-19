@@ -18,6 +18,7 @@
     (piped-input-stream
       (fn [ostream]
         (spit ostream \"Hello\")))"
+  {:added "1.1"}
   [func]
   (let [input  (PipedInputStream.)
         output (PipedOutputStream.)]
@@ -30,6 +31,7 @@
 
 (defn string-input-stream
   "Returns a ByteArrayInputStream for the given String."
+  {:added "1.1"}
   ([^String s]
      (ByteArrayInputStream. (.getBytes s)))
   ([^String s ^String encoding]
@@ -37,6 +39,7 @@
 
 (defn close!
   "Ensure a stream is closed, swallowing any exceptions."
+  {:added "1.2"}
   [stream]
   (when (instance? java.io.Closeable stream)
     (try
@@ -46,6 +49,7 @@
 (defn last-modified-date
   "Returns the last modified date for a file, rounded down to the nearest
   second."
+  {:added "1.2"}
   [^File file]
   (-> (.lastModified file)
       (/ 1000) (long) (* 1000)

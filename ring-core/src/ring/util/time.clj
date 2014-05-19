@@ -28,6 +28,7 @@
 
 (defn parse-date
   "Attempt to parse a HTTP date. Returns nil if unsuccessful."
+  {:added "1.2"}
   [http-date]
   (->> (keys http-date-formats)
        (map (partial attempt-parse (trim-quotes http-date)))
@@ -35,6 +36,7 @@
        (first)))
 
 (defn format-date
-  "Format a date as RFC1123 format"
+  "Format a date as RFC1123 format."
+  {:added "1.2"}
   [^java.util.Date date]
   (.format (formatter :rfc1123) date))
