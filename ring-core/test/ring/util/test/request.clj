@@ -45,6 +45,16 @@
     (is (= (character-encoding {:headers {"content-type" "text/plain;charset=UTF-8"}})
            "UTF-8"))))
 
+(deftest test-urlencoded-form?
+  (testing "urlencoded form"
+    (is (urlencoded-form? {:headers {"content-type" "application/x-www-form-urlencoded"}}))
+    (is (urlencoded-form?
+         {:headers {"content-type" "application/x-www-form-urlencoded; charset=UTF-8"}})))
+  (testing "other content type"
+    (is (not (urlencoded-form? {:headers {"content-type" "application/json"}}))))
+  (testing "no content type"
+    (is (not (urlencoded-form? {:headers {}})))))
+
 (deftest test-body-string
   (testing "nil body"
     (is (= (body-string {:body nil}) nil)))

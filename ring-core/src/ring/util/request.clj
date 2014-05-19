@@ -37,6 +37,13 @@
   (if-let [type (get-in request [:headers "content-type"])]
     (second (re-find charset-pattern type))))
 
+(defn urlencoded-form?
+  "True if a request contains a urlencoded form in the body."
+  {:added "1.3"}
+  [request]
+  (if-let [^String type (content-type request)]
+    (.startsWith type "application/x-www-form-urlencoded")))
+
 (defmulti body-string
   "Return the request body as a string."
   {:arglists '([request]), :added "1.2"}

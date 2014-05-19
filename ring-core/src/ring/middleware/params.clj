@@ -18,18 +18,12 @@
         {:query-params params, :params params})
       {:query-params {}, :params {}})))
 
-(defn- urlencoded-form?
-  "Does a request have a urlencoded form?"
-  [request]
-  (if-let [^String type (req/content-type request)]
-    (.startsWith type "application/x-www-form-urlencoded")))
-
 (defn assoc-form-params
   "Parse and assoc parameters from the request body with the request."
   {:added "1.2"}
   [request encoding]
   (merge-with merge request
-    (if-let [body (and (urlencoded-form? request) (:body request))]
+    (if-let [body (and (req/urlencoded-form? request) (:body request))]
       (let [params (parse-params (slurp body :encoding encoding) encoding)]
         {:form-params params, :params params})
       {:form-params {}, :params {}})))
