@@ -1,4 +1,4 @@
-## 1.3.0 (TBA)
+## 1.3.0 (2014-06-02)
 
 * Deprecated :content-type, :content-length and :character-encoding keys in SPEC
 * Removed deprecated keys from source code
