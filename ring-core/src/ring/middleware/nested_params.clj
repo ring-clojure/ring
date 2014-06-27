@@ -11,7 +11,7 @@
     \"foo[bar][][baz]\"
     => [\"foo\" \"bar\" \"\" \"baz\"]"
   [param-name]
-  (let [[_ k ks] (re-matches #"(.*?)((?:\[.*?\])*)" (name param-name))
+  (let [[_ k ks] (re-matches #"(?s)(.*?)((?:\[.*?\])*)" (name param-name))
         keys     (if ks (map second (re-seq #"\[(.*?)\]" ks)))]
     (cons k keys)))
 

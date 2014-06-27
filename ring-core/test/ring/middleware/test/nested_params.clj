@@ -25,7 +25,10 @@
     (testing "duplicate parameters"
       (are [p r] (= (handler {:params p}) r)
         {"a" ["b" "c"]}    {"a" ["b" "c"]}
-        {"a[b]" ["c" "d"]} {"a" {"b" ["c" "d"]}}))))
+        {"a[b]" ["c" "d"]} {"a" {"b" ["c" "d"]}}))
+    (testing "parameters with newlines"
+      (are [p r] (= (handler {:params p}) r)
+        {"foo\nbar" "baz"} {"foo\nbar" "baz"}))))
 
 (deftest nested-params-test-with-options
   (let [handler (wrap-nested-params :params
