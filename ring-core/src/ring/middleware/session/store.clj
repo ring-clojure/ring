@@ -10,7 +10,7 @@
 
   Session stores should come with a mechanism for expiring old session data."
   (read-session [store key]
-    "Read a session map from the store. If the key is not found, an empty map
+    "Read a session map from the store. If the key is not found, nil
     is returned.")
   (write-session [store key data]
     "Write a session map to the store. Returns the (possibly changed) key under
