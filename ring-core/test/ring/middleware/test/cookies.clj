@@ -15,6 +15,12 @@
     (is (= {"a" {:value "b"}, "c" {:value "d"}, "e" {:value "f"}}
            resp))))
 
+(deftest wrap-cookies-multiple-cookie-headers
+  (let [req  {:headers {"cookie" ["a=b" "c=d,e=f"]}}
+        resp ((wrap-cookies :cookies) req)]
+    (is (= {"a" {:value "b"}, "c" {:value "d"}, "e" {:value "f"}}
+           resp))))
+
 (deftest wrap-cookies-quoted-cookies
   (let [req  {:headers {"cookie" "a=\"b\""}}
         resp ((wrap-cookies :cookies) req)]
