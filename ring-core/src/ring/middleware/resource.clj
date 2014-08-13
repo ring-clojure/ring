@@ -1,9 +1,9 @@
 (ns ring.middleware.resource
   "Middleware for serving static resources."
-  (require [ring.util.codec :as codec]
-           [ring.util.response :as response]
-           [ring.util.request :as request]
-           [ring.middleware.head :as head]))
+  (:require [ring.util.codec :as codec]
+            [ring.util.response :as response]
+            [ring.util.request :as request]
+            [ring.middleware.head :as head]))
 
 (defn resource-request
   "If request matches a static resource, returns it in a response map.

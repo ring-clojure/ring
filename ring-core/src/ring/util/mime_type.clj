@@ -1,6 +1,6 @@
 (ns ring.util.mime-type
   "Utility functions for determining the mime-types files."
-  (require [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (def ^{:doc "A map of file extensions to mime-types."}
   default-mime-types
