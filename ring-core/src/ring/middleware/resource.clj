@@ -10,9 +10,10 @@
   Otherwise returns nil."
   {:added "1.2"}
   [request root-path]
-  (if (= :get (:request-method request))
+  (if (#{:head :get} (:request-method request))
     (let [path (subs (codec/url-decode (request/path-info request)) 1)]
-      (response/resource-response path {:root root-path}))))
+      (-> (response/resource-response path {:root root-path})
+          (head/head-response request)))))
 
 (defn wrap-resource
   "Middleware that first checks to see whether the request map matches a static
@@ -21,5 +22,5 @@
   added to the beginning of the resource path."
   [handler root-path]
   (fn [request]
-    (or ((head/wrap-head #(resource-request % root-path)) request)
+    (or (resource-request request root-path)
         (handler request))))
