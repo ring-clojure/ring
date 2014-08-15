@@ -28,10 +28,8 @@
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
   [header]
-  (let [headers (if (coll? header) header [header])]
-    (->> headers
-         (mapcat #(re-seq re-cookie %))
-         (map rest))))
+  (for [[_ name value] (re-seq re-cookie header)]
+    [name value]))
 
 (defn- strip-quotes
   "Strip quotes from a cookie value."
