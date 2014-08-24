@@ -11,7 +11,7 @@
      [ring/ring-servlet "1.3.1"]]
   :plugins
     [[lein-sub "0.2.4"]
-     [codox "0.8.5"]]
+     [codox "0.8.10"]]
   :sub
     ["ring-core"
      "ring-devel"
