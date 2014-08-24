@@ -1,3 +1,8 @@
+## 1.3.1 (2014-08-24)
+
+* Support HEAD requests in ring.middleware.resource/resource-request
+* Fix handling of nested parameters with names that include newlines
+
 ## 1.3.0 (2014-06-02)
 
 * Deprecated :content-type, :content-length and :character-encoding keys in SPEC
