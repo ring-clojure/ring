@@ -7,6 +7,7 @@
   {"7z"    "application/x-7z-compressed"
    "aac"   "audio/aac"
    "ai"    "application/postscript"
+   "appcache" "text/cache-manifest"
    "asc"   "text/plain"
    "atom"  "application/atom+xml"
    "avi"   "video/x-msvideo"
