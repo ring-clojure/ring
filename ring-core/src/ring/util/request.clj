@@ -25,7 +25,7 @@
   {:added "1.3"}
   [request]
   (if-let [length (get-in request [:headers "content-length"])]
-    (Long. length)))
+    (long length)))
 
 (def ^:private charset-pattern
   (re-pattern (str ";(?:.*\\s)?(?i:charset)=(" re-value ")\\s*(?:;|$)")))
