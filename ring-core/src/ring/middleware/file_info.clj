@@ -54,9 +54,9 @@
     response))
 
 (defn wrap-file-info
-  "Wrap a handler such that responses with a file a body will have corresponding
-  Content-Type, Content-Length, and Last Modified headers added if they can be
-  determined from the file.
+  "Wrap a handler such that responses with a file for a body will have
+  corresponding Content-Type, Content-Length, and Last Modified headers added if
+  they can be determined from the file.
 
   If the request specifies a If-Modified-Since header that matches the last
   modification date of the file, a 304 Not Modified response is returned.
