@@ -79,3 +79,15 @@
 
 (deftest multipart-params-request-test
   (is (fn? multipart-params-request)))
+
+(deftest test-utf8-encoding-support
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "Øæßç®£èé\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX")}
+                 :body (string-input-stream form-body "UTF-8")}
+        request* (multipart-params-request request)]
+        (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))

@@ -48,10 +48,10 @@
 (defn- parse-file-item
   "Parse a FileItemStream into a key-value pair. If the request is a file the
   supplied store function is used to save it."
-  [^FileItemStream item store]
+  [^FileItemStream item store encoding]
   [(.getFieldName item)
    (if (.isFormField item)
-     (Streams/asString (.openStream item))
+     (Streams/asString (.openStream item) encoding)
      (store {:filename     (.getName item)
              :content-type (.getContentType item)
              :stream       (.openStream item)}))])
@@ -61,7 +61,7 @@
   [request encoding store]
   (->> (request-context request encoding)
        (file-item-seq)
-       (map #(parse-file-item % store))
+       (map #(parse-file-item % store encoding))
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
 (defn- load-var
