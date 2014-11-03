@@ -49,7 +49,8 @@ corresponding values:
 
 :uri
   (Required, String)
-  The request URI. Must start with "/".
+  The request URI, excluding the query string and the "?" separator.
+  Must start with "/".
 
 :query-string
   (Optional, String)
