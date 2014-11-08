@@ -37,7 +37,7 @@
   [request & [options]]
   (-> request
       cookies/cookies-request
-      (bare-session-request options)))
+      (bare-session-request (session-options options))))
 
 (defn- bare-session-response
   [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
@@ -64,7 +64,7 @@
   [response request & [options]]
   (if response
     (-> response
-        (bare-session-response request options)
+        (bare-session-response request (session-options options))
         cookies/cookies-response)))
 
 (defn wrap-session
