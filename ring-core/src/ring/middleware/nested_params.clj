@@ -37,7 +37,7 @@
   [params]
   (mapcat
     (fn [[name value]]
-      (if (sequential? value)
+      (if (and (sequential? value) (not (coll? (first value))))
         (for [v value] [name v])
         [[name value]]))
     params))
