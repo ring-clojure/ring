@@ -70,7 +70,7 @@
     "Ring response must be a Clojure map")
 
   (lint (:status resp) #(and (integer? %) (>= % 100))
-    ":status must be an Intger greater than or equal to 100")
+    ":status must be an Integer greater than or equal to 100")
 
   (let [headers (:headers resp)]
     (lint headers map?
