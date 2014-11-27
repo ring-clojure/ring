@@ -97,3 +97,32 @@
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))))))
+
+(defservice "foo-"
+  (fn [_]
+    {:status  200
+     :headers {"Content-Type" "text/plain"}
+     :body    nil}))
+
+(deftest defservice-test
+  (let [body     (proxy [javax.servlet.ServletInputStream] [])
+        servlet  (doto (proxy [javax.servlet.http.HttpServlet] [])
+                   (.init (servlet-config)))
+        request  {:server-port    8080
+                  :server-name    "foobar"
+                  :remote-addr    "127.0.0.1"
+                  :uri            "/foo"
+                  :query-string   ""
+                  :scheme         :http
+                  :request-method :get
+                  :headers        {}
+                  :content-type   "text/plain"
+                  :content-length 10
+                  :character-encoding "UTF-8"
+                  :body           body}
+        response (atom {})]
+    (foo-service servlet
+                 (servlet-request request)
+                 (servlet-response response))
+    (is (= (@response :status) 200))
+    (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))))
