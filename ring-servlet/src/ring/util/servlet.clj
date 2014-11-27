@@ -131,10 +131,10 @@
 (defn servlet
   "Create a servlet from a Ring handler."
   [handler]
-  (proxy [HttpServlet] []
-    (service [request response]
-      ((make-service-method handler)
-         this request response))))
+  (let [service-method (make-service-method handler)]
+    (proxy [HttpServlet] []
+      (service [request response]
+        (service-method this request response)))))
 
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
@@ -147,7 +147,7 @@
   ([handler]
    `(defservice "-" ~handler))
   ([prefix handler]
-   `(defn ~(symbol (str prefix "service"))
-      [servlet# request# response#]
-      ((make-service-method ~handler)
-         servlet# request# response#))))
+   `(let [service-method# (make-service-method ~handler)]
+      (defn ~(symbol (str prefix "service"))
+        [servlet# request# response#]
+        (service-method# servlet# request# response#)))))
