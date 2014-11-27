@@ -22,6 +22,9 @@
    :headers {"request-map" (str (dissoc request :body))}
    :body (:body request)})
 
+(defn- all-threads []
+  (.keySet (Thread/getAllStackTraces)))
+
 (defmacro with-server [app options & body]
   `(let [server# (run-jetty ~app ~(assoc options :join? false))]
      (try
@@ -150,4 +153,10 @@
           (is (= (:scheme request-map) :http))
           (is (= (:server-name request-map) "localhost"))
           (is (= (:server-port request-map) 4347))
-          (is (= (:ssl-client-cert request-map) nil)))))))
+          (is (= (:ssl-client-cert request-map) nil))))))
+
+  (testing "resource cleanup on exception"
+    (with-server hello-world {:port 4347}
+      (let [thread-count (count (all-threads))]
+        (is (thrown? Exception (run-jetty hello-world {:port 4347})))
+        (is (= thread-count (count (all-threads))))))))

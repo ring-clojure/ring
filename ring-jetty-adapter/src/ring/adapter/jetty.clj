@@ -99,7 +99,11 @@
       (.setThreadPool p))
     (when-let [configurator (:configurator options)]
       (configurator s))
-    (.start s)
-    (when (:join? options true)
-      (.join s))
-    s))
+    (try
+      (.start s)
+      (when (:join? options true)
+        (.join s))
+      s
+      (catch Exception ex
+        (.stop s)
+        (throw ex)))))
