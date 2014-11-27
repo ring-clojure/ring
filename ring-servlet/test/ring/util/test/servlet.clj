@@ -44,9 +44,9 @@
 
 (defn- run-servlet [handler request response]
   (doto (servlet handler)
-          (.init (servlet-config))
-          (.service (servlet-request request)
-                    (servlet-response response))))
+    (.init (servlet-config))
+    (.service (servlet-request request)
+              (servlet-response response))))
 
 (deftest servlet-test
   (let [body (proxy [javax.servlet.ServletInputStream] [])

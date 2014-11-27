@@ -119,8 +119,8 @@
   same return value as the service method in the HttpServlet class."
   [handler]
   (fn [^HttpServlet servlet
-       ^HttpServletRequest request
-       ^HttpServletResponse response]
+      ^HttpServletRequest request
+      ^HttpServletResponse response]
     (let [request-map (-> request
                           (build-request-map)
                           (merge-servlet-keys servlet request response))]
@@ -145,9 +145,9 @@
     (defservice my-handler)
     (defservice \"my-prefix-\" my-handler)"
   ([handler]
-   `(defservice "-" ~handler))
+     `(defservice "-" ~handler))
   ([prefix handler]
-   `(let [service-method# (make-service-method ~handler)]
-      (defn ~(symbol (str prefix "service"))
-        [servlet# request# response#]
-        (service-method# servlet# request# response#)))))
+     `(let [service-method# (make-service-method ~handler)]
+        (defn ~(symbol (str prefix "service"))
+          [servlet# request# response#]
+          (service-method# servlet# request# response#)))))
