@@ -39,11 +39,11 @@ To resolve this, include the following dependency in your dev profile:
 To include one of the above libraries, for example `ring-core`, add
 the following to your `:dependencies`:
 
-    [ring/ring-core "1.3.1"]
+    [ring/ring-core "1.3.2"]
 
 To include all of them:
 
-    [ring "1.3.1"]
+    [ring "1.3.2"]
 
 ## Documentation
 

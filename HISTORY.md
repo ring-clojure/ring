@@ -1,3 +1,12 @@
+## 1.3.2 (2014-11-27)
+
+* Ensure Jetty adapter threadpool is cleaned when server fails to start
+* Fixed NPE in resource-response for directory resources in jar files
+* Stopped ring.util.servlet/make-service being called every request
+* Made wrap-nested-params safe to use with already nested params
+* Fixed form field encoding in wrap-multipart-params
+* Added mimetype for HTML5 application cache manifest
+
 ## 1.3.1 (2014-08-24)
 
 * Support HEAD requests in ring.middleware.resource/resource-request
