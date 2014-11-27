@@ -182,8 +182,18 @@
   (if (= "file" (.getProtocol url))
     (url-as-file url)))
 
-(defn- directory-url? [^java.net.URL url]
-  (-> (str url) (.endsWith "/")))
+(defn- add-ending-slash [^String path]
+  (if (.endsWith path "/")
+    path
+    (str path "/")))
+
+(defn- jar-directory? [conn]
+  (and (instance? java.net.JarURLConnection conn)
+       (let [^java.net.JarURLConnection jar-conn conn
+             jar-file   (.getJarFile jar-conn)
+             entry-name (.getEntryName jar-conn)
+             dir-entry  (.getEntry jar-file (add-ending-slash entry-name))]
+         (and dir-entry (.isDirectory dir-entry)))))
 
 (defn url-response
   "Return a response for the supplied URL."
@@ -194,12 +204,11 @@
       (-> (response file)
           (file-content-length)
           (file-last-modified)))
-    (when-not (directory-url? url)
-      (let [conn (.openConnection url)]
-        (if-let [stream (.getInputStream conn)]
-          (-> (response stream)
-              (connection-content-length conn)
-              (connection-last-modified conn)))))))
+    (let [conn (.openConnection url)]
+      (if-not (jar-directory? conn)
+        (-> (response (.getInputStream conn))
+            (connection-content-length conn)
+            (connection-last-modified conn))))))
 
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the

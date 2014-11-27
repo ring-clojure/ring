@@ -120,10 +120,10 @@
     (is (nil? (resource-response "/ring/assets"))))
 
   (testing "resource is a directory in a jar file"
-    (is (nil? (resource-response "/java/lang"))))
+    (is (nil? (resource-response "/clojure/lang"))))
 
   (testing "resource is a directory in a jar file with a trailing slash"
-    (is (nil? (resource-response "/java/lang/"))))
+    (is (nil? (resource-response "/clojure/lang/"))))
 
   (testing "resource is a file with spaces in path"
     (let [resp (resource-response "/ring/assets/hello world.txt")]
