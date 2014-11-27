@@ -16,6 +16,14 @@
     (is (.exists (:tempfile result)))
     (is (= (slurp (:tempfile result)) "foo"))))
 
+(defn eventually [check n d]
+  (loop [i n]
+    (if (check)
+      true
+      (when (pos? i)
+        (Thread/sleep d)
+        (recur (dec i))))))
+
 (deftest test-temp-file-expiry
   (let [store  (temp-file-store {:expires-in 2})
         result (store
@@ -23,8 +31,9 @@
                  :content-type "text/plain"
                  :stream (string-input-stream "foo")})]
     (is (.exists (:tempfile result)))
-    (Thread/sleep 3000)
-    (is (not (.exists (:tempfile result))))))
+    (Thread/sleep 2000)
+    (let [deleted? (eventually #(not (.exists (:tempfile result))) 120 250)]
+      (is deleted?))))
 
 (defn all-threads []
   (.keySet (Thread/getAllStackTraces)))
