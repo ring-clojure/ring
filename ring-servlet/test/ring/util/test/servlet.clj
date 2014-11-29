@@ -20,6 +20,7 @@
       (getContextPath [] (request :servlet-context-path))
       (getScheme [] (name (request :scheme)))
       (getMethod [] (-> request :request-method name .toUpperCase))
+      (getProtocol [] (request :protocol))
       (getHeaderNames [] (enumeration (keys (request :headers))))
       (getHeaders [name] (enumeration (get-in request [:headers name])))
       (getContentType [] (request :content-type))
@@ -58,6 +59,7 @@
                  :query-string   "a=b"
                  :scheme         :http
                  :request-method :get
+                 :protocol       "HTTP/1.1"
                  :headers        {"X-Client" ["Foo", "Bar"]
                                   "X-Server" ["Baz"]}
                  :content-type   "text/plain"
@@ -77,6 +79,7 @@
                  :query-string   "a=b"
                  :scheme         :http
                  :request-method :get
+                 :protocol       "HTTP/1.1"
                  :headers        {"x-client" "Foo,Bar"
                                   "x-server" "Baz"}
                  :content-type   "text/plain"
