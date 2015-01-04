@@ -24,7 +24,7 @@
   "Return the content-length of the request, or nil no content-length is set."
   {:added "1.3"}
   [request]
-  (if-let [length (get-in request [:headers "content-length"])]
+  (if-let [^String length (get-in request [:headers "content-length"])]
     (Long. length)))
 
 (def ^:private charset-pattern
