@@ -8,9 +8,10 @@
             [clojure.string :as str]))
 
 (defn redirect
-  "Returns a Ring response for an HTTP 302 redirect."
-  [url]
-  {:status  302
+  "Returns a Ring response for an HTTP 302 (default) redirect. Can be called with
+   :permanent? true for a 301 redirect"
+  [url & {:keys [permanent?]}]
+  {:status (if permanent? 301 302)
    :headers {"Location" url}
    :body    ""})
 

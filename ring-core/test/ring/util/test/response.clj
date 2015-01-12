@@ -9,6 +9,10 @@
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
          (redirect "http://google.com"))))
 
+(deftest test-permanent-redirect
+  (is (= {:status 301 :headers {"Location" "http://google.com"} :body ""}
+         (redirect "http://google.com" :permanent? true))))
+
 (deftest test-redirect-after-post
   (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
          (redirect-after-post "http://example.com"))))
