@@ -7,6 +7,14 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
+(defn moved-permanently
+  "Returns a Ring response for a HTTP 301 'moved permanently' redirect."
+  {:added "1.3"}
+  [url]
+  {:status  301
+   :headers {"Location" url}
+   :body    ""})
+
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
   [url]
