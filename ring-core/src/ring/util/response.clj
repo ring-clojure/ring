@@ -92,13 +92,20 @@
       (.exists file)
         file)))
 
-(defn- file-content-length [resp]
-  (let [file ^File (:body resp)]
-    (header resp "Content-Length" (.length file))))
+(defn- file-data [^File file]
+  {:content        file
+   :content-length (.length file)
+   :last-modified  (last-modified-date file)})
 
-(defn- file-last-modified [resp]
-  (let [file ^File (:body resp)]
-    (header resp "Last-Modified" (format-date (last-modified-date file)))))
+(defn- content-length [resp len]
+  (if len
+    (header resp "Content-Length" len)
+    resp))
+
+(defn- last-modified [resp last-mod]
+  (if last-mod
+    (header resp "Last-Modified" (format-date last-mod))
+    resp))
 
 (defn file-response
   "Returns a Ring response to serve a static file, or nil if an appropriate
@@ -109,9 +116,10 @@
     :allow-symlinks? - serve files through symbolic links, defaults to false"
   [filepath & [opts]]
   (if-let [file (find-file filepath opts)]
-    (-> (response file)
-        (file-content-length)
-        (file-last-modified))))
+    (let [data (file-data file)]
+      (-> (response (:content data))
+          (content-length (:content-length data))
+          (last-modified (:last-modified data))))))
 
 ;; In Clojure versions 1.2.0, 1.2.1 and 1.3.0, the as-file function
 ;; in clojure.java.io does not correctly decode special characters in
@@ -166,49 +174,69 @@
        (integer? (:status resp))
        (map? (:headers resp))))
 
-(defn- connection-content-length [resp ^java.net.URLConnection conn]
-  (let [content-length (.getContentLength conn)]
-    (if (neg? content-length)
-      resp
-      (header resp "Content-Length" content-length))))
+(defmulti resource-data
+  "Returns data about the resource specified by url, or nil if an
+  appropriate resource does not exist.
 
-(defn- connection-last-modified [resp ^java.net.URLConnection conn]
-  (let [last-modified (.getLastModified conn)]
-    (if (zero? last-modified)
-      resp
-      (header resp "Last-Modified" (format-date (Date. last-modified))))))
+  The return value is a map with optional values for:
+  :content        - the content of the URL, suitable for use as the :body
+                    of a ring response
+  :content-length - the length of the :content, nil if not available
+  :last-modified  - the Date the :content was last modified, nil if not
+                    available
 
-(defn- file-url [^java.net.URL url]
-  (if (= "file" (.getProtocol url))
-    (url-as-file url)))
+  This dispatches on the protocol of the URL as a keyword, and
+  implementations are provided for :file and :jar. If you are on a
+  platform where (Class/getResource) returns URLs with a different
+  protocol, you will need to provide an implementation for that
+  protocol.
+
+  This function is used internally by url-response."
+  (fn [^java.net.URL url]
+    (keyword (.getProtocol url))))
+
+(defmethod resource-data :file
+  [url]
+  (if-let [file (url-as-file url)]
+    (if-not (.isDirectory file)
+      (file-data file))))
 
 (defn- add-ending-slash [^String path]
   (if (.endsWith path "/")
     path
     (str path "/")))
 
-(defn- jar-directory? [conn]
-  (and (instance? java.net.JarURLConnection conn)
-       (let [^java.net.JarURLConnection jar-conn conn
-             jar-file   (.getJarFile jar-conn)
-             entry-name (.getEntryName jar-conn)
-             dir-entry  (.getEntry jar-file (add-ending-slash entry-name))]
-         (and dir-entry (.isDirectory dir-entry)))))
+(defn- jar-directory? [^java.net.JarURLConnection conn]
+  (let [jar-file   (.getJarFile conn)
+        entry-name (.getEntryName conn)
+        dir-entry  (.getEntry jar-file (add-ending-slash entry-name))]
+    (and dir-entry (.isDirectory dir-entry))))
+
+(defn- connection-content-length [^java.net.URLConnection conn]
+  (let [len (.getContentLength conn)]
+    (if (<= 0 len) len)))
+
+(defn- connection-last-modified [^java.net.URLConnection conn]
+  (let [last-mod (.getLastModified conn)]
+    (if-not (zero? last-mod)
+      (Date. last-mod))))
+
+(defmethod resource-data :jar
+  [^java.net.URL url]
+  (let [conn (.openConnection url)]
+    (if-not (jar-directory? conn)
+      {:content        (.getInputStream conn)
+       :content-length (connection-content-length conn)
+       :last-modified  (connection-last-modified conn)})))
 
 (defn url-response
   "Return a response for the supplied URL."
   {:added "1.2"}
   [^URL url]
-  (if-let [^File file (file-url url)]
-    (if-not (.isDirectory file)
-      (-> (response file)
-          (file-content-length)
-          (file-last-modified)))
-    (let [conn (.openConnection url)]
-      (if-not (jar-directory? conn)
-        (-> (response (.getInputStream conn))
-            (connection-content-length conn)
-            (connection-last-modified conn))))))
+  (if-let [data (resource-data url)]
+    (-> (response (:content data))
+        (content-length (:content-length data))
+        (last-modified (:last-modified data)))))
 
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the
