@@ -140,6 +140,12 @@
   [resp content-type]
   (header resp "Content-Type" content-type))
 
+(defn content-encoding
+  "Returns an updated Ring response with the a Content-Encoding header corresponding
+  to the given content-encoding."
+  [resp content-encoding]
+  (header resp "Content-Encoding" content-encoding))
+
 (defn charset
   "Returns an updated Ring response with the supplied charset added to the
   Content-Type header."

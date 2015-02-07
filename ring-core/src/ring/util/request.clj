@@ -1,6 +1,7 @@
 (ns ring.util.request
   "Functions for augmenting and pulling information from request maps."
-  (:use [ring.util.parsing :only (re-value)]))
+  (:use [ring.util.parsing :only (re-value)])
+  (:require [clojure.string :as str]))
 
 (defn request-url
   "Return the full URL of the request."
@@ -26,6 +27,13 @@
   [request]
   (if-let [^String length (get-in request [:headers "content-length"])]
     (Long. length)))
+
+(defn accept-encoding
+  "Return the accpt-encoding of the request, or nil none is set."
+  {:added "1.3"}
+  [request]
+  (if-let [^String length (get-in request [:headers "accept-encoding"])]
+    (str/split length #",\s*")))
 
 (def ^:private charset-pattern
   (re-pattern (str ";(?:.*\\s)?(?i:charset)=(" re-value ")\\s*(?:;|$)")))
