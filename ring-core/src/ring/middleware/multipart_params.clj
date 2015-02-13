@@ -41,9 +41,11 @@
 
 (defn- file-item-seq
   "Create a seq of FileItem instances from a request context."
-  [context]
+  [max-file-size context]
   (file-item-iterator-seq
-    (.getItemIterator (FileUpload.) context)))
+    (.getItemIterator (doto (FileUpload.)
+                        (.setFileSizeMax max-file-size))
+                      context)))
 
 (defn- parse-file-item
   "Parse a FileItemStream into a key-value pair. If the request is a file the
@@ -58,9 +60,9 @@
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
-  [request encoding store]
+  [request encoding store max-file-size]
   (->> (request-context request encoding)
-       (file-item-seq)
+       (file-item-seq max-file-size)
        (map #(parse-file-item % store encoding))
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
@@ -87,8 +89,9 @@
         encoding (or (:encoding options)
                      (req/character-encoding request)
                      "UTF-8")
+        max-file-size (or (:max-file-size options) -1)
         params   (if (multipart-form? request)
-                   (parse-multipart-params request encoding store)
+                   (parse-multipart-params request encoding store max-file-size)
                    {})]
     (merge-with merge request
                 {:multipart-params params}
@@ -103,15 +106,20 @@
 
   The following options are accepted
 
-  :encoding - character encoding to use for multipart parsing. If not
-              specified, uses the request character encoding, or \"UTF-8\"
-              if no request character encoding is set.
+  :encoding      - character encoding to use for multipart parsing. If not
+                   specified, uses the request character encoding, or \"UTF-8\"
+                   if no request character encoding is set.
 
-  :store    - a function that stores a file upload. The function should
-              expect a map with :filename, content-type and :stream keys,
-              and its return value will be used as the value for the
-              parameter in the multipart parameter map. The default storage
-              function is the temp-file-store."
+  :store         - a function that stores a file upload. The function should
+                   expect a map with :filename, content-type and :stream keys,
+                   and its return value will be used as the value for the
+                   parameter in the multipart parameter map. The default storage
+                   function is the temp-file-store.
+
+  :max-file-size - maximum number of bytes to accept for a file. Throws a
+                   org.apache.commons.fileupload.FileUploadBase$FileUploadIOException
+                   if this limit is exceeded. Defaults to -1 (unlimited)."
+
   {:arglists '([handler] [handler options])}
   [handler & [options]]
   (fn [request]
