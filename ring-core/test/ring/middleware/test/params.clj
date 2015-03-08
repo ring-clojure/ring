@@ -44,6 +44,13 @@
     (is (= (:params resp) {"hello" "world"}))
     (is (= (:form-params resp) {"hello" "world"}))))
 
+(deftest wrap-params-string-body
+  (let [req {:headers {"content-type" "application/x-www-form-urlencoded;charset=UTF-16"}
+             :body    "hello=world"}
+        resp (wrapped-echo req)]
+    (is (= (:params resp) {"hello" "world"}))
+    (is (= (:form-params resp) {"hello" "world"}))))
+
 (deftest params-request-test
   (is (fn? params-request)))
 
