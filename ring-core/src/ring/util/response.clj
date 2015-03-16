@@ -7,6 +7,13 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
+(defn moved-permanently 
+  "Returns a Ring response for an HTTP 301 redirect"
+  [url]
+  {:status  301
+   :headers {"Location" url}
+   :body    ""})
+
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect."
   [url]
@@ -14,12 +21,16 @@
    :headers {"Location" url}
    :body    ""})
 
+(def found redirect)
+
 (defn redirect-after-post
   "Returns a Ring response for an HTTP 303 redirect."
   [url]
   {:status  303
    :headers {"Location" url}
    :body    ""})
+
+(def see-other redirect-after-post)
 
 (defn created
   "Returns a Ring response for a HTTP 201 created response."
