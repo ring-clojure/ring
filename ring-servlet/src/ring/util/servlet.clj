@@ -3,6 +3,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string])
   (:import (java.io File InputStream FileInputStream)
+           (java.util Locale)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
                                HttpServletResponse)))
@@ -13,7 +14,7 @@
   (reduce
     (fn [headers, ^String name]
       (assoc headers
-        (.toLowerCase name)
+        (.toLowerCase name Locale/ENGLISH)
         (->> (.getHeaders request name)
              (enumeration-seq)
              (string/join ","))))
@@ -40,7 +41,7 @@
    :uri                (.getRequestURI request)
    :query-string       (.getQueryString request)
    :scheme             (keyword (.getScheme request))
-   :request-method     (keyword (.toLowerCase (.getMethod request)))
+   :request-method     (keyword (.toLowerCase (.getMethod request) Locale/ENGLISH))
    :protocol           (.getProtocol request)
    :headers            (get-headers request)
    :content-type       (.getContentType request)

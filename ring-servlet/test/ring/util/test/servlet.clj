@@ -1,6 +1,13 @@
 (ns ring.util.test.servlet
+  (:import [java.util Locale])
   (:use clojure.test
         ring.util.servlet))
+
+(defmacro ^:private with-locale [locale & body]
+  `(let [old-locale# (Locale/getDefault)]
+     (try (Locale/setDefault ~locale)
+          (do ~@body)
+          (finally (Locale/setDefault old-locale#)))))
 
 (defn- enumeration [coll]
   (let [e (atom coll)]
@@ -61,7 +68,8 @@
                  :request-method :get
                  :protocol       "HTTP/1.1"
                  :headers        {"X-Client" ["Foo", "Bar"]
-                                  "X-Server" ["Baz"]}
+                                  "X-Server" ["Baz"]
+                                  "X-Capital-I" ["Qux"]}
                  :content-type   "text/plain"
                  :content-length 10
                  :character-encoding "UTF-8"
@@ -69,27 +77,31 @@
                  :ssl-client-cert cert
                  :body            body}
           response (atom {})]
-    (testing "request"
-      (letfn [(handler [r]
-               (are [k v] (= (r k) v)
-                 :server-port    8080
-                 :server-name    "foobar"
-                 :remote-addr    "127.0.0.1"
-                 :uri            "/foo"
-                 :query-string   "a=b"
-                 :scheme         :http
-                 :request-method :get
-                 :protocol       "HTTP/1.1"
-                 :headers        {"x-client" "Foo,Bar"
-                                  "x-server" "Baz"}
-                 :content-type   "text/plain"
-                 :content-length 10
-                 :character-encoding "UTF-8"
-                 :servlet-context-path "/foo"
-                 :ssl-client-cert cert
-                 :body            body)
-               {:status 200, :headers {}})]
-        (run-servlet handler request response)))
+    (letfn [(handler [r]
+             (are [k v] (= (r k) v)
+               :server-port    8080
+               :server-name    "foobar"
+               :remote-addr    "127.0.0.1"
+               :uri            "/foo"
+               :query-string   "a=b"
+               :scheme         :http
+               :request-method :get
+               :protocol       "HTTP/1.1"
+               :headers        {"x-client" "Foo,Bar"
+                                "x-server" "Baz"
+                                "x-capital-i" "Qux"}
+               :content-type   "text/plain"
+               :content-length 10
+               :character-encoding "UTF-8"
+               :servlet-context-path "/foo"
+               :ssl-client-cert cert
+               :body            body)
+             {:status 200, :headers {}})]
+      (testing "request"
+        (run-servlet handler request response))
+      (testing "mapping request header names to lower case"
+        (with-locale (Locale. "tr")
+          (run-servlet handler request response))))
     (testing "response"
       (letfn [(handler [r]
                {:status  200
