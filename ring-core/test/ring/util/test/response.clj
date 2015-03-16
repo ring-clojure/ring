@@ -132,6 +132,11 @@
       (is (= (slurp (:body resp))
              "Hello World\n"))))
 
+  (testing "nil resource-data values"
+    (defmethod resource-data :http [_] {})
+    (with-redefs [io/resource (constantly (java.net.URL. "http://foo"))]
+      (is (= (response nil) (resource-response "whatever")))))
+
   (comment
     ;; This test requires the ability to have file names in the source
     ;; tree with non-ASCII characters in them encoded as UTF-8.  That
