@@ -214,12 +214,15 @@
   "Returns a Ring response to serve a packaged resource, or nil if the
   resource does not exist.
   Options:
-    :root - take the resource relative to this root"
-  [path & [opts]]
-  (let [path (-> (str (:root opts "") "/" path)
+    :root - take the resource relative to this root
+    :loader - resolve the resource in this class loader"
+  [path & [{:keys [root loader] :as opts}]]
+  (let [path (-> (str (or root "") "/" path)
                  (.replace "//" "/")
                  (.replaceAll "^/" ""))]
-    (if-let [resource (io/resource path)]
+    (if-let [resource (if loader
+                        (io/resource path loader)
+                        (io/resource path))]
       (url-response resource))))
 
 (defn get-header
