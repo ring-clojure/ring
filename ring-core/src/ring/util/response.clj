@@ -7,12 +7,22 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
+
+(def redirect-status-codes
+  {:moved-permanently 301
+   :found 302
+   :see-other 303
+   :temporary-redirect 307
+   :permanent-redirect 308})
+
 (defn redirect
-  "Returns a Ring response for an HTTP 302 redirect."
-  [url]
-  {:status  302
-   :headers {"Location" url}
-   :body    ""})
+  "Returns a Ring response for an HTTP 302 redirect. Status may be 
+  a key in redirect-status-codes or a numeric code. Defaults to 302"
+  ([url] (redirect url :found))
+  ([url status]
+   {:status  (redirect-status-codes status status)
+    :headers {"Location" url}
+    :body    ""}))
 
 (defn redirect-after-post
   "Returns a Ring response for an HTTP 303 redirect."
