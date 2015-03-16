@@ -7,7 +7,17 @@
 
 (deftest test-redirect
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}
-         (redirect "http://google.com"))))
+         (redirect "http://google.com")))
+  (are [x y] (= (->> x
+                     (redirect "/foo")
+                     :status)
+                y)
+       :moved-permanently 301
+       :found 302
+       :see-other 303
+       :temporary-redirect 307
+       :permanent-redirect 308
+       300 300))
 
 (deftest test-redirect-after-post
   (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
