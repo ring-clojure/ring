@@ -41,6 +41,7 @@
    :query-string       (.getQueryString request)
    :scheme             (keyword (.getScheme request))
    :request-method     (keyword (.toLowerCase (.getMethod request)))
+   :protocol           (.getProtocol request)
    :headers            (get-headers request)
    :content-type       (.getContentType request)
    :content-length     (get-content-length request)
