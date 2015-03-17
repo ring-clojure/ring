@@ -42,8 +42,12 @@
 (defn- bare-session-response
   [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
   (let [new-session-key (if (contains? response :session)
-                          (if-let [session (response :session)]
-                            (store/write-session store session-key session)
+                         (if-let [session (response :session)]
+                            (if (:recreate (meta session))
+                              (do
+                                (store/delete-session store session-key)
+                                (store/write-session store nil session))
+                              (store/write-session store session-key session))
                             (if session-key
                               (store/delete-session store session-key))))
         session-attrs (:session-cookie-attrs response)
