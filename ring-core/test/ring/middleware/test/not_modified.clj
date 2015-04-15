@@ -15,10 +15,10 @@
     :body ""}))
 
 (defn- etag-request [etag]
-  {:headers {"if-none-match" etag}})
+  {:request-method :get, :headers {"if-none-match" etag}})
 
 (defn- modified-request [modified-date]
-  {:headers {"if-modified-since" modified-date}})
+  {:request-method :get, :headers {"if-modified-since" modified-date}})
 
 (deftest test-wrap-not-modified
   (with-redefs [ring.middleware.not-modified/not-modified-response #(vector %1 %2)]
@@ -30,13 +30,13 @@
 (deftest test-not-modified-response  
   (testing "etag match"
     (let [known-etag "known-etag"
-          request {:headers {"if-none-match" known-etag}}
+          request {:request-method :get, :headers {"if-none-match" known-etag}}
           handler-resp #(hash-map :status 200 :headers {"etag" %} :body "")]
       (is (= 304 (:status (not-modified-response (handler-resp known-etag) request))))
       (is (= 200 (:status (not-modified-response (handler-resp "unknown-etag") request))))))
   
   (testing "not modified"
-    (let [req #(hash-map :headers {"if-modified-since" %})
+    (let [req #(hash-map :request-method :get, :headers {"if-modified-since" %})
           last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
           h-resp {:status 200 :headers {"Last-Modified" last-modified} :body ""}]
       (is (= 304 (:status (not-modified-response h-resp (req last-modified)))))
@@ -44,7 +44,7 @@
       (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:50 GMT")))))))
 
   (testing "not modified body and content-length"
-    (let [req   #(hash-map :headers {"if-modified-since" %})
+    (let [req   #(hash-map :request-method :get :headers {"if-modified-since" %})
           last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
           h-resp {:status 200 :headers {"Last-Modified" last-modified} :body ""}
           resp   (not-modified-response h-resp (req last-modified))]
@@ -61,7 +61,31 @@
                   :headers {"LasT-ModiFied" "Sun, 23 Sep 2012 11:00:00 GMT"
                             "EtAg" "\"123456abcdef\""}}]
       (is (= 304 (:status (not-modified-response
-                           h-resp {:headers {"if-modified-since"
+                           h-resp {:request-method :get
+                                   :headers {"if-modified-since"
                                              "Sun, 23 Sep 2012 11:00:00 GMT"}}))))
       (is (= 304 (:status (not-modified-response
-                           h-resp {:headers {"if-none-match" "\"123456abcdef\""}})))))))
+                           h-resp {:request-method :get
+                                   :headers {"if-none-match" "\"123456abcdef\""}}))))))
+
+  (testing "doesn't affect POST, PUT, PATCH or DELETE"
+    (let [date "Sat, 22 Sep 2012 11:00:00 GMT"
+          req  {:headers {"if-modified-since" date}}
+          resp {:status 200 :headers {"Last-Modified" date} :body ""}]
+      (are [m s] (= s (:status (not-modified-response resp (assoc req :request-method m))))
+        :head   304
+        :get    304
+        :post   200
+        :put    200
+        :patch  200
+        :delete 200)))
+
+  (testing "only affects 200 OK responses"
+    (let [date "Sat, 22 Sep 2012 11:00:00 GMT"
+          req  {:request-method :get, :headers {"if-modified-since" date}}
+          resp {:headers {"Last-Modified" date} :body ""}]
+      (are [s1 s2] (= s2 (:status (not-modified-response (assoc resp :status s1) req)))
+        200 304
+        302 302
+        404 404
+        500 500))))

@@ -20,13 +20,21 @@
          modified-since
          (not (.before modified-since modified-date)))))
 
+(defn- read-request? [request]
+  (#{:get :head} (:request-method request)))
+
+(defn- ok-response? [response]
+  (= (:status response) 200))
+
 (defn not-modified-response
   "Returns 304 or original response based on response and request.
   See: wrap-not-modified."
   {:added "1.2"}
   [response request]
-  (if (or (etag-match? request response)
-          (not-modified-since? request response))
+  (if (and (read-request? request)
+           (ok-response? response)
+           (or (etag-match? request response)
+               (not-modified-since? request response)))
     (do (close! (:body response))
         (-> response
             (assoc :status 304)
