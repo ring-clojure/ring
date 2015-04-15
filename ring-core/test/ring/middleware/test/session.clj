@@ -180,3 +180,15 @@
     (testing "Session cookie attrs with active session"
       (let [response (handler {:foo "bar" :cookies {"ring-session" {:value sess-key}}})]
         (is (get-session-cookie response))))))
+
+(deftest session-is-recreated-when-recreate-key-present-in-metadata
+  (let [reader  (trace-fn (constantly {}))
+        writer  (trace-fn (constantly nil))
+        deleter (trace-fn (constantly nil))
+        store   (make-store reader writer deleter)
+        handler (constantly {:session ^:recreate {:foo "bar"}})
+        handler (wrap-session handler {:store store})]
+    (handler {:cookies {"ring-session" {:value "test"}}})
+    (is (= (trace reader) [["test"]]))
+    (is (= (trace writer) [[nil {:foo "bar"}]]))
+    (is (= (trace deleter) [["test"]]))))
