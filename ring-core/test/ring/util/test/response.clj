@@ -189,6 +189,15 @@
          (set-cookie {:status 200 :headers {}}
                      "Foo" "Bar" {:http-only true}))))
 
+(deftest test-find-header
+  (is (= (find-header {:headers {"Content-Type" "text/plain"}} "Content-Type")
+         ["Content-Type" "text/plain"]))
+  (is (= (find-header {:headers {"content-type" "text/plain"}} "Content-Type")
+         ["content-type" "text/plain"]))
+  (is (= (find-header {:headers {"Content-typE" "text/plain"}} "content-type")
+         ["Content-typE" "text/plain"]))
+  (is (nil? (find-header {:headers {"Content-Type" "text/plain"}} "content-length"))))
+
 (deftest test-get-header
   (is (= (get-header {:headers {"Content-Type" "text/plain"}} "Content-Type")
          "text/plain"))

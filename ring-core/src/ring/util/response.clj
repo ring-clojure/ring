@@ -158,6 +158,23 @@
   [resp content-type]
   (header resp "Content-Type" content-type))
 
+(defn find-header
+  "Looks up a header in a Ring response (or request) case insensitively,
+  returning the header map entry, or nil if not present."
+  {:added "1.4"}
+  [resp ^String header-name]
+  (->> (:headers resp)
+       (filter #(.equalsIgnoreCase header-name (key %)))
+       (first)))
+
+(defn get-header
+  "Looks up a header in a Ring response (or request) case insensitively,
+  returning the value of the header, or nil if not present."
+  {:added "1.2"}
+  [resp header-name]
+  (if-let [entry (find-header resp header-name)]
+    (val entry)))
+
 (defn charset
   "Returns an updated Ring response with the supplied charset added to the
   Content-Type header."
@@ -262,11 +279,3 @@
                         (io/resource path loader)
                         (io/resource path))]
       (url-response resource))))
-
-(defn get-header
-  "Look up a header in a Ring response (or request) case insensitively,
-  returning the value of the header."
-  {:added "1.2"}
-  [resp ^String header-name]
-  (some (fn [[k v]] (if (.equalsIgnoreCase header-name k) v))
-        (:headers resp)))
