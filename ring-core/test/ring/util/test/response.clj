@@ -57,7 +57,10 @@
            {:status 200 :headers {"Content-Type" "text/html; charset=UTF-8"}})))
   (testing "default content-type"
     (is (= (charset {:status 200 :headers {}} "UTF-8")
-           {:status 200 :headers {"Content-Type" "text/plain; charset=UTF-8"}}))))
+           {:status 200 :headers {"Content-Type" "text/plain; charset=UTF-8"}})))
+  (testing "case insensitive"
+    (is (= (charset {:status 200 :headers {"content-type" "text/html"}} "UTF-8")
+           {:status 200 :headers {"content-type" "text/html; charset=UTF-8"}}))))
 
 (deftest test-header
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
@@ -205,5 +208,14 @@
          "text/plain"))
   (is (= (get-header {:headers {"Content-typE" "text/plain"}} "content-type")
          "text/plain"))
-  (is (= (get-header {:headers {"Content-Type" "text/plain"}} "content-length")
-         nil)))
+  (is (nil? (get-header {:headers {"Content-Type" "text/plain"}} "content-length"))))
+
+(deftest test-update-header
+  (is (= (update-header {:headers {"Content-Type" "text/plain"}}
+                        "content-type"
+                        str "; charset=UTF-8")
+         {:headers {"Content-Type" "text/plain; charset=UTF-8"}}))
+  (is (= (update-header {:headers {}}
+                        "content-type"
+                        str "; charset=UTF-8")
+         {:headers {"content-type" "; charset=UTF-8"}})))

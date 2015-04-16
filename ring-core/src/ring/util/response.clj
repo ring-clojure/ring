@@ -175,12 +175,23 @@
   (if-let [entry (find-header resp header-name)]
     (val entry)))
 
+(defn update-header
+  "Looks up a header in a Ring response (or request) case insensitively,
+  then updates the header with the supplied function and arguments in the
+  manner of update-in."
+  {:added "1.4"}
+  [resp header-name f & args]
+  (let [header-key (if-let [entry (find-header resp header-name)]
+                     (key entry)
+                     header-name)]
+    (update-in resp [:headers header-key] #(apply f % args))))
+
 (defn charset
   "Returns an updated Ring response with the supplied charset added to the
   Content-Type header."
   {:added "1.1"}
   [resp charset]
-  (update-in resp [:headers "Content-Type"]
+  (update-header resp "Content-Type"
     (fn [content-type]
       (-> (or content-type "text/plain")
           (str/replace #";\s*charset=[^;]*" "")
