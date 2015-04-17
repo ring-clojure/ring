@@ -3,12 +3,12 @@
 
   This middleware is deprecated. Prefer the ring.middleware.content-type and
   ring.middleware.not-modified middleware instead."
-  (:require [ring.util.response :as res])
-  (:use [ring.util.mime-type :only (ext-mime-type)]
-        [ring.util.io :only (last-modified-date)])
-  (:import java.io.File
-           (java.util Date Locale TimeZone)
-           java.text.SimpleDateFormat))
+  (:require [ring.util.response :as res]
+            [ring.util.mime-type :refer [ext-mime-type]]
+            [ring.util.io :refer [last-modified-date]])
+  (:import [java.io File]
+           [java.util Date Locale TimeZone]
+           [java.text SimpleDateFormat]))
 
 (defn- guess-mime-type
   "Returns a String corresponding to the guessed mime type for the given file,

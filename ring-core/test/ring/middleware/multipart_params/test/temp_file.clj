@@ -1,7 +1,7 @@
 (ns ring.middleware.multipart-params.test.temp-file
-  (:use clojure.test
-        [ring.util.io :only (string-input-stream)]
-        ring.middleware.multipart-params.temp-file))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.multipart-params.temp-file :refer :all]
+            [ring.util.io :refer [string-input-stream]]))
 
 (deftest test-temp-file-store
   (let [store  (temp-file-store)

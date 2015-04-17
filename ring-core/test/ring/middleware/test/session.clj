@@ -1,7 +1,7 @@
 (ns ring.middleware.test.session
-  (:use clojure.test
-        ring.middleware.session
-        ring.middleware.session.store))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.session :refer :all]
+            [ring.middleware.session.store :refer :all]))
 
 (defn- make-store [reader writer deleter]
   (reify SessionStore

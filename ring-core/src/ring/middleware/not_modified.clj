@@ -1,9 +1,9 @@
 (ns ring.middleware.not-modified
   "Middleware that returns a 304 Not Modified response for responses with
   Last-Modified headers."
-  (:use [ring.util.time :only (parse-date)]
-        [ring.util.response :only (status get-header header)]
-        [ring.util.io :only (close!)]))
+  (:require [ring.util.time :refer [parse-date]]
+            [ring.util.response :refer [status get-header header]]
+            [ring.util.io :refer [close!]]))
 
 (defn- etag-match? [request response]
   (if-let [etag (get-header response "ETag")]

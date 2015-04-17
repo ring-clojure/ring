@@ -1,9 +1,9 @@
 (ns ring.middleware.test.resource
-  (:import [java.net URL URLClassLoader])
-  (:require [clojure.java.io :as io])
-  (:use clojure.test
-        [ring.util.io :only (string-input-stream)]
-        ring.middleware.resource))
+  (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
+            [ring.middleware.resource :refer :all]
+            [ring.util.io :refer [string-input-stream]])
+  (:import [java.net URL URLClassLoader]))
 
 (defn test-handler [request]
   {:status 200

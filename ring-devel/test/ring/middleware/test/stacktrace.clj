@@ -1,6 +1,6 @@
 (ns ring.middleware.test.stacktrace
-  (:use clojure.test
-        ring.middleware.stacktrace))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.stacktrace :refer :all]))
 
 (def exception-app (wrap-stacktrace (fn [_] (throw (Exception. "fail")))))
 (def assert-app    (wrap-stacktrace (fn [_] (assert (= 1 2)))))

@@ -3,11 +3,11 @@
 
   Most of the time you should prefer ring.middleware.resource instead, as this
   middleware will not work with files in jar or war files."
-  (:import java.io.File)
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response]
             [ring.util.request :as request]
-            [ring.middleware.head :as head]))
+            [ring.middleware.head :as head])
+  (:import [java.io File]))
 
 (defn- ensure-dir
   "Ensures that a directory exists at the given path, throwing if one does not."

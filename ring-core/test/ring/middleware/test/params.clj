@@ -1,7 +1,7 @@
 (ns ring.middleware.test.params
-  (:use clojure.test
-        ring.middleware.params
-        [ring.util.io :only (string-input-stream)]))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.params :refer :all]
+            [ring.util.io :refer [string-input-stream]]))
 
 (def wrapped-echo (wrap-params identity))
 

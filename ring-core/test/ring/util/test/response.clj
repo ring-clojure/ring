@@ -1,9 +1,9 @@
 (ns ring.util.test.response
-  (:use clojure.test
-        ring.util.response)
+  (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
+            [ring.util.response :refer :all])
   (:import [java.io File InputStream]
-           org.apache.commons.io.FileUtils)
-  (:require [clojure.java.io :as io]))
+           [org.apache.commons io.FileUtils]))
 
 (deftest test-redirect
   (is (= {:status 302 :headers {"Location" "http://google.com"} :body ""}

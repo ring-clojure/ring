@@ -1,7 +1,7 @@
 (ns ring.middleware.test.file-info
-  (:use clojure.test
-        ring.middleware.file-info)
-  (:import java.io.File))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.file-info :refer :all])
+  (:import [java.io File]))
 
 (def non-file-app (wrap-file-info (constantly {:headers {} :body "body"})))
 

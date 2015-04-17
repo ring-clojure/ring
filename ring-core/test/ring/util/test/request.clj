@@ -1,8 +1,8 @@
 (ns ring.util.test.request
-  (:import java.io.File)
-  (:use clojure.test
-        ring.util.request
-        ring.util.io))
+  (:require [clojure.test :refer :all]
+            [ring.util.request :refer :all]
+            [ring.util.io :refer [string-input-stream]])
+  (:import [java.io File]))
 
 (deftest test-request-url
   (is (= (request-url {:scheme :http

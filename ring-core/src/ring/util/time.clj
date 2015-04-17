@@ -1,10 +1,8 @@
 (ns ring.util.time
   "Functions for dealing with time and dates in HTTP requests."
   (:require [clojure.string :as str])
-  (:import java.text.SimpleDateFormat
-           java.text.ParseException
-           java.util.TimeZone
-           java.util.Locale))
+  (:import [java.text ParseException SimpleDateFormat]
+           [java.util Locale TimeZone]))
 
 (def ^:no-doc http-date-formats
   {:rfc1123 "EEE, dd MMM yyyy HH:mm:ss zzz"

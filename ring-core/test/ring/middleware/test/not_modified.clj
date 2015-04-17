@@ -1,6 +1,6 @@
 (ns ring.middleware.test.not-modified
-  (:use clojure.test
-        ring.middleware.not-modified))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.not-modified :refer :all]))
 
 (defn- handler-etag [etag]
   (constantly

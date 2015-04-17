@@ -1,6 +1,6 @@
 (ns ring.middleware.test.flash
-  (:use clojure.test
-        ring.middleware.flash))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.flash :refer :all]))
 
 (deftest flash-is-added-to-session
   (let [message  {:error "Could not save"}

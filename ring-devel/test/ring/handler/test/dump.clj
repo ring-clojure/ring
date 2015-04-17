@@ -1,7 +1,7 @@
 (ns ring.handler.test.dump
-  (:use clojure.test
-        [ring.util.io :only (string-input-stream)]
-        ring.handler.dump))
+  (:require [clojure.test :refer :all]
+            [ring.handler.dump :refer :all]
+            [ring.util.io :refer [string-input-stream]]))
 
 (def post-req
   {:uri            "/foo/bar"

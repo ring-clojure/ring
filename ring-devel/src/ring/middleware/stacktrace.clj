@@ -4,12 +4,12 @@
 
   This middleware is for debugging purposes, and should be limited to
   development environments."
-  (:require [clojure.java.io :as io])
-  (:use hiccup.core
-        hiccup.page
-        clj-stacktrace.core
-        clj-stacktrace.repl
-        ring.util.response))
+  (:require [clojure.java.io :as io]
+            [hiccup.core :refer [html h]]
+            [hiccup.page :refer [html5]]
+            [clj-stacktrace.core :refer :all]
+            [clj-stacktrace.repl :refer :all]
+            [ring.util.response :refer [content-type response status]]))
 
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown.

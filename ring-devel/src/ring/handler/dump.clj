@@ -2,11 +2,13 @@
   "A handler that displays the received request map.
 
   This is useful for debugging new adapters."
-  (:use [hiccup core page def]
-        ring.util.response)
   (:require [clojure.set :as set]
             [clojure.pprint :as pprint]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [hiccup.core :refer [html h]]
+            [hiccup.page :refer [doctype]]
+            [hiccup.def :refer [defhtml]]
+            [ring.util.response :refer [content-type response]]))
 
 (def ^:no-doc ring-keys
   '(:server-port :server-name :remote-addr :uri :query-string :scheme

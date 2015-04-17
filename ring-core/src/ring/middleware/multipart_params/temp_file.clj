@@ -1,7 +1,7 @@
 (ns ring.middleware.multipart-params.temp-file
   "A multipart storage engine for storing uploads in temporary files."
   (:require [clojure.java.io :as io])
-  (:import java.io.File))
+  (:import [java.io File]))
 
 (defn- background-thread [^Runnable f]
   (doto (Thread. f)

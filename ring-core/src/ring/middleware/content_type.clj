@@ -1,7 +1,7 @@
 (ns ring.middleware.content-type
   "Middleware for automatically adding a content type to response maps."
-  (:use ring.util.mime-type
-        ring.util.response))
+  (:require [ring.util.mime-type :refer [ext-mime-type]]
+            [ring.util.response :refer [content-type get-header]]))
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."

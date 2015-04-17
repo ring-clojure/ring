@@ -2,11 +2,11 @@
   "Compatibility functions for turning a ring handler into a Java servlet."
   (:require [clojure.java.io :as io]
             [clojure.string :as string])
-  (:import (java.io File InputStream FileInputStream)
-           (java.util Locale)
-           (javax.servlet.http HttpServlet
+  (:import [java.io File InputStream FileInputStream]
+           [java.util Locale]
+           [javax.servlet.http HttpServlet
                                HttpServletRequest
-                               HttpServletResponse)))
+                               HttpServletResponse]))
 
 (defn- get-headers
   "Creates a name/value map of all the request headers."

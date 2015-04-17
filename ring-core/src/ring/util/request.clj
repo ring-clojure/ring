@@ -1,6 +1,6 @@
 (ns ring.util.request
   "Functions for augmenting and pulling information from request maps."
-  (:use [ring.util.parsing :only (re-value)]))
+  (:require [ring.util.parsing :refer [re-value]]))
 
 (defn request-url
   "Return the full URL of the request."

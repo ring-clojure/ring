@@ -1,6 +1,6 @@
 (ns ring.middleware.nested-params
   "Middleware to convert a single-depth map of parameters to a nested map."
-  (:use [ring.util.codec :only (assoc-conj)]))
+  (:require [ring.util.codec :refer [assoc-conj]]))
 
 (defn parse-nested-keys
   "Parse a parameter name into a list of keys using a 'C'-like index

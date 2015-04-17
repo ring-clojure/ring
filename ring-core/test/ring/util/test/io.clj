@@ -1,8 +1,8 @@
 (ns ring.util.test.io
-  (:use clojure.test
-        ring.util.io)
-  (:require [clojure.java.io :as io])
-  (:import java.io.IOException))
+  (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
+            [ring.util.io :refer :all])
+  (:import [java.io IOException]))
 
 (deftest test-piped-input-stream
   (let [stream (piped-input-stream #(spit % "Hello World"))]

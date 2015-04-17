@@ -7,14 +7,13 @@
 
     ring.middleware.multipart-params.byte-array/byte-array-store
     ring.middleware.multipart-params.temp-file/temp-file-store"
-  (:use [ring.util.codec :only (assoc-conj)])
-  (:require [ring.util.request :as req])
+  (:require [ring.util.codec :refer [assoc-conj]]
+            [ring.util.request :as req])
   (:import [org.apache.commons.fileupload.util Streams]
-           [org.apache.commons.fileupload
-             UploadContext
-             FileItemIterator
-             FileItemStream
-             FileUpload]))
+           [org.apache.commons.fileupload UploadContext
+                                          FileItemIterator
+                                          FileItemStream
+                                          FileUpload]))
 
 (defn- multipart-form?
   "Does a request have a multipart form?"

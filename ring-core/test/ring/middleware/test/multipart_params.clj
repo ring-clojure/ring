@@ -1,8 +1,8 @@
 (ns ring.middleware.test.multipart-params
-  (:use clojure.test
-        ring.middleware.multipart-params
-        [ring.util.io :only (string-input-stream)])
-  (:import java.io.InputStream))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.multipart-params :refer :all]
+            [ring.util.io :refer [string-input-stream]])
+  (:import [java.io InputStream]))
 
 (defn string-store [item]
   (-> (select-keys item [:filename :content-type])

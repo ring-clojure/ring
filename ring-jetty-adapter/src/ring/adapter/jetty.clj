@@ -2,14 +2,14 @@
   "A Ring adapter that uses the Jetty 7 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
-  (:import (org.eclipse.jetty.server Server Request)
-           (org.eclipse.jetty.server.handler AbstractHandler)
-           (org.eclipse.jetty.server.nio SelectChannelConnector)
-           (org.eclipse.jetty.server.ssl SslSelectChannelConnector)
-           (org.eclipse.jetty.util.thread QueuedThreadPool)
-           (org.eclipse.jetty.util.ssl SslContextFactory)
-           (javax.servlet.http HttpServletRequest HttpServletResponse))
-  (:require [ring.util.servlet :as servlet]))
+  (:require [ring.util.servlet :as servlet])
+  (:import [org.eclipse.jetty.server Server Request]
+           [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.server.nio SelectChannelConnector]
+           [org.eclipse.jetty.server.ssl SslSelectChannelConnector]
+           [org.eclipse.jetty.util.thread QueuedThreadPool]
+           [org.eclipse.jetty.util.ssl SslContextFactory]
+           [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- proxy-handler
   "Returns an Jetty Handler implementation for the given Ring handler."

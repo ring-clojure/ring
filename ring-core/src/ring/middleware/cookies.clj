@@ -1,11 +1,11 @@
 (ns ring.middleware.cookies
   "Middleware for parsing and generating cookies."
+  (:import [org.joda.time DateTime Interval])
   (:require [ring.util.codec :as codec]
-            [clojure.string :as str])
-  (:use [clj-time.core :only (in-seconds)]
-        [clj-time.format :only (formatters unparse)]
-        [ring.util.parsing :only (re-token re-value)])
-  (:import (org.joda.time Interval DateTime)))
+            [clojure.string :as str]
+            [clj-time.core :refer [in-seconds]]
+            [clj-time.format :refer [formatters unparse]]
+            [ring.util.parsing :refer [re-token re-value]]))
 
 (def ^{:private true, :doc "RFC6265 cookie-octet"}
   re-cookie-octet

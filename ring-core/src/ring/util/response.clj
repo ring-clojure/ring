@@ -1,11 +1,12 @@
 (ns ring.util.response
   "Functions for generating and augmenting response maps."
-  (:import java.io.File java.util.Date java.net.URL
-           java.net.URLDecoder java.net.URLEncoder)
-  (:use [ring.util.time :only (format-date)]
-        [ring.util.io :only (last-modified-date)])
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [ring.util.io :refer [last-modified-date]]
+            [ring.util.time :refer [format-date]])
+  (:import [java.io File]
+           [java.util Date]
+           [java.net URL URLDecoder URLEncoder]))
 
 
 (def redirect-status-codes

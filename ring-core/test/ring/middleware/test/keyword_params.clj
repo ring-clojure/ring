@@ -1,6 +1,6 @@
 (ns ring.middleware.test.keyword-params
-  (:use clojure.test
-        ring.middleware.keyword-params))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.keyword-params :refer :all]))
 
 (def wrapped-echo (wrap-keyword-params identity))
 

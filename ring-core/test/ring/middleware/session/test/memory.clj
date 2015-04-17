@@ -1,6 +1,7 @@
 (ns ring.middleware.session.test.memory
-  (:use clojure.test
-        [ring.middleware.session store memory]))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.session.store :refer :all]
+            [ring.middleware.session.memory :refer :all]))
 
 (deftest memory-session-read-not-exist
   (let [store (memory-store)]

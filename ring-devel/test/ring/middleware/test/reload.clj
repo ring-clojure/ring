@@ -1,6 +1,6 @@
 (ns ring.middleware.test.reload
-  (:use clojure.test
-        ring.middleware.reload))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.reload :refer :all]))
 
 (deftest wrap-reload-smoke-test
   (let [handler (wrap-reload identity)

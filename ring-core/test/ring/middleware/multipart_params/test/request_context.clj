@@ -1,6 +1,6 @@
 (ns ring.middleware.multipart-params.test.request-context
-  (:use clojure.test)
-  (:require [ring.middleware.multipart-params :as mp]))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.multipart-params :as mp]))
 
 (deftest test-default-content-length
   (is (= -1

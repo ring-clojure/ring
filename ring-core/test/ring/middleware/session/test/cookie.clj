@@ -1,7 +1,7 @@
 (ns ring.middleware.session.test.cookie
-  (:use clojure.test
-        [ring.middleware.session store cookie])
-  (:require [ring.middleware.session.cookie :as cookie]
+  (:require [clojure.test :refer :all]
+            [ring.middleware.session.store :refer :all]
+            [ring.middleware.session.cookie :as cookie :refer [cookie-store]]
             [ring.util.codec :as codec]
             [crypto.random :as random]))
 

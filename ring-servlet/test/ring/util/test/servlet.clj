@@ -1,7 +1,7 @@
 (ns ring.util.test.servlet
-  (:import [java.util Locale])
-  (:use clojure.test
-        ring.util.servlet))
+  (:require [clojure.test :refer :all]
+            [ring.util.servlet :refer :all])
+  (:import [java.util Locale]))
 
 (defmacro ^:private with-locale [locale & body]
   `(let [old-locale# (Locale/getDefault)]

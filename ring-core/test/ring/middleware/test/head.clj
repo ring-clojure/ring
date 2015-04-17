@@ -1,6 +1,6 @@
 (ns ring.middleware.test.head
-  (:use clojure.test
-        ring.middleware.head))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.head :refer :all]))
 
 (defn- handler [req]
   {:status 200

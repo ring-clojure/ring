@@ -2,7 +2,7 @@
   "Middleware that reloads modified namespaces on each request.
 
   This middleware should be limited to use in development environments."
-  (:use [ns-tracker.core :only (ns-tracker)]))
+  (:require [ns-tracker.core :refer [ns-tracker]]))
 
 (defn wrap-reload
   "Reload namespaces of modified files before the request is passed to the

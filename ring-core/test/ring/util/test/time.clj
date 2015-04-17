@@ -1,8 +1,8 @@
 (ns ring.util.test.time
-  (:use clojure.test
-        ring.util.time
-        [clj-time.core :only (date-time)]
-        [clj-time.coerce :only (to-date)]))
+  (:require [clojure.test :refer :all]
+            [ring.util.time :refer :all]
+            [clj-time.core :refer [date-time]]
+            [clj-time.coerce :refer [to-date]]))
 
 (deftest test-parse-date
   (are [x y] (= (parse-date x) (to-date y))

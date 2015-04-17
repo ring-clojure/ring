@@ -1,10 +1,10 @@
 (ns ring.adapter.test.jetty
-  (:use clojure.test
-        ring.adapter.jetty)
-  (:require [clj-http.client :as http])
-  (:import (org.eclipse.jetty.util.thread QueuedThreadPool)
-           (org.eclipse.jetty.server Server Request)
-           (org.eclipse.jetty.server.handler AbstractHandler)))
+  (:require [clojure.test :refer :all]
+            [ring.adapter.jetty :refer :all]
+            [clj-http.client :as http])
+  (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
+           [org.eclipse.jetty.server Server Request]
+           [org.eclipse.jetty.server.handler AbstractHandler]))
 
 (defn- hello-world [request]
   {:status  200

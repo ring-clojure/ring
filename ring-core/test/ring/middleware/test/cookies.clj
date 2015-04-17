@@ -1,8 +1,8 @@
 (ns ring.middleware.test.cookies
-  (:require [clojure.string :as str])
-  (:use clojure.test
-        ring.middleware.cookies
-        [clj-time.core :only (interval date-time)]))
+  (:require [clojure.test :refer :all]
+            [clojure.string :as str]
+            [ring.middleware.cookies :refer :all]
+            [clj-time.core :refer [date-time interval]]))
 
 (deftest wrap-cookies-basic-cookie
   (let [req  {:headers {"cookie" "a=b"}}

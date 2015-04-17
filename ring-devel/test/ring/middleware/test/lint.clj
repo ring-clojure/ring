@@ -1,8 +1,8 @@
 (ns ring.middleware.test.lint
-  (:use clojure.test
-        [ring.util.io :only (string-input-stream)]
-        ring.middleware.lint)
-  (:import (java.io File InputStream)))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.lint :refer :all]
+            [ring.util.io :refer [string-input-stream]])
+  (:import [java.io File InputStream]))
 
 (def valid-request
   {:server-port        80

@@ -1,7 +1,7 @@
 (ns ring.middleware.session.memory
   "A session storage engine that stores session data in memory."
-  (:use ring.middleware.session.store)
-  (:import java.util.UUID))
+  (:require [ring.middleware.session.store :refer [SessionStore]])
+  (:import [java.util UUID]))
 
 (deftype MemoryStore [session-map]
   SessionStore

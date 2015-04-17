@@ -1,6 +1,6 @@
 (ns ring.util.test.mime-type
-  (:use clojure.test
-        ring.util.mime-type))
+  (:require [clojure.test :refer :all]
+            [ring.util.mime-type :refer :all]))
 
 (deftest ext-mime-type-test
   (testing "default mime types"

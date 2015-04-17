@@ -1,13 +1,13 @@
 (ns ring.middleware.session.cookie
   "A session storage engine that stores session data in encrypted cookies."
-  (:use ring.middleware.session.store)
-  (:require [ring.util.codec :as codec]
+  (:require [ring.middleware.session.store :refer [SessionStore]]
+            [ring.util.codec :as codec]
             [clojure.tools.reader.edn :as edn]
             [crypto.random :as random]
             [crypto.equality :as crypto])
-  (:import java.security.SecureRandom
-           (javax.crypto Cipher Mac)
-           (javax.crypto.spec SecretKeySpec IvParameterSpec)))
+  (:import [java.security SecureRandom]
+           [javax.crypto Cipher Mac]
+           [javax.crypto.spec SecretKeySpec IvParameterSpec]))
 
 (def ^{:private true
        :doc "Algorithm to generate a HMAC."}

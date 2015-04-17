@@ -1,6 +1,6 @@
 (ns ring.middleware.test.content-type
-  (:use clojure.test
-        ring.middleware.content-type))
+  (:require [clojure.test :refer :all]
+            [ring.middleware.content-type :refer :all]))
 
 (deftest wrap-content-type-test
   (testing "response without content-type"

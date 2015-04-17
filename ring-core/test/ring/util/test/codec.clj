@@ -1,7 +1,7 @@
 (ns ring.util.test.codec
-  (:use clojure.test
-        ring.util.codec)
-  (:import java.util.Arrays))
+  (:require [clojure.test :refer :all]
+            [ring.util.codec :refer :all])
+  (:import [java.util Arrays]))
 
 (deftest test-percent-encode
   (is (= (percent-encode " ") "%20"))
