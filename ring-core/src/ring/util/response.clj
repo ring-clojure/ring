@@ -8,7 +8,6 @@
            [java.util Date]
            [java.net URL URLDecoder URLEncoder]))
 
-
 (def redirect-status-codes
   {:moved-permanently 301
    :found 302
