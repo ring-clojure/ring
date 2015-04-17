@@ -1,7 +1,6 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string])
+  (:require [clojure.string :as string])
   (:import (java.io File InputStream FileInputStream)
            (java.util Locale)
            (javax.servlet.http HttpServlet
@@ -79,7 +78,23 @@
         (.addHeader response key val))))
   ; Some headers must be set through specific methods
   (when-let [content-type (get headers "Content-Type")]
-    (.setContentType response content-type)))
+    (.setContentType response content-type))
+  ; Flush after headers
+  (.flushBuffer response))
+
+(defn copy-and-flush [in output]
+  (let [buffer (make-array Byte/TYPE 1024)]
+    (loop []
+      (let [av (.available in)]
+        (if (pos? av)
+          (let [size (.read in buffer 0 (min av (alength buffer)))]
+            (when (pos? size)
+              (.write output buffer 0 size)
+              (.flush output)
+              (recur)))
+          (let [b (.read in)] ;; block
+            (.write output b)
+            (recur)))))))
 
 (defn- set-body
   "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
@@ -94,7 +109,7 @@
           (.print writer (str chunk))))
     (instance? InputStream body)
       (with-open [^InputStream b body]
-        (io/copy b (.getOutputStream response)))
+        (copy-and-flush b (.getOutputStream response)))
     (instance? File body)
       (let [^File f body]
         (with-open [stream (FileInputStream. f)]

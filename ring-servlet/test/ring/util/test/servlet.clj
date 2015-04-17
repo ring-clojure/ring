@@ -44,7 +44,8 @@
       (swap! response assoc-in [:headers name] value))
     (setCharacterEncoding [value])
     (setContentType [value]
-      (swap! response assoc :content-type value))))
+      (swap! response assoc :content-type value))
+    (flushBuffer [])))
 
 (defn- servlet-config []
   (proxy [javax.servlet.ServletConfig] []
