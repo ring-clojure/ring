@@ -7,7 +7,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring/ring-core "1.3.2"]
                  [hiccup "1.0.5"]
-                 [clj-stacktrace "0.2.7"]
+                 [clj-stacktrace "0.2.8"]
                  [ns-tracker "0.2.2"]]
   :profiles
   {:1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}})
