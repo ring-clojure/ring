@@ -26,7 +26,9 @@
     :body    ""}))
 
 (defn redirect-after-post
-  "Returns a Ring response for an HTTP 303 redirect."
+  "Returns a Ring response for an HTTP 303 redirect. Deprecated in favor
+  of using redirect with a :see-other status."
+  {:deprecated "1.4"}
   [url]
   {:status  303
    :headers {"Location" url}
