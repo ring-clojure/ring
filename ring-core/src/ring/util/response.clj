@@ -131,12 +131,6 @@
           (content-length (:content-length data))
           (last-modified (:last-modified data))))))
 
-;; In Clojure versions 1.2.0, 1.2.1 and 1.3.0, the as-file function
-;; in clojure.java.io does not correctly decode special characters in
-;; URLs (e.g. '%20' should be turned into ' ').
-;;
-;; See: http://dev.clojure.org/jira/browse/CLJ-885
-;;
 ;; In Clojure 1.5.1, the as-file function does not correctly decode
 ;; UTF-8 byte sequences.
 ;;
