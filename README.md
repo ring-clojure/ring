@@ -1,6 +1,6 @@
 # Ring
 
-[![Build Status](https://secure.travis-ci.org/ring-clojure/ring.png)](http://travis-ci.org/ring-clojure/ring)
+[![Build Status](https://travis-ci.org/ring-clojure/ring.svg?branch=master)](https://travis-ci.org/ring-clojure/ring)
 
 Ring is a Clojure web applications library inspired by Python's WSGI
 and Ruby's Rack. By abstracting the details of HTTP into a simple,
