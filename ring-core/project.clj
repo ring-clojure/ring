@@ -9,7 +9,7 @@
                  [ring/ring-codec "1.0.0"]
                  [commons-io "2.4"]
                  [commons-fileupload "1.3"]
-                 [clj-time "0.6.0"]
+                 [clj-time "0.9.0"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
   :profiles
