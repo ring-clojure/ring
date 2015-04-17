@@ -169,8 +169,7 @@
   returning the value of the header, or nil if not present."
   {:added "1.2"}
   [resp header-name]
-  (if-let [entry (find-header resp header-name)]
-    (val entry)))
+  (some-> resp (find-header header-name) val))
 
 (defn update-header
   "Looks up a header in a Ring response (or request) case insensitively,
@@ -178,9 +177,7 @@
   manner of update-in."
   {:added "1.4"}
   [resp header-name f & args]
-  (let [header-key (if-let [entry (find-header resp header-name)]
-                     (key entry)
-                     header-name)]
+  (let [header-key (or (some-> resp (find-header header-name) key) header-name)]
     (update-in resp [:headers header-key] #(apply f % args))))
 
 (defn charset
