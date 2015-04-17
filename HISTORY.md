@@ -1,3 +1,17 @@
+## 1.4.0 (TBD)
+
+* Updated minimum Clojure version to 1.5.1
+* Added :protocol key to the request map in the SPEC
+* Added class :loader option to wrap-resource and resource-response
+* Fixed lowercase header bug when working with non-english locales
+* Added optional status argument to ring.util.response/redirect
+* Added ring.util.response/resource-data multimethod
+* Added functionality to regenerate sessions using :recreate metadata
+* Fixed not-modified middleware affecting POSTs and 404s
+* Added find-header and update-header to ring.util.response
+* Fixed charset case sensitivity bug
+* Updated clj-stacktrace, tools.reader, clj-time and Apache Commons FileUpload
+
 ## 1.3.2 (2014-11-27)
 
 * Ensure Jetty adapter threadpool is cleaned when server fails to start
