@@ -48,3 +48,11 @@
   (let [store    (cookie-store)
         bad-data {:foo 1 (keyword "bar 3 :baz ") 2}]
     (is (thrown? AssertionError (write-session store nil bad-data)))))
+
+(deftest cookie-session-invalid-key
+  (is (thrown-with-msg?
+       AssertionError #"the secret key must be exactly 16 bytes"
+       (cookie-store {:key (.getBytes "abcd")})))
+  (is (thrown-with-msg?
+       AssertionError #"the secret key must be exactly 16 bytes"
+       (cookie-store {:key (.getBytes "012345678901234567890")}))))

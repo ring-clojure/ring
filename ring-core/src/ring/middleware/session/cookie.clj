@@ -91,6 +91,10 @@
 
 (ns-unmap *ns* '->CookieStore)
 
+(defn- valid-secret-key? [key]
+  (and (= (type (byte-array 0)) (type key))
+       (= (count key) 16)))
+
 (defn cookie-store
   "Creates an encrypted cookie storage engine. Accepts the following options:
 
@@ -100,4 +104,6 @@
          cookies."
   ([] (cookie-store {}))
   ([options]
-    (CookieStore. (get-secret-key options))))
+    (let [key (get-secret-key options)]
+      (assert (valid-secret-key? key) "the secret key must be exactly 16 bytes")
+      (CookieStore. (get-secret-key options)))))
