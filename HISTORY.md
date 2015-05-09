@@ -1,6 +1,7 @@
 ## 1.4.0 (TBD)
 
 * Updated minimum Clojure version to 1.5.1
+* Updated Jetty to 9.2.10 as Jetty 7 is at EOL (adapter now needs JDK 7 or later)
 * Added :protocol key to the request map in the SPEC
 * Added class :loader option to wrap-resource and resource-response
 * Fixed lowercase header bug when working with non-english locales
