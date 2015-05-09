@@ -53,9 +53,8 @@
     (let [max-threads 20
           new-handler  (proxy [AbstractHandler] []
                          (handle [_ ^Request base-request request response]))
-          threadPool (QueuedThreadPool. ({} :max-threads max-threads))
           configurator (fn [server]
-                         (.setThreadPool server threadPool)
+                         (.setMaxThreads (.getThreadPool server) max-threads)
                          (.setHandler server new-handler))
           server (run-jetty hello-world
                             {:join? false :port 4347 :configurator configurator})]
@@ -86,8 +85,8 @@
                                          :join? false
                                          :max-idle-time 5000})
           connectors (. server getConnectors)]
-      (is (= 5000 (. (first connectors) getMaxIdleTime)))
-      (is (= 5000 (. (second connectors) getMaxIdleTime)))
+      (is (= 5000 (. (first connectors) getIdleTimeout)))
+      (is (= 5000 (. (second connectors) getIdleTimeout)))
       (.stop server)))
 
   (testing "using the default max idle time"
@@ -97,8 +96,8 @@
                                          :key-password "password"
                                          :join? false})
           connectors (. server getConnectors)]
-      (is (= 200000 (. (first connectors) getMaxIdleTime)))
-      (is (= 200000 (. (second connectors) getMaxIdleTime)))
+      (is (= 200000 (. (first connectors) getIdleTimeout)))
+      (is (= 200000 (. (second connectors) getIdleTimeout)))
       (.stop server)))
 
   (testing "setting min-threads"
@@ -114,14 +113,6 @@
                                          :join? false})
           thread-pool (. server getThreadPool)]
       (is (= 8 (. thread-pool getMinThreads)))
-      (.stop server)))
-
-  (testing "setting max-queued"
-    (let [server (run-jetty hello-world {:port 4347
-                                         :max-queued 7
-                                         :join? false})
-          thread-pool (. server getThreadPool)]
-      (is (= 7 (. thread-pool getMaxQueued)))
       (.stop server)))
 
   (testing "default character encoding"

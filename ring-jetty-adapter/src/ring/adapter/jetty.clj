@@ -1,19 +1,23 @@
 (ns ring.adapter.jetty
-  "A Ring adapter that uses the Jetty 7 embedded web server.
+  "A Ring adapter that uses the Jetty 9 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
   (:require [ring.util.servlet :as servlet])
-  (:import [org.eclipse.jetty.server Server Request]
+  (:import [org.eclipse.jetty.server
+            Request
+            Server
+            ServerConnector
+            ConnectionFactory
+            HttpConfiguration
+            HttpConnectionFactory
+            SslConnectionFactory
+            SecureRequestCustomizer]
            [org.eclipse.jetty.server.handler AbstractHandler]
-           [org.eclipse.jetty.server.nio SelectChannelConnector]
-           [org.eclipse.jetty.server.ssl SslSelectChannelConnector]
-           [org.eclipse.jetty.util.thread QueuedThreadPool]
+           [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
-(defn- proxy-handler
-  "Returns an Jetty Handler implementation for the given Ring handler."
-  [handler]
+(defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
@@ -22,9 +26,19 @@
           (servlet/update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
-(defn- ssl-context-factory
-  "Creates a new SslContextFactory instance from a map of options."
-  [options]
+(defn- ^ServerConnector server-connector [server & factories]
+  (ServerConnector. server (into-array ConnectionFactory factories)))
+
+(defn- ^ServerConnector http-connector [server options]
+  (let [http-factory (HttpConnectionFactory.
+                      (doto (HttpConfiguration.)
+                        (.setSendDateHeader true)))]
+    (doto (server-connector server http-factory)
+      (.setPort (options :port 80))
+      (.setHost (options :host))
+      (.setIdleTimeout (options :max-idle-time 200000)))))
+
+(defn- ^SslContextFactory ssl-context-factory [options]
   (let [context (SslContextFactory.)]
     (if (string? (options :keystore))
       (.setKeyStorePath context (options :keystore))
@@ -32,7 +46,7 @@
     (.setKeyStorePassword context (options :key-password))
     (cond
       (string? (options :truststore))
-      (.setTrustStore context ^String (options :truststore))
+      (.setTrustStorePath context (options :truststore))
       (instance? java.security.KeyStore (options :truststore))
       (.setTrustStore context ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
@@ -43,26 +57,34 @@
       nil)
     context))
 
-(defn- ssl-connector
-  "Creates a SslSelectChannelConnector instance."
-  [options]
-  (doto (SslSelectChannelConnector. (ssl-context-factory options))
-    (.setPort (options :ssl-port 443))
-    (.setHost (options :host))
-    (.setMaxIdleTime (options :max-idle-time 200000))))
+(defn- ^ServerConnector ssl-connector [server options]
+  (let [ssl-port     (options :ssl-port 443)
+        http-factory (HttpConnectionFactory.
+                      (doto (HttpConfiguration.)
+                        (.setSendDateHeader true)
+                        (.setSecureScheme "https")
+                        (.setSecurePort ssl-port)
+                        (.addCustomizer (SecureRequestCustomizer.))))
+        ssl-factory  (SslConnectionFactory.
+                      (ssl-context-factory options)
+                      "http/1.1")]
+    (doto (server-connector server ssl-factory http-factory)
+      (.setPort ssl-port)
+      (.setHost (options :host))
+      (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- create-server
-  "Construct a Jetty Server instance."
-  [options]
-  (let [connector (doto (SelectChannelConnector.)
-                    (.setPort (options :port 80))
-                    (.setHost (options :host))
-                    (.setMaxIdleTime (options :max-idle-time 200000)))
-        server    (doto (Server.)
-                    (.addConnector connector)
-                    (.setSendDateHeader true))]
+(defn- ^ThreadPool create-threadpool [options]
+  (let [pool (QueuedThreadPool. ^Integer (options :max-threads 50))]
+    (.setMinThreads pool (options :min-threads 8))
+    (when (:daemon? options false)
+      (.setDaemon pool true))
+    pool))
+
+(defn- ^Server create-server [options]
+  (let [server (Server. (create-threadpool options))]
+    (.addConnector server (http-connector server options))
     (when (or (options :ssl?) (options :ssl-port))
-      (.addConnector server (ssl-connector options)))
+      (.addConnector server (ssl-connector server options)))
     server))
 
 (defn ^Server run-jetty
@@ -82,28 +104,20 @@
   :trust-password - the password to the truststore
   :max-threads    - the maximum number of threads to use (default 50)
   :min-threads    - the minimum number of threads to use (default 8)
-  :max-queued     - the maximum number of requests to queue (default unbounded)
   :max-idle-time  - the maximum idle time in milliseconds for a connection (default 200000)
   :client-auth    - SSL client certificate authenticate, may be set to :need,
                     :want or :none (defaults to :none)"
   [handler options]
-  (let [^Server s (create-server (dissoc options :configurator))
-        ^QueuedThreadPool p (QueuedThreadPool. ^Integer (options :max-threads 50))]
-    (.setMinThreads p (options :min-threads 8))
-    (when-let [max-queued (:max-queued options)]
-      (.setMaxQueued p max-queued))
-    (when (:daemon? options false)
-      (.setDaemon p true))
-    (doto s
-      (.setHandler (proxy-handler handler))
-      (.setThreadPool p))
+  (let [server (create-server (dissoc options :configurator))]
+    (doto server
+      (.setHandler (proxy-handler handler)))
     (when-let [configurator (:configurator options)]
-      (configurator s))
+      (configurator server))
     (try
-      (.start s)
+      (.start server)
       (when (:join? options true)
-        (.join s))
-      s
+        (.join server))
+      server
       (catch Exception ex
-        (.stop s)
+        (.stop server)
         (throw ex)))))
