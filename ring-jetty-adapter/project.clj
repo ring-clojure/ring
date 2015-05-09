@@ -9,5 +9,5 @@
                  [ring/ring-servlet "1.4.0-beta1"]
                  [org.eclipse.jetty/jetty-server "7.6.13.v20130916"]]
   :profiles
-  {:dev {:dependencies [[clj-http "0.6.4"]]}
+  {:dev {:dependencies [[clj-http "1.1.2"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}})
