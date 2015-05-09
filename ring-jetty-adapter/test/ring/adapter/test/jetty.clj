@@ -150,4 +150,5 @@
     (with-server hello-world {:port 4347}
       (let [thread-count (count (all-threads))]
         (is (thrown? Exception (run-jetty hello-world {:port 4347})))
+        (Thread/sleep 100)
         (is (= thread-count (count (all-threads))))))))
