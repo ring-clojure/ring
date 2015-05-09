@@ -10,4 +10,5 @@
                  [clj-stacktrace "0.2.8"]
                  [ns-tracker "0.2.2"]]
   :profiles
-  {:1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}})
+  {:1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
+   :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta2"]]}})
