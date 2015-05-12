@@ -8,7 +8,7 @@
                  [ring/ring-core "1.4.0-beta2"]
                  [hiccup "1.0.5"]
                  [clj-stacktrace "0.2.8"]
-                 [ns-tracker "0.2.2"]]
+                 [ns-tracker "0.3.0"]]
   :profiles
   {:1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
    :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta2"]]}})
