@@ -40,7 +40,11 @@
              (handler {:params {"foo" [{"bar" "baz" "asdf" "zxcv"}]}}))))
     (testing "double-nested map"
       (is (= {"foo" {"key" {"bar" "baz" "asdf" "zxcv"}}}
-             (handler {:params {"foo" {"key" {"bar" "baz" "asdf" "zxcv"}}}}))))))
+             (handler {:params {"foo" {"key" {"bar" "baz" "asdf" "zxcv"}}}})))))
+  (let [handler (wrap-nested-params identity {:params-keys [:form-params :query-params]})]
+    (testing "alternate parameter keys"
+      (is (= {:form-params {"a" {"b" {"c" "d"}}} :query-params {"foo" ["bar"]}}
+             (handler {:form-params {"a[b][c]" "d"} :query-params {"foo[]" "bar"}}))))))
 
 (deftest nested-params-test-with-options
   (let [handler (wrap-nested-params :params
