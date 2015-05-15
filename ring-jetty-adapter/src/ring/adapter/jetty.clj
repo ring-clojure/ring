@@ -29,10 +29,15 @@
 (defn- ^ServerConnector server-connector [server & factories]
   (ServerConnector. server (into-array ConnectionFactory factories)))
 
+(defn- ^HttpConfiguration http-config [options]
+  (doto (HttpConfiguration.)
+    (.setSendDateHeader (:send-date-header? options true))
+    (.setOutputBufferSize (:output-buffer-size options 32768))
+    (.setRequestHeaderSize (:request-header-size options 8192))
+    (.setResponseHeaderSize (:response-header-size options 8192))))
+
 (defn- ^ServerConnector http-connector [server options]
-  (let [http-factory (HttpConnectionFactory.
-                      (doto (HttpConfiguration.)
-                        (.setSendDateHeader true)))]
+  (let [http-factory (HttpConnectionFactory. (http-config options))]
     (doto (server-connector server http-factory)
       (.setPort (options :port 80))
       (.setHost (options :host))
@@ -60,8 +65,7 @@
 (defn- ^ServerConnector ssl-connector [server options]
   (let [ssl-port     (options :ssl-port 443)
         http-factory (HttpConnectionFactory.
-                      (doto (HttpConfiguration.)
-                        (.setSendDateHeader true)
+                      (doto (http-config options)
                         (.setSecureScheme "https")
                         (.setSecurePort ssl-port)
                         (.addCustomizer (SecureRequestCustomizer.))))
@@ -91,22 +95,28 @@
   "Start a Jetty webserver to serve the given handler according to the
   supplied options:
 
-  :configurator   - a function called with the Jetty Server instance
-  :port           - the port to listen on (defaults to 80)
-  :host           - the hostname to listen on
-  :join?          - blocks the thread until server ends (defaults to true)
-  :daemon?        - use daemon threads (defaults to false)
-  :ssl?           - allow connections over HTTPS
-  :ssl-port       - the SSL port to listen on (defaults to 443, implies :ssl?)
-  :keystore       - the keystore to use for SSL connections
-  :key-password   - the password to the keystore
-  :truststore     - a truststore to use for SSL connections
-  :trust-password - the password to the truststore
-  :max-threads    - the maximum number of threads to use (default 50)
-  :min-threads    - the minimum number of threads to use (default 8)
-  :max-idle-time  - the maximum idle time in milliseconds for a connection (default 200000)
-  :client-auth    - SSL client certificate authenticate, may be set to :need,
-                    :want or :none (defaults to :none)"
+  :configurator         - a function called with the Jetty Server instance
+  :port                 - the port to listen on (defaults to 80)
+  :host                 - the hostname to listen on
+  :join?                - blocks the thread until server ends (defaults to true)
+  :daemon?              - use daemon threads (defaults to false)
+  :ssl?                 - allow connections over HTTPS
+  :ssl-port             - the SSL port to listen on (defaults to 443, implies
+                          :ssl? is true)
+  :keystore             - the keystore to use for SSL connections
+  :key-password         - the password to the keystore
+  :truststore           - a truststore to use for SSL connections
+  :trust-password       - the password to the truststore
+  :max-threads          - the maximum number of threads to use (default 50)
+  :min-threads          - the minimum number of threads to use (default 8)
+  :max-idle-time        - the maximum idle time in milliseconds for a connection
+                          (default 200000)
+  :client-auth          - SSL client certificate authenticate, may be set to
+                          :need,:want or :none (defaults to :none)
+  :send-date-header?    - add a date header to the response (default true)
+  :output-buffer-size   - the response body buffer size (default 32768)
+  :request-header-size  - the maximum size of a request header (default 8192)
+  :response-header-size - the maximum size of a response header (default 8192)"
   [handler options]
   (let [server (create-server (dissoc options :configurator))]
     (doto server
