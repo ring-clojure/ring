@@ -9,4 +9,4 @@
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-   :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta2"]]}})
+   :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}})
