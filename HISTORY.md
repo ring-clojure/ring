@@ -2,6 +2,7 @@
 
 * Updated minimum Clojure version to 1.5.1
 * Updated Jetty to 9.2.10 as Jetty 7 is at EOL (adapter now needs JDK 7 or later)
+* Added four new Jetty 9 specific options to Jetty adapter
 * Added :protocol key to the request map in the SPEC
 * Added class :loader option to wrap-resource and resource-response
 * Fixed lowercase header bug when working with non-english locales
@@ -12,6 +13,9 @@
 * Added find-header and update-header to ring.util.response
 * Fixed charset case sensitivity bug
 * Updated clj-stacktrace, tools.reader, clj-time and Apache Commons FileUpload
+* Fixed temporary filename leak in multipart-params middleware
+* Updated wrap-file to accept java.io.File instances
+* Updated ns-tracker to 0.3.0 to with more robust namespace parsing
 
 ## 1.3.2 (2014-11-27)
 
