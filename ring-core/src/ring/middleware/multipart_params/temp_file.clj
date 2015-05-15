@@ -29,13 +29,19 @@
 (defn- ^File make-temp-file [file-set]
   (let [temp-file (File/createTempFile "ring-multipart-" nil)]
     (swap! file-set conj temp-file)
-    (.deleteOnExit temp-file)
     temp-file))
 
 (defn- start-clean-up [file-set expires-in]
   (when expires-in
     (do-every expires-in
       (remove-old-files file-set expires-in))))
+
+(defn- ensure-shutdown-clean-up [file-set]
+  (.addShutdownHook
+    (Runtime/getRuntime)
+    (Thread.
+      #(doseq [^File file @file-set]
+         (.delete file)))))
 
 (defn temp-file-store
   "Returns a function that stores multipart file parameters as temporary files.
@@ -56,6 +62,7 @@
   ([{:keys [expires-in]}]
      (let [file-set (atom #{})
            clean-up (delay (start-clean-up file-set expires-in))]
+       (ensure-shutdown-clean-up file-set)
        (fn [item]
          (force clean-up)
          (let [temp-file (make-temp-file file-set)]
