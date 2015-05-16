@@ -151,7 +151,7 @@
       (let [thread-count (count (all-threads))]
         (is (thrown? Exception (run-jetty hello-world {:port 4347})))
         (loop [i 0]
-          (when (and (< i 300) (not= thread-count (count (all-threads))))
-            (Thread/sleep 100)
+          (when (and (< i 400) (not= thread-count (count (all-threads))))
+            (Thread/sleep 250)
             (recur (inc i))))
         (is (= thread-count (count (all-threads))))))))
