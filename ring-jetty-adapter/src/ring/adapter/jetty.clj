@@ -17,14 +17,31 @@
            [org.eclipse.jetty.util.ssl SslContextFactory]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
+(defmulti handle-response-map
+  (fn [^Request base-request ^HttpServletRequest request ^HttpServletResponse response response-map]
+    (:async response-map)))
+
+(defmethod handle-response-map nil
+  [^Request base-request ^HttpServletRequest request ^HttpServletResponse response response-map]
+  (servlet/update-servlet-response response response-map)
+  (.setHandled base-request true))
+
+(defmethod handle-response-map :ring
+  [^Request base-request ^HttpServletRequest request ^HttpServletResponse response response-map]
+  (let [reactor (:reactor response-map)
+        ac (.startAsync request)
+        emit (fn [response-map]
+               (servlet/update-servlet-response (.getResponse ac) response-map)
+               (.complete ac))]
+    (reactor emit)))
+
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (when response-map
-          (servlet/update-servlet-response response response-map)
-          (.setHandled base-request true))))))
+          (handle-response-map base-request request response response-map))))))
 
 (defn- ^ServerConnector server-connector [server & factories]
   (ServerConnector. server (into-array ConnectionFactory factories)))

@@ -22,6 +22,12 @@
    :headers {"request-map" (str (dissoc request :body))}
    :body (:body request)})
 
+(defn- async-handler [request]
+  {:async :ring
+   :reactor (fn [response-fn]
+              (response-fn {:status 200
+                            :body "async"}))})
+
 (defn- all-threads []
   (.keySet (Thread/getAllStackTraces)))
 
@@ -154,4 +160,9 @@
           (when (and (< i 400) (not= thread-count (count (all-threads))))
             (Thread/sleep 250)
             (recur (inc i))))
-        (is (= thread-count (count (all-threads))))))))
+        (is (= thread-count (count (all-threads)))))))
+
+  (testing "async request handling"
+    (with-server async-handler {:port 4347}
+      (let [response (http/get "http://localhost:4347")]
+        (is (= (:body response) "async"))))))

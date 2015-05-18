@@ -1,6 +1,7 @@
 (ns ring.middleware.flash
   "Middleware that adds session-based flash store that persists only to the
-  next request in the same session.")
+  next request in the same session."
+  (:require [ring.util.async :refer (wrap-ring-async)]))
 
 (defn flash-request
   "Adds :flash key to request from :_flash in session."
@@ -32,5 +33,5 @@
   This is useful for small messages that persist across redirects."
   [handler]
   (fn [request]
-    (if-let [resp (handler (flash-request request))]
+    (wrap-ring-async [resp (handler (flash-request request))]
       (flash-response resp (flash-request request)))))

@@ -2,6 +2,7 @@
   "Middleware for parsing and generating cookies."
   (:import [org.joda.time DateTime Interval])
   (:require [ring.util.codec :as codec]
+            [ring.util.async :refer (wrap-ring-async)]
             [clojure.string :as str]
             [clj-time.core :refer [in-seconds]]
             [clj-time.format :refer [formatters unparse]]
@@ -152,7 +153,7 @@
                :or {decoder codec/form-decode-str
                     encoder codec/form-encode}}]]
   (fn [request]
-    (-> request
-        (cookies-request {:decoder decoder})
-        handler
-        (cookies-response {:encoder encoder}))))
+    (wrap-ring-async [resp (-> request
+                               (cookies-request {:decoder decoder})
+                               handler)]
+      (cookies-response resp {:encoder encoder}))))

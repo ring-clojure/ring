@@ -9,7 +9,8 @@
     ring.middleware.session.cookie/cookie-store"
   (:require [ring.middleware.cookies :as cookies]
             [ring.middleware.session.store :as store]
-            [ring.middleware.session.memory :as mem]))
+            [ring.middleware.session.memory :as mem]
+            [ring.util.async :refer (wrap-ring-async)]))
 
 (defn- session-options
   [options]
@@ -99,5 +100,5 @@
      (let [options (session-options options)]
        (fn [request]
          (let [new-request (session-request request options)]
-           (-> (handler new-request)
-               (session-response new-request options)))))))
+           (wrap-ring-async [response (handler new-request)]
+             (session-response response new-request options)))))))
