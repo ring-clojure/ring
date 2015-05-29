@@ -67,7 +67,7 @@ corresponding values:
 
 :protocol
   (Required, String)
-  The HTTP protocol version the request was made with.
+  The protocol the request was made with, e.g. "HTTP/1.1".
 
 :content-type [DEPRECATED]
   (Optional, String)
