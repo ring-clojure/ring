@@ -224,6 +224,7 @@
   protocol.
 
   This function is used internally by url-response."
+  {:arglists '([url])}
   (fn [^java.net.URL url]
     (keyword (.getProtocol url))))
 
