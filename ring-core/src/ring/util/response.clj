@@ -9,6 +9,7 @@
            [java.net URL URLDecoder URLEncoder]))
 
 (def redirect-status-codes
+  "Map a keyword to a redirect status code."
   {:moved-permanently 301
    :found 302
    :see-other 303
