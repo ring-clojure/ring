@@ -8,7 +8,7 @@
            [java.util Date]
            [java.net URL URLDecoder URLEncoder]))
 
-(def redirect-status-codes
+(def ^{:added "1.4"} redirect-status-codes
   "Map a keyword to a redirect status code."
   {:moved-permanently 301
    :found 302
@@ -224,7 +224,7 @@
   protocol.
 
   This function is used internally by url-response."
-  {:arglists '([url])}
+  {:arglists '([url]), :added "1.4"}
   (fn [^java.net.URL url]
     (keyword (.getProtocol url))))
 
