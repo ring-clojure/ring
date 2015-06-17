@@ -1,7 +1,8 @@
 (ns ring.middleware.content-type
   "Middleware for automatically adding a content type to response maps."
   (:require [ring.util.mime-type :refer [ext-mime-type]]
-            [ring.util.response :refer [content-type get-header]]))
+            [ring.util.response :refer [content-type get-header]]
+            [ring.util.async :refer (wrap-ring-async)]))
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
@@ -27,5 +28,5 @@
   {:arglists '([handler] [handler options])}
   [handler & [opts]]
   (fn [req]
-    (if-let [resp (handler req)]
+    (wrap-ring-async [resp (handler req)]
       (content-type-response resp req opts))))

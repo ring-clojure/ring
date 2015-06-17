@@ -3,7 +3,8 @@
   Last-Modified headers."
   (:require [ring.util.time :refer [parse-date]]
             [ring.util.response :refer [status get-header header]]
-            [ring.util.io :refer [close!]]))
+            [ring.util.io :refer [close!]]
+            [ring.util.async :refer (wrap-ring-async)]))
 
 (defn- etag-match? [request response]
   (if-let [etag (get-header response "ETag")]
@@ -49,5 +50,5 @@
   {:added "1.2"}
   [handler]
   (fn [request]
-    (-> (handler request)
-        (not-modified-response request))))
+    (wrap-ring-async [resp (handler request)]
+      (not-modified-response resp request))))

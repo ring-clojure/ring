@@ -2,7 +2,8 @@
   "Middleware to simplify replying to HEAD requests.
 
   A response to a HEAD request should be identical to a GET request, with the
-  exception that a response to a HEAD request should have an empty body.")
+  exception that a response to a HEAD request should have an empty body."
+  (:require [ring.util.async :refer (wrap-ring-async)]))
 
 (defn head-request
   "Turns a HEAD request into a GET."
@@ -26,7 +27,5 @@
   {:added "1.1"}
   [handler]
   (fn [request]
-    (-> request
-        head-request
-        handler
-        (head-response request))))
+    (wrap-ring-async [resp (handler (head-request request))]
+      (head-response resp request))))

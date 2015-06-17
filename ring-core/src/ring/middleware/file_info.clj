@@ -5,7 +5,8 @@
   ring.middleware.not-modified middleware instead."
   (:require [ring.util.response :as res]
             [ring.util.mime-type :refer [ext-mime-type]]
-            [ring.util.io :refer [last-modified-date]])
+            [ring.util.io :refer [last-modified-date]]
+            [ring.util.async :refer (wrap-ring-async)])
   (:import [java.io File]
            [java.util Date Locale TimeZone]
            [java.text SimpleDateFormat]))
@@ -66,5 +67,5 @@
    :deprecated "1.2"}
   [handler & [mime-types]]
   (fn [req]
-    (-> (handler req)
-        (file-info-response req mime-types))))
+    (wrap-ring-async [resp (handler req)]
+      (file-info-response resp req mime-types))))
