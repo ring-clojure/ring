@@ -164,6 +164,12 @@
         (is (.contains (slurp (:body resp)) "UTF-8"))))))
 
 (deftest test-file-response
+
+  (testing "index file defaults"
+    (let [resp (file-response "." {:root "test/ring/assets"})]
+           (is (= (resp :status) 200))
+           (is (= (slurp (resp :body)) "index html"))))
+
   (testing "response map"
     (let [resp (file-response "foo.html" {:root "test/ring/assets"})]
       (is (= (resp :status) 200))

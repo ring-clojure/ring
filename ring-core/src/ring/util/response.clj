@@ -87,7 +87,7 @@
   [^File dir]
   (first
     (filter
-      #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
+      #(.startsWith (.toLowerCase (.getName ^File %)) "index.htm")
        (.listFiles dir))))
 
 (defn- safely-find-file [^String path opts]
