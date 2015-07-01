@@ -4,8 +4,8 @@
   (:require [ring.util.codec :as codec]
             [clojure.string :as str]
             [clj-time.core :refer [in-seconds]]
-            [clj-time.format :refer [formatters unparse]]
-            [ring.util.parsing :refer [re-token re-value]]))
+            [clj-time.format :refer [formatters unparse with-locale]]
+            [ring.util.parsing :refer [re-token]]))
 
 (def ^{:private true, :doc "RFC6265 cookie-octet"}
   re-cookie-octet
@@ -24,6 +24,9 @@
   set-cookie-attrs
   {:domain "Domain", :max-age "Max-Age", :path "Path"
    :secure "Secure", :expires "Expires", :http-only "HttpOnly"})
+
+(def ^:private rfc822-formatter
+  (with-locale (formatters :rfc822) java.util.Locale/US))
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
@@ -75,7 +78,7 @@
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
        (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
-       (instance? DateTime value) (str ";" attr-name "=" (unparse (formatters :rfc822) value))
+       (instance? DateTime value) (str ";" attr-name "=" (unparse rfc822-formatter value))
        (true? value)  (str ";" attr-name)
        (false? value) ""
        :else (str ";" attr-name "=" value)))))
