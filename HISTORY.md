@@ -16,6 +16,7 @@
 * Fixed temporary filename leak in multipart-params middleware
 * Updated wrap-file to accept java.io.File instances
 * Updated ns-tracker to 0.3.0 to with more robust namespace parsing
+* Fixed issue with clj-time cookie expiry dates on non-English locales
 
 ## 1.3.2 (2014-11-27)
 
