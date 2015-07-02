@@ -9,7 +9,7 @@
                  [ring/ring-jetty-adapter "1.4.0-RC1"]
                  [ring/ring-servlet "1.4.0-RC1"]]
   :plugins [[lein-sub "0.2.4"]
-            [codox "0.8.11"]]
+            [codox "0.8.12"]]
   :sub ["ring-core"
         "ring-devel"
         "ring-jetty-adapter"
