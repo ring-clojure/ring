@@ -1,4 +1,4 @@
-## 1.4.0 (TBD)
+## 1.4.0 (2015-07-09)
 
 * Updated minimum Clojure version to 1.5.1
 * Updated Jetty to 9.2.10 as Jetty 7 is at EOL (adapter now needs JDK 7 or later)
