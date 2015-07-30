@@ -61,6 +61,10 @@
       :need (.setNeedClientAuth context true)
       :want (.setWantClientAuth context true)
       nil)
+    (if-let [exclude-ciphers (options :exclude-ciphers)]
+      (.addExcludeCipherSuites context (into-array String exclude-ciphers)))
+    (if-let [exclude-protocols (options :exclude-protocols)]
+      (.addExcludeProtocols context (into-array String exclude-protocols)))
     context))
 
 (defn- ^ServerConnector ssl-connector [server options]
@@ -106,6 +110,8 @@
   :ssl?                 - allow connections over HTTPS
   :ssl-port             - the SSL port to listen on (defaults to 443, implies
                           :ssl? is true)
+  :exclude-ciphers      - When :ssl? is true, exclude these cipher suites
+  :exclude-protocols    - When :ssl? is true, exclude these protocols
   :keystore             - the keystore to use for SSL connections
   :key-password         - the password to the keystore
   :truststore           - a truststore to use for SSL connections
