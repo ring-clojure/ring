@@ -173,6 +173,22 @@
           (is (= (:server-port request-map) test-port))
           (is (= (:ssl-client-cert request-map) nil))))))
 
+  (testing "sending 'Server' header in HTTP response'"
+    (testing ":send-server-version? set to default value (true)" 
+      (with-server hello-world {:port test-port}
+        (let [response (http/get test-url)]
+          (is (contains? (:headers response) "Server")))))
+    (testing ":send-server-version? set to true" 
+      (with-server hello-world {:port test-port
+                                :send-server-version? true}
+        (let [response (http/get test-url)]
+          (is (contains? (:headers response) "Server")))))
+    (testing ":send-server-version? set to false" 
+      (with-server hello-world {:port test-port
+                                :send-server-version? false}
+        (let [response (http/get test-url)]
+          (is (not (contains? (:headers response) "Server")))))))
+
   ;; Unable to get test working with Jetty 9
   (comment
     (testing "resource cleanup on exception"

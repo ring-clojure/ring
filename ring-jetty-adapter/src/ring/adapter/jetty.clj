@@ -34,7 +34,8 @@
     (.setSendDateHeader (:send-date-header? options true))
     (.setOutputBufferSize (:output-buffer-size options 32768))
     (.setRequestHeaderSize (:request-header-size options 8192))
-    (.setResponseHeaderSize (:response-header-size options 8192))))
+    (.setResponseHeaderSize (:response-header-size options 8192))
+    (.setSendServerVersion (:send-server-version? options true))))
 
 (defn- ^ServerConnector http-connector [server options]
   (let [http-factory (HttpConnectionFactory. (http-config options))]
@@ -118,7 +119,8 @@
   :send-date-header?    - add a date header to the response (default true)
   :output-buffer-size   - the response body buffer size (default 32768)
   :request-header-size  - the maximum size of a request header (default 8192)
-  :response-header-size - the maximum size of a response header (default 8192)"
+  :response-header-size - the maximum size of a response header (default 8192)
+  :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
   (let [server (create-server (dissoc options :configurator))]
     (doto server
