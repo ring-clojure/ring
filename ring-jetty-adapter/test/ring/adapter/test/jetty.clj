@@ -5,7 +5,7 @@
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.server Server Request]
            [org.eclipse.jetty.server.handler AbstractHandler]
-           [java.net ServerSocket]))
+           [java.net ServerSocket ConnectException]))
 
 (defn- hello-world [request]
   {:status  200
@@ -63,6 +63,18 @@
       (let [response (http/get test-ssl-url {:insecure? true})]
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))))
+
+  (testing "HTTPS-only server"
+    (with-server hello-world {:http? false
+                              :port test-port
+                              :ssl-port test-ssl-port
+                              :keystore "test/keystore.jks"
+                              :key-password "password"}
+      (let [response (http/get test-ssl-url {:insecure? true})]
+        (is (= (:status response) 200))
+        (is (= (:body response) "Hello World")))
+      (is (thrown-with-msg? ConnectException #"Connection refused"
+                            (http/get test-url)))))
 
   (testing "configurator set to run last"
     (let [max-threads 20

@@ -86,7 +86,8 @@
 
 (defn- ^Server create-server [options]
   (let [server (Server. (create-threadpool options))]
-    (.addConnector server (http-connector server options))
+    (when (:http? options true)
+      (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
     server))
@@ -100,6 +101,7 @@
   :host                 - the hostname to listen on
   :join?                - blocks the thread until server ends (defaults to true)
   :daemon?              - use daemon threads (defaults to false)
+  :http?                - listen on :port for HTTP traffic (defaults to true)
   :ssl?                 - allow connections over HTTPS
   :ssl-port             - the SSL port to listen on (defaults to 443, implies
                           :ssl? is true)
