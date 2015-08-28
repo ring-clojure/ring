@@ -14,7 +14,7 @@
   (let [handler (wrap-resource test-handler "/ring/assets")]
     (are [request body] (= (slurp (:body (handler request))) body)
       {:request-method :get, :uri "/foo.html"}      "foo"
-      {:request-method :get, :uri "/index.html"}    "index"
+      {:request-method :get, :uri "/index.html"}    "index html"
       {:request-method :get, :uri "/bars/foo.html"} "foo"
       {:request-method :get, :uri "/handler"}       "handler"
       {:request-method :post, :uri "/foo.html"}     "handler"
