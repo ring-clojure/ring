@@ -122,9 +122,8 @@
   :response-header-size - the maximum size of a response header (default 8192)
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))]
-    (doto server
-      (.setHandler (proxy-handler handler)))
+  (let [server (doto (create-server (dissoc options :configurator))
+                  (.setHandler (proxy-handler handler)))]
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try
