@@ -29,7 +29,9 @@
         (if (= j "")
           (assoc-vec m k (assoc-nested {} js v))
           (assoc m k (assoc-nested (get m k {}) ks v))))
-      (assoc-conj m k v))
+      (if (map? m)
+        (assoc-conj m k v)
+        {k v}))
     v))
 
 (defn- param-pairs

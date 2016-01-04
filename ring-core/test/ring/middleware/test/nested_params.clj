@@ -29,6 +29,14 @@
     (testing "parameters with newlines"
       (are [p r] (= (handler {:params p}) r)
         {"foo\nbar" "baz"} {"foo\nbar" "baz"}))
+    (testing "empty string"
+      (is (= {"foo" {"bar" "baz"}}
+             (handler {:params (sorted-map "foo" ""
+                                           "foo[bar]" "baz")}))))
+    (testing "double nested empty string"
+      (is (= {"foo" {"bar" {"baz" "bam"}}}
+             (handler {:params (sorted-map "foo[bar]" ""
+                                           "foo[bar][baz]" "bam")}))))
     (testing "parameters are already nested"
       (is (= {"foo" [["bar" "baz"] ["asdf" "zxcv"]]}
              (handler {:params {"foo" [["bar" "baz"] ["asdf" "zxcv"]]}}))))
