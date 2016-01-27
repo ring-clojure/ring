@@ -82,13 +82,23 @@
       (set)
       (contains? "..")))
 
+(defn- find-file-named [^File dir ^String filename]
+  (let [path (File. dir filename)]
+    (if (.isFile path)
+      path)))
+
+(defn- find-file-starting-with [^File dir ^String prefix]
+  (first
+   (filter
+    #(.startsWith (.toLowerCase (.getName ^File %)) prefix)
+    (.listFiles dir))))
+
 (defn- find-index-file
   "Search the directory for an index file."
   [^File dir]
-  (first
-    (filter
-      #(.startsWith (.toLowerCase (.getName ^File %)) "index.")
-       (.listFiles dir))))
+  (or (find-file-named dir "index.html")
+      (find-file-named dir "index.htm")
+      (find-file-starting-with dir "index.")))
 
 (defn- safely-find-file [^String path opts]
   (if-let [^String root (:root opts)]
