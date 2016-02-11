@@ -3,9 +3,10 @@
             [ring.adapter.jetty :refer :all]
             [clj-http.client :as http])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
-           [org.eclipse.jetty.server Server Request]
+           [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
-           [java.net ServerSocket ConnectException]))
+           [java.net ServerSocket ConnectException]
+           [java.security KeyStore]))
 
 (defn- hello-world [request]
   {:status  200
@@ -38,6 +39,14 @@
       (.close socket)
       port)))
 
+(defn- get-ssl-context-factory
+  [^Server s]
+  (->> (seq (.getConnectors s))
+       (mapcat #(seq (.getConnectionFactories %)))
+       (filter #(instance? SslConnectionFactory %))
+       (first)
+       (.getSslContextFactory)))
+
 (def test-port (find-free-local-port))
 
 (def test-ssl-port (find-free-local-port))
@@ -45,6 +54,21 @@
 (def test-url (str "http://localhost:" test-port))
 
 (def test-ssl-url (str "https://localhost:" test-ssl-port))
+
+(def test-ssl-options {:port test-port
+                       :ssl? true
+                       :ssl-port test-ssl-port
+                       :keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
+                                   (.load nil))
+                       :key-password "hunter2"
+                       :join? nil})
+
+(defn- with-ssl-server [app options f]
+  (let [options (merge test-ssl-options options)]
+    (let [server (run-jetty app options)]
+      (try
+        (f server)
+        (finally (.stop server))))))
 
 (deftest test-run-jetty
   (testing "HTTP server"
@@ -200,3 +224,15 @@
               (Thread/sleep 250)
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
+
+(deftest test-ssl-context-factory
+  (testing "excluding cipher suites"
+    (let [cipher "SSL_RSA_WITH_NULL_MD5"]
+      (with-ssl-server
+        echo-handler {:exclude-ciphers [cipher]}
+        #(is (contains? (set (.getExcludeCipherSuites (get-ssl-context-factory %))) cipher)))))
+
+  (testing "excluding protocols"
+    (let [protocol "SSLv2Hello"]
+      (with-ssl-server echo-handler {:exclude-prococols [protocol]}
+        #(is (contains? (set (.getExcludeProtocols (get-ssl-context-factory %))) protocol))))))
