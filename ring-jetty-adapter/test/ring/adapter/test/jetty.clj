@@ -47,6 +47,12 @@
        (first)
        (.getSslContextFactory)))
 
+(defn- exclude-ciphers [server]
+  (set (.getExcludeCipherSuites (get-ssl-context-factory server))))
+
+(defn- exclude-protocols [server]
+  (set (.getExcludeProtocols (get-ssl-context-factory server))))
+
 (def test-port (find-free-local-port))
 
 (def test-ssl-port (find-free-local-port))
@@ -55,20 +61,16 @@
 
 (def test-ssl-url (str "https://localhost:" test-ssl-port))
 
-(def test-ssl-options {:port test-port
-                       :ssl? true
-                       :ssl-port test-ssl-port
-                       :keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
-                                   (.load nil))
-                       :key-password "hunter2"
-                       :join? nil})
+(def nil-keystore
+  (doto (KeyStore/getInstance (KeyStore/getDefaultType)) (.load nil)))
 
-(defn- with-ssl-server [app options f]
-  (let [options (merge test-ssl-options options)]
-    (let [server (run-jetty app options)]
-      (try
-        (f server)
-        (finally (.stop server))))))
+(def test-ssl-options
+  {:port         test-port
+   :ssl?         true
+   :ssl-port     test-ssl-port
+   :keystore     nil-keystore
+   :key-password "hunter2"
+   :join?        false})
 
 (deftest test-run-jetty
   (testing "HTTP server"
@@ -213,6 +215,24 @@
         (let [response (http/get test-url)]
           (is (not (contains? (:headers response) "Server")))))))
 
+  (testing "excluding cipher suites"
+    (let [cipher  "SSL_RSA_WITH_NULL_MD5"
+          options (assoc test-ssl-options :exclude-ciphers [cipher])
+          server  (run-jetty echo-handler options)]
+      (try
+        (is (contains? (exclude-ciphers server) cipher))
+        (finally
+          (.stop server)))))
+
+  (testing "excluding cipher protocols"
+    (let [protocol "SSLv2Hello"
+          options  (assoc test-ssl-options :exclude-protocols [protocol])
+          server   (run-jetty echo-handler options)]
+      (try
+        (is (contains? (exclude-protocols server) protocol))
+        (finally
+          (.stop server)))))
+
   ;; Unable to get test working with Jetty 9
   (comment
     (testing "resource cleanup on exception"
@@ -224,15 +244,3 @@
               (Thread/sleep 250)
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
-
-(deftest test-ssl-context-factory
-  (testing "excluding cipher suites"
-    (let [cipher "SSL_RSA_WITH_NULL_MD5"]
-      (with-ssl-server
-        echo-handler {:exclude-ciphers [cipher]}
-        #(is (contains? (set (.getExcludeCipherSuites (get-ssl-context-factory %))) cipher)))))
-
-  (testing "excluding protocols"
-    (let [protocol "SSLv2Hello"]
-      (with-ssl-server echo-handler {:exclude-prococols [protocol]}
-        #(is (contains? (set (.getExcludeProtocols (get-ssl-context-factory %))) protocol))))))
