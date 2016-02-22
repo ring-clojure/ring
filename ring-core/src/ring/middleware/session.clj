@@ -46,7 +46,8 @@
                             (if (:recreate (meta session))
                               (do
                                 (store/delete-session store session-key)
-                                (store/write-session store nil session))
+                                (->> (vary-meta session dissoc :recreate)
+                                     (store/write-session store nil)))
                               (store/write-session store session-key session))
                             (if session-key
                               (store/delete-session store session-key))))
