@@ -191,4 +191,7 @@
     (handler {:cookies {"ring-session" {:value "test"}}})
     (is (= (trace reader) [["test"]]))
     (is (= (trace writer) [[nil {:foo "bar"}]]))
-    (is (= (trace deleter) [["test"]]))))
+    (is (= (trace deleter) [["test"]]))
+    (testing "session was not written with :recreate metadata intact"
+      (let [[[_ written]] (trace writer)]
+        (is (not (:recreate (meta written))))))))
