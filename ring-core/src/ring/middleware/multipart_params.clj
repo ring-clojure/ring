@@ -13,7 +13,14 @@
            [org.apache.commons.fileupload UploadContext
                                           FileItemIterator
                                           FileItemStream
-                                          FileUpload]))
+                                          FileUpload
+                                          ProgressListener]))
+(defn- progress-listener
+  "Create a progress listener that calls the supplied function."
+  [request progress-fn]
+  (reify ProgressListener
+    (update [this bytes-read content-length item-count]
+      (progress-fn request bytes-read content-length item-count))))
 
 (defn- multipart-form?
   "Does a request have a multipart form?"
@@ -40,9 +47,13 @@
 
 (defn- file-item-seq
   "Create a seq of FileItem instances from a request context."
-  [context]
-  (file-item-iterator-seq
-    (.getItemIterator (FileUpload.) context)))
+  [request ^ProgressListener progress-fn context]
+  (let [upload (if progress-fn
+                 (doto (FileUpload.)
+                   (.setProgressListener (progress-listener request progress-fn)))
+                 (FileUpload.))]
+    (file-item-iterator-seq
+      (.getItemIterator ^FileUpload upload context))))
 
 (defn- parse-file-item
   "Parse a FileItemStream into a key-value pair. If the request is a file the
@@ -57,9 +68,9 @@
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
-  [request encoding store]
+  [request encoding store progress-fn]
   (->> (request-context request encoding)
-       (file-item-seq)
+       (file-item-seq request progress-fn)
        (map #(parse-file-item % store encoding))
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
@@ -86,8 +97,9 @@
         encoding (or (:encoding options)
                      (req/character-encoding request)
                      "UTF-8")
+        progress (:progress-fn options)
         params   (if (multipart-form? request)
-                   (parse-multipart-params request encoding store)
+                   (parse-multipart-params request encoding store progress)
                    {})]
     (merge-with merge request
                 {:multipart-params params}
@@ -102,15 +114,19 @@
 
   The following options are accepted
 
-  :encoding - character encoding to use for multipart parsing. If not
-              specified, uses the request character encoding, or \"UTF-8\"
-              if no request character encoding is set.
+  :encoding    - character encoding to use for multipart parsing. If not
+                 specified, uses the request character encoding, or \"UTF-8\"
+                 if no request character encoding is set.
 
-  :store    - a function that stores a file upload. The function should
-              expect a map with :filename, content-type and :stream keys,
-              and its return value will be used as the value for the
-              parameter in the multipart parameter map. The default storage
-              function is the temp-file-store."
+  :store       - a function that stores a file upload. The function should
+                 expect a map with :filename, content-type and :stream keys,
+                 and its return value will be used as the value for the
+                 parameter in the multipart parameter map. The default storage
+                 function is the temp-file-store.
+
+  :progress-fn - a function that gets called during uploads. The function
+                 should expect four parameters: request, bytes-read,
+                 content-length, and item-count."
   {:arglists '([handler] [handler options])}
   [handler & [options]]
   (fn [request]
