@@ -4,6 +4,7 @@
   Adapters are used to convert Ring handlers into running web servers."
   (:require [ring.util.servlet :as servlet])
   (:import [org.eclipse.jetty.server
+            Handler
             Request
             Server
             ServerConnector
@@ -12,7 +13,7 @@
             HttpConnectionFactory
             SslConnectionFactory
             SecureRequestCustomizer]
-           [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.server.handler AbstractHandler ResourceHandler HandlerList]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
@@ -70,13 +71,13 @@
 (defn- ^ServerConnector ssl-connector [server options]
   (let [ssl-port     (options :ssl-port 443)
         http-factory (HttpConnectionFactory.
-                      (doto (http-config options)
-                        (.setSecureScheme "https")
-                        (.setSecurePort ssl-port)
-                        (.addCustomizer (SecureRequestCustomizer.))))
+                       (doto (http-config options)
+                         (.setSecureScheme "https")
+                         (.setSecurePort ssl-port)
+                         (.addCustomizer (SecureRequestCustomizer.))))
         ssl-factory  (SslConnectionFactory.
-                      (ssl-context-factory options)
-                      "http/1.1")]
+                       (ssl-context-factory options)
+                       "http/1.1")]
     (doto (server-connector server ssl-factory http-factory)
       (.setPort ssl-port)
       (.setHost (options :host))
@@ -88,6 +89,16 @@
     (when (:daemon? options false)
       (.setDaemon pool true))
     pool))
+
+(defn- ^ResourceHandler create-resource-handler [resource-base & welcome-page]
+  (doto (ResourceHandler.)
+    (.setDirectoriesListed true)
+    (.setWelcomeFiles (into-array String welcome-page))
+    (.setResourceBase resource-base)))
+
+(defn- ^HandlerList create-handler-list [def-handler resource-handler]
+  (doto (HandlerList.)
+    (.setHandlers (into-array Handler [def-handler resource-handler]))))
 
 (defn- ^Server create-server [options]
   (let [server (Server. (create-threadpool options))]
@@ -110,6 +121,7 @@
   :ssl?                 - allow connections over HTTPS
   :ssl-port             - the SSL port to listen on (defaults to 443, implies
                           :ssl? is true)
+  :welcome-page-conf    - configures welcome-page like index.html
   :exclude-ciphers      - When :ssl? is true, exclude these cipher suites
   :exclude-protocols    - When :ssl? is true, exclude these protocols
   :keystore             - the keystore to use for SSL connections
@@ -129,8 +141,12 @@
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
   (let [server (create-server (dissoc options :configurator))]
-    (doto server
-      (.setHandler (proxy-handler handler)))
+    (if-let [welcome-conf (:welcome-page-conf options)]
+      (doto server
+        (.setHandler (create-handler-list (proxy-handler handler)
+                                          (create-resource-handler (:resource-base welcome-conf) (:welcome-page welcome-conf)))))
+      (doto server
+        (.setHandler (proxy-handler handler))))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try
