@@ -7,7 +7,7 @@ pom.xml
 pom.xml.asc
 autodoc
 .lein-failures
-doc
+codox
 .lein-deps-sum
 .lein-env
 target

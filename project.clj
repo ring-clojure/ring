@@ -9,14 +9,14 @@
                  [ring/ring-jetty-adapter "1.4.0"]
                  [ring/ring-servlet "1.4.0"]]
   :plugins [[lein-sub "0.2.4"]
-            [codox "0.8.12"]]
+            [lein-codox "0.9.5"]]
   :sub ["ring-core"
         "ring-devel"
         "ring-jetty-adapter"
         "ring-servlet"]
-  :codox {:src-dir-uri "http://github.com/ring-clojure/ring/blob/1.4.0/"
-          :src-linenum-anchor-prefix "L"
-          :sources ["ring-core/src"
-                    "ring-devel/src"
-                    "ring-jetty-adapter/src"
-                    "ring-servlet/src"]})
+  :codox {:output-path "codox"
+          :source-uri "http://github.com/ring-clojure/ring/blob/{version}/{filepath}#L{line}"
+          :source-paths ["ring-core/src"
+                         "ring-devel/src"
+                         "ring-jetty-adapter/src"
+                         "ring-servlet/src"]})
