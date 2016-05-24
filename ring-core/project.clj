@@ -7,9 +7,9 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.reader "0.9.1"]
                  [ring/ring-codec "1.0.1"]
-                 [commons-io "2.4"]
+                 [commons-io "2.5"]
                  [commons-fileupload "1.3.1"]
-                 [clj-time "0.9.0"]
+                 [clj-time "0.11.0"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
   :profiles
