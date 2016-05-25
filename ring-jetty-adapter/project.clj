@@ -9,7 +9,7 @@
                  [ring/ring-servlet "1.4.0"]
                  [org.eclipse.jetty/jetty-server "9.2.10.v20150310"]]
   :profiles
-  {:dev {:dependencies [[clj-http "1.1.2"]]}
+  {:dev {:dependencies [[clj-http "2.2.0"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
    :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}})
