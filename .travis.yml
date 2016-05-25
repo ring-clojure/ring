@@ -1,2 +1,2 @@
 language: clojure
-script: lein sub with-profile default:+1.6:+1.7 test
+script: lein sub with-profile default:+1.6:+1.7:+1.8 test
