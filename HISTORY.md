@@ -1,3 +1,16 @@
+## 1.5.0 (TBD)
+
+* Added `:http?` option to Jetty adapter to allow HTTP to be turned off
+* Added `:send-server-version?` option to Jetty adapter
+* Added `:exclude-ciphers` and `:exclude-protocols` options to Jetty adapter
+* Added a process listener function to `wrap-multipart-params`
+* Made `file-response` prefer HTML files as indexes over other formats
+* Made `wrap-reload` keep throwing compile exceptions, so errors aren't lost
+* Fixed issue with `:recreate` metadata not being removed from sessions
+* Fixed exception in `wrap-nested-params` on bad input
+* Updated Ring-Codec to 1.0.1 to fix exceptions on bad URL encoding
+
+
 ## 1.4.0 (2015-07-09)
 
 * Updated minimum Clojure version to 1.5.1
