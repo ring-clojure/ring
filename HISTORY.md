@@ -1,4 +1,4 @@
-## 1.5.0 (TBD)
+## 1.5.0 (2016-06-08)
 
 * Added `:http?` option to Jetty adapter to allow HTTP to be turned off
 * Added `:send-server-version?` option to Jetty adapter
