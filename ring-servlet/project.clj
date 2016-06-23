@@ -1,11 +1,11 @@
-(defproject ring/ring-servlet "1.5.0"
+(defproject ring/ring-servlet "1.6.0-beta1"
   :description "Ring servlet utilities."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [ring/ring-core "1.5.0"]]
+                 [ring/ring-core "1.6.0-beta1"]]
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}
