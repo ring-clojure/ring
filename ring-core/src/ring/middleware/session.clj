@@ -90,10 +90,12 @@
                   path attribute. Defaults to \"/\".
 
   :cookie-name  - The name of the cookie that holds the session key. Defaults to
-                  \"ring-session\"
+                  \"ring-session\".
 
   :cookie-attrs - A map of attributes to associate with the session cookie.
-                  Defaults to {:http-only true}."
+                  Defaults to {:http-only true}. This may be overridden on a
+                  per-response basis by adding :session-cookie-attrs to the
+                  response."
   ([handler]
      (wrap-session handler {}))
   ([handler options]
