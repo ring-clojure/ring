@@ -1,4 +1,4 @@
-=== Ring Spec (1.3)
+=== Ring Spec (1.4-SNAPSHOT)
 Ring is defined in terms of handlers, middleware, adapters, requests maps, and 
 response maps, each of which are described below.
 
@@ -57,11 +57,11 @@ corresponding values:
   The query string, if present.
 
 :scheme
-  (Required, Keyword)
+  (Required, clojure.lang.Keyword)
   The transport protocol, must be one of :http or :https.
 
 :request-method 
-  (Required, Keyword) 
+  (Required, clojure.lang.Keyword)
   The HTTP request method, must be a lowercase keyword corresponding to a HTTP
   request method, such as :get or :post.
 
@@ -82,16 +82,16 @@ corresponding values:
   The name of the character encoding used in the request body, if known.
 
 :ssl-client-cert
-  (Optional, X509Certificate)
+  (Optional, java.security.cert.X509Certificate)
   The SSL client certificate, if supplied.
 
 :headers
-  (Required, IPersistentMap)
+  (Required, clojure.lang.IPersistentMap)
   A Clojure map of downcased header name Strings to corresponding header value 
   Strings.
 
 :body
-  (Optional, InputStream)
+  (Optional, java.io.InputStream)
   An InputStream for the request body, if present.
 
 
@@ -104,16 +104,18 @@ corresponding values:
   The HTTP status code, must be greater than or equal to 100.
 
 :headers
-  (Required, IPersistentMap)
+  (Required, clojure.lang.IPersistentMap)
   A Clojure map of HTTP header names to header values. These values may be
   either Strings, in which case one name/value header will be sent in the
   HTTP response, or a seq of Strings, in which case a name/value header will be 
   sent for each such String value.
 
 :body
-  (Optional, {String, ISeq, File, InputStream})
+  (Optional, ring.core.protocols/ResponseBody)
   A representation of the response body, if a response body is appropriate for 
-  the response's status code. The respond body is handled according to its type:
+  the response's status code. The response body must satisfy the ResponseBody
+  protocol located in ring.core.protocols. By default the protocol is satisfied
+  by the following types:
   String:
     Contents are sent to the client as-is.
   ISeq:
