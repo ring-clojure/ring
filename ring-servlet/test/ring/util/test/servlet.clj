@@ -38,6 +38,10 @@
 
 (defn- servlet-response [response]
   (proxy [javax.servlet.http.HttpServletResponse] []
+    (getOutputStream []
+      (proxy [javax.servlet.ServletOutputStream] []
+        (write [body & _]
+          (swap! response assoc :body body))))
     (setStatus [status]
       (swap! response assoc :status status))
     (setHeader [name value]
@@ -107,17 +111,19 @@
                {:status  200
                 :headers {"Content-Type" "text/plain"
                           "X-Server" "Bar"}
-                :body    nil})]
+                :body    "Hello World"})]
         (run-servlet handler request response)
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
-        (is (= (get-in @response [:headers "X-Server"]) "Bar"))))))
+        (is (= (get-in @response [:headers "X-Server"]) "Bar"))
+        (is (= (take-while (complement zero?) (@response :body))
+               (seq (.getBytes "Hello World"))))))))
 
 (defservice "foo-"
   (fn [_]
     {:status  200
      :headers {"Content-Type" "text/plain"}
-     :body    nil}))
+     :body    "Hello World"}))
 
 (deftest defservice-test
   (let [body     (proxy [javax.servlet.ServletInputStream] [])
@@ -140,4 +146,6 @@
                  (servlet-request request)
                  (servlet-response response))
     (is (= (@response :status) 200))
-    (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))))
+    (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))
+    (is (= (take-while (complement zero?) (@response :body))
+           (seq (.getBytes "Hello World"))))))

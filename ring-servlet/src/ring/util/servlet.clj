@@ -1,7 +1,8 @@
 (ns ring.util.servlet
   "Compatibility functions for turning a ring handler into a Java servlet."
   (:require [clojure.java.io :as io]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [ring.core.protocols :as protocols])
   (:import [java.io File InputStream FileInputStream]
            [java.util Locale]
            [javax.servlet.http HttpServlet
@@ -84,25 +85,7 @@
 (defn- set-body
   "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
   [^HttpServletResponse response, body]
-  (cond
-    (string? body)
-      (with-open [writer (.getWriter response)]
-        (.print writer body))
-    (seq? body)
-      (with-open [writer (.getWriter response)]
-        (doseq [chunk body]
-          (.print writer (str chunk))))
-    (instance? InputStream body)
-      (with-open [^InputStream b body]
-        (io/copy b (.getOutputStream response)))
-    (instance? File body)
-      (let [^File f body]
-        (with-open [stream (FileInputStream. f)]
-          (set-body response stream)))
-    (nil? body)
-      nil
-    :else
-      (throw (Exception. ^String (format "Unrecognized body: %s" body)))))
+  (protocols/write-body body (.getOutputStream response)))
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map."
