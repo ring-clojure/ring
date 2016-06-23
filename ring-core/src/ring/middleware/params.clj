@@ -29,7 +29,7 @@
       {:form-params {}, :params {}})))
 
 (defn params-request
-  "Adds parameters from the query string and the request body to the request
+  "Adds parameters from the request body and the query string to the request
   map. See: wrap-params."
   {:arglists '([request] [request options])
    :added "1.2"}
@@ -51,7 +51,7 @@
 
   :query-params - a map of parameters from the query string
   :form-params  - a map of parameters from the body
-  :params       - a merged map of all types of parameter
+  :params       - a merged map of all types of parameter, query-params last
 
   Accepts the following options:      
 
