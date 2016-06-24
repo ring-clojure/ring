@@ -100,7 +100,14 @@
      (wrap-session handler {}))
   ([handler options]
      (let [options (session-options options)]
-       (fn [request]
-         (let [new-request (session-request request options)]
-           (-> (handler new-request)
-               (session-response new-request options)))))))
+       (fn
+         ([request]
+          (let [request (session-request request options)]
+            (-> (handler request)
+                (session-response request options))))
+         ([request cont]
+          (let [request (session-request request options)]
+            (handler
+             request
+             (fn [response]
+               (cont (session-response response request options))))))))))

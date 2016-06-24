@@ -31,5 +31,8 @@
   This middleware does not alter the maps under :*-params keys. These are left
   as strings."
   [handler]
-  (fn [request]
-    (handler (keyword-params-request request))))
+  (fn
+    ([request]
+     (handler (keyword-params-request request)))
+    ([request cont]
+     (handler (keyword-params-request request) cont))))

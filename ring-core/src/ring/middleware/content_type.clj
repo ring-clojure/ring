@@ -25,7 +25,12 @@
                 used in addition to the ones defined in
                 ring.util.mime-types/default-mime-types"
   {:arglists '([handler] [handler options])}
-  [handler & [opts]]
-  (fn [req]
-    (if-let [resp (handler req)]
-      (content-type-response resp req opts))))
+  [handler & [options]]
+  (fn
+    ([request]
+     (some-> (handler request) (content-type-response request options)))
+    ([request cont]
+     (handler
+      request
+      (fn [response]
+        (cont (some-> response (content-type-response request options))))))))

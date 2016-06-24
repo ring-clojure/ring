@@ -25,8 +25,13 @@
   body to nil."
   {:added "1.1"}
   [handler]
-  (fn [request]
-    (-> request
-        head-request
-        handler
-        (head-response request))))
+  (fn
+    ([request]
+     (-> request
+         head-request
+         handler
+         (head-response request)))
+    ([request cont]
+     (handler
+      (head-request request)
+      (fn [response] (cont (head-response response request)))))))

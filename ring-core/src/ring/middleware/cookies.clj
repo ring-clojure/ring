@@ -154,8 +154,14 @@
   [handler & [{:keys [decoder encoder]
                :or {decoder codec/form-decode-str
                     encoder codec/form-encode}}]]
-  (fn [request]
-    (-> request
-        (cookies-request {:decoder decoder})
-        handler
-        (cookies-response {:encoder encoder}))))
+  (fn
+    ([request]
+     (-> request
+         (cookies-request {:decoder decoder})
+         handler
+         (cookies-response {:encoder encoder})))
+    ([request cont]
+     (handler
+      (cookies-request request {:decoder decoder})
+      (fn [response]
+        (cont (cookies-response response {:encoder encoder})))))))

@@ -82,5 +82,8 @@
     => {\"foo\" [\"bar\"]}"
   {:arglists '([handler] [handler options])}
   [handler & [options]]
-  (fn [request]
-    (handler (nested-params-request request options))))
+  (fn
+    ([request]
+     (handler (nested-params-request request options)))
+    ([request cont]
+     (handler (nested-params-request request options) cont))))

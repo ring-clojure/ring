@@ -23,6 +23,11 @@
   provided in the option map, the resource will be resolved by the given class
   loader instead of the context class loader."
   [handler root-path & [{:keys [loader]}]]
-  (fn [request]
-    (or (resource-request request root-path {:loader loader})
-        (handler request))))
+  (fn
+    ([request]
+     (or (resource-request request root-path {:loader loader})
+         (handler request)))
+    ([request cont]
+     (if-let [response (resource-request request root-path {:loader loader})]
+       (cont response)
+       (handler request cont)))))

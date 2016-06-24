@@ -48,6 +48,8 @@
   If-None-Match or If-Modified-Since header that matches the response."
   {:added "1.2"}
   [handler]
-  (fn [request]
-    (-> (handler request)
-        (not-modified-response request))))
+  (fn
+    ([request]
+     (-> (handler request) (not-modified-response request)))
+    ([request cont]
+     (handler request (fn [response] (cont (not-modified-response response request)))))))
