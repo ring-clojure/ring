@@ -23,3 +23,17 @@
     (let [{:keys [status headers]} (assert-app js-req)]
       (is (= 500 status))
       (is (= {"Content-Type" "text/javascript"} headers)))))
+
+(deftest wrap-stacktrace-cps-test
+  (testing "no exception"
+    (let [handler  (wrap-stacktrace (fn [_ cont] (cont :ok)))
+          response (promise)]
+      (handler {} response)
+      (is (= :ok @response))))
+
+  (testing "exception"
+    (let [handler  (wrap-stacktrace (fn [_ cont] (throw (Exception. "fail"))))
+          response (promise)]
+      (binding [*err* (java.io.StringWriter.)]
+        (handler {} response))
+      (is (= 500 (:status @response))))))

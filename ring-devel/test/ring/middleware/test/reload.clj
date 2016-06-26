@@ -6,3 +6,10 @@
   (let [handler (wrap-reload identity)
         request {:http-method :get, :uri "/"}]
     (is (= (handler request) request))))
+
+(deftest wrap-reload-cps-test
+  (let [handler  (wrap-reload (fn [req cont] (cont req)))
+        request  {:http-method :get, :uri "/"}
+        response (promise)]
+    (handler request response)
+    (is (= request @response))))
