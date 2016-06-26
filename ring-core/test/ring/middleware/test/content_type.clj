@@ -41,5 +41,18 @@
       (is (= (handler {:uri "/foo/bar.png"})
              {:headers {"CoNteNt-typE" "application/x-overridden"}})))))
 
+(deftest wrap-content-type-cps-test
+  (testing "response without content-type"
+    (let [handler  (wrap-content-type (fn [_ cont] (cont {:headers {}})))
+          response (promise)]
+      (handler {:uri "/foo/bar.png"} response)
+      (is (= @response {:headers {"Content-Type" "image/png"}}))))
+
+  (testing "nil response"
+    (let [handler  (wrap-content-type (fn [_ cont] (cont nil)))
+          response (promise)]
+      (handler {:uri "/foo/bar.png"} response)
+      (is (nil? @response)))))
+
 (deftest content-type-response-test
   (is (fn? content-type-response)))

@@ -37,6 +37,18 @@
     (are [request body] (= (slurp (:body (with-loader request))) body)
       {:request-method :get, :uri "/foo.html"} "foo-in-jar")))
 
+(deftest wrap-resource-cps-test
+  (let [handler (wrap-resource (fn [req cont] (cont (test-handler req))) "/ring/assets")]
+    (testing "resource response"
+      (let [response (promise)]
+        (handler {:request-method :get, :uri "/foo.html"} response)
+        (is (= "foo" (-> @response :body slurp)))))
+
+    (testing "non-resource response"
+      (let [response (promise)]
+        (handler {:request-method :get, :uri "/handler"} response)
+        (is (= "handler" (-> @response :body slurp)))))))
+
 (deftest resource-request-test
   (is (fn? resource-request)))
 

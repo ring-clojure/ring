@@ -27,6 +27,17 @@
       (is (= [(handler req) req] ; Not modified since is called with expected args
              ((wrap-not-modified handler) req))))))
 
+(deftest wrap-not-modified-cps-test
+  (testing "etag match"
+    (let [etag     "known-etag"
+          handler  (wrap-not-modified
+                    (fn [req cont]
+                      (cont {:status 200, :headers {"etag" etag}, :body ""})))
+          request  {:request-method :get, :headers {"if-none-match" etag}}
+          response (promise)]
+      (handler request response)
+      (is (= 304 (:status @response))))))
+
 (deftest test-not-modified-response  
   (testing "etag match"
     (let [known-etag "known-etag"

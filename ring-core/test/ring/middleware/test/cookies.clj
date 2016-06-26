@@ -190,6 +190,20 @@
   (let [req {:headers {"cookie" "a=%22/test%22"}}]
     (is (= {"a" {:value "\"/test\""}} ((cookies-request req) :cookies)))))
 
+(deftest wrap-cookies-cps-test
+  (testing "read cookie"
+    (let [request  {:headers {"cookie" "a=b"}}
+          handler  (wrap-cookies (fn [req cont] (cont (:cookies req))))
+          response (promise)]
+      (handler request response)
+      (is (= {"a" {:value "b"}} @response))))
+
+  (testing "write cookie"
+    (let [handler  (wrap-cookies (fn [req cont] (cont {:cookies {"a" "b"}})))
+          response (promise)]
+      (handler {} response)
+      (is (= {"Set-Cookie" (list "a=b")} (:headers @response))))))
+
 (deftest cookies-response-test
   (is (fn? cookies-response)))
 

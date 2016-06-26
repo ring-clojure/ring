@@ -77,6 +77,19 @@
     (is (< (count (all-threads))
            100))))
 
+(deftest wrap-multipart-params-cps-test
+  (let [handler   (wrap-multipart-params (fn [req cont] (cont req)))
+        form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "bar\r\n"
+                       "--XXXX--")
+        request   {:headers {"content-type" "multipart/form-data; boundary=XXXX"}
+                   :body    (string-input-stream form-body "UTF-8")}
+        response  (promise)]
+        (handler request response)
+        (is (= (get-in @response [:multipart-params "foo"]) "bar"))))
+
 (deftest multipart-params-request-test
   (is (fn? multipart-params-request)))
 
