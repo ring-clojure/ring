@@ -99,27 +99,48 @@
     (set-headers headers)
     (set-body body)))
 
-(defn make-service-method
-  "Turns a handler into a function that takes the same arguments and has the
-  same return value as the service method in the HttpServlet class."
-  [handler]
-  (fn [^HttpServlet servlet
-      ^HttpServletRequest request
-      ^HttpServletResponse response]
+(defn- handler-nil-exception []
+  (NullPointerException. "Handler returned nil"))
+
+(defn- make-blocking-service-method [handler]
+  (fn [servlet request response]
     (let [request-map (-> request
                           (build-request-map)
                           (merge-servlet-keys servlet request response))]
       (if-let [response-map (handler request-map)]
         (update-servlet-response response response-map)
-        (throw (NullPointerException. "Handler returned nil"))))))
+        (throw (handler-nil-exception))))))
+
+(defn- make-async-service-method [handler]
+  (fn [servlet request response]
+    (handler
+     (-> request
+         (build-request-map)
+         (merge-servlet-keys servlet request response))
+     (fn [response-map]
+       (if response-map
+         (update-servlet-response response response-map)
+         (throw (handler-nil-exception)))))))
+
+(defn make-service-method
+  "Turns a handler into a function that takes the same arguments and has the
+  same return value as the service method in the HttpServlet class."
+  ([handler]
+   (make-service-method {}))
+  ([handler options]
+   (if (:async? options)
+     (make-async-service-method handler)
+     (make-blocking-service-method handler))))
 
 (defn servlet
   "Create a servlet from a Ring handler."
-  [handler]
-  (let [service-method (make-service-method handler)]
-    (proxy [HttpServlet] []
-      (service [request response]
-        (service-method this request response)))))
+  ([handler]
+   (servlet handler {}))
+  ([handler options]
+   (let [service-method (make-service-method handler options)]
+     (proxy [HttpServlet] []
+       (service [request response]
+         (service-method this request response))))))
 
 (defmacro defservice
   "Defines a service method with an optional prefix suitable for being used by
@@ -132,7 +153,11 @@
   ([handler]
      `(defservice "-" ~handler))
   ([prefix handler]
-     `(let [service-method# (make-service-method ~handler)]
+   (if (map? handler)
+     `(defservice ~prefix ~handler)
+     `(defservice ~prefix ~handler {})))
+  ([prefix handler options]
+     `(let [service-method# (make-service-method ~handler ~options)]
         (defn ~(symbol (str prefix "service"))
           [servlet# request# response#]
           (service-method# servlet# request# response#)))))
