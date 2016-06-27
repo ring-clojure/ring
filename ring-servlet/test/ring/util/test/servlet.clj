@@ -54,11 +54,14 @@
   (proxy [javax.servlet.ServletConfig] []
     (getServletContext [] nil)))
 
-(defn- run-servlet [handler request response]
-  (doto (servlet handler)
-    (.init (servlet-config))
-    (.service (servlet-request request)
-              (servlet-response response))))
+(defn- run-servlet
+  ([handler request response]
+   (run-servlet handler request response {}))
+  ([handler request response options]
+   (doto (servlet handler options)
+     (.init (servlet-config))
+     (.service (servlet-request request)
+               (servlet-response response)))))
 
 (deftest servlet-test
   (let [body (proxy [javax.servlet.ServletInputStream] [])
@@ -118,6 +121,27 @@
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))
         (is (= (take-while (complement zero?) (@response :body))
                (seq (.getBytes "Hello World"))))))))
+
+(deftest servlet-cps-test
+  (let [handler  (fn [req cont]
+                   (cont {:status  200
+                          :headers {"Content-Type" "text/plain"}
+                          :body    "Hello World"}))
+        request  {:server-port    8080
+                  :server-name    "foobar"
+                  :remote-addr    "127.0.0.1"
+                  :uri            "/foo"
+                  :scheme         :http
+                  :request-method :get
+                  :protocol       "HTTP/1.1"
+                  :headers        {}
+                  :body           nil}
+        response (atom {})]
+    (run-servlet handler request response {:async? true})
+    (is (= (@response :status) 200))
+    (is (= (@response :content-type) "text/plain"))
+    (is (= (take-while (complement zero?) (@response :body))
+           (seq (.getBytes "Hello World"))))))
 
 (defservice "foo-"
   (fn [_]
