@@ -61,17 +61,19 @@
   {:arglists '([request] [request options])
    :added "1.2"}
   [request & [opts]]
-  (let [parse (:key-parser opts parse-nested-keys)]
-    (update-in request [:params] nest-params parse)))
+  (let [parse       (:key-parser opts parse-nested-keys)
+        params-keys (:params-keys opts [:params])]
+    (reduce #(update-in %1 [%2] nest-params parse) request params-keys)))
 
 (defn wrap-nested-params
   "Middleware to converts a flat map of parameters into a nested map.
   Accepts the following options:
 
-  :key-parser - the function to use to parse the parameter names into a list
-                of keys. Keys that are empty strings are treated as elements in
-                a vector, non-empty keys are treated as elements in a map.
-                Defaults to the parse-nested-keys function.
+  :key-parser  - the function to use to parse the parameter names into a list
+                 of keys. Keys that are empty strings are treated as elements in
+                 a vector, non-empty keys are treated as elements in a map.
+                 Defaults to the parse-nested-keys function.
+  :params-keys - a vector of keys to be processed, defaults to [:params].
 
   For example:
 
