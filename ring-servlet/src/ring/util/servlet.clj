@@ -5,6 +5,7 @@
             [ring.core.protocols :as protocols])
   (:import [java.io File InputStream FileInputStream]
            [java.util Locale]
+           [javax.servlet AsyncContext]
            [javax.servlet.http HttpServlet
                                HttpServletRequest
                                HttpServletResponse]))
@@ -113,14 +114,15 @@
 
 (defn- make-async-service-method [handler]
   (fn [servlet request response]
-    (handler
-     (-> request
-         (build-request-map)
-         (merge-servlet-keys servlet request response))
-     (fn [response-map]
-       (if response-map
-         (update-servlet-response response response-map)
-         (throw (handler-nil-exception)))))))
+    (let [^AsyncContext context (.startAsync request)]
+      (handler
+       (-> request
+           (build-request-map)
+           (merge-servlet-keys servlet request response))
+       (fn [response-map]
+         (when response-map
+           (update-servlet-response response response-map))
+         (.complete context))))))
 
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the

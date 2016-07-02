@@ -15,6 +15,10 @@
       (hasMoreElements [] (not (empty? @e)))
       (nextElement [] (let [f (first @e)] (swap! e rest) f)))))
 
+(defn- async-context [completed]
+  (proxy [javax.servlet.AsyncContext] []
+    (complete [] (reset! completed true))))
+
 (defn- servlet-request [request]
   (let [attributes {"javax.servlet.request.X509Certificate"
                     [(request :ssl-client-cert)]}]
@@ -34,7 +38,8 @@
       (getContentLength [] (or (request :content-length) -1))
       (getCharacterEncoding [] (request :character-encoding))
       (getAttribute [k] (attributes k))
-      (getInputStream [] (request :body)))))
+      (getInputStream [] (request :body))
+      (startAsync [] (async-context (request :completed))))))
 
 (defn- servlet-response [response]
   (proxy [javax.servlet.http.HttpServletResponse] []
@@ -127,7 +132,8 @@
                    (cont {:status  200
                           :headers {"Content-Type" "text/plain"}
                           :body    "Hello World"}))
-        request  {:server-port    8080
+        request  {:completed      (atom false)
+                  :server-port    8080
                   :server-name    "foobar"
                   :remote-addr    "127.0.0.1"
                   :uri            "/foo"
@@ -138,6 +144,7 @@
                   :body           nil}
         response (atom {})]
     (run-servlet handler request response {:async? true})
+    (is (= @(:completed request) true))
     (is (= (@response :status) 200))
     (is (= (@response :content-type) "text/plain"))
     (is (= (take-while (complement zero?) (@response :body))
