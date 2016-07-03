@@ -160,8 +160,8 @@
          (cookies-request {:decoder decoder})
          handler
          (cookies-response {:encoder encoder})))
-    ([request cont]
-     (handler
-      (cookies-request request {:decoder decoder})
-      (fn [response]
-        (cont (cookies-response response {:encoder encoder})))))))
+    ([request cont raise]
+     (handler (cookies-request request {:decoder decoder})
+              (fn [response]
+                (cont (cookies-response response {:encoder encoder})))
+              raise))))

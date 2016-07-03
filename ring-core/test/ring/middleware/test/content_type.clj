@@ -43,16 +43,20 @@
 
 (deftest wrap-content-type-cps-test
   (testing "response without content-type"
-    (let [handler  (wrap-content-type (fn [_ cont] (cont {:headers {}})))
-          response (promise)]
-      (handler {:uri "/foo/bar.png"} response)
-      (is (= @response {:headers {"Content-Type" "image/png"}}))))
+    (let [handler   (wrap-content-type (fn [_ cont _] (cont {:headers {}})))
+          response  (promise)
+          exception (promise)]
+      (handler {:uri "/foo/bar.png"} response exception)
+      (is (= @response {:headers {"Content-Type" "image/png"}}))
+      (is (not (realized? exception)))))
 
   (testing "nil response"
-    (let [handler  (wrap-content-type (fn [_ cont] (cont nil)))
-          response (promise)]
-      (handler {:uri "/foo/bar.png"} response)
-      (is (nil? @response)))))
+    (let [handler   (wrap-content-type (fn [_ cont _] (cont nil)))
+          response  (promise)
+          exception (promise)]
+      (handler {:uri "/foo/bar.png"} response exception)
+      (is (nil? @response))
+      (is (not (realized? exception))))))
 
 (deftest content-type-response-test
   (is (fn? content-type-response)))

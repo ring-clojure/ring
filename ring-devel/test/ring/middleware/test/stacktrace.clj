@@ -26,14 +26,27 @@
 
 (deftest wrap-stacktrace-cps-test
   (testing "no exception"
-    (let [handler  (wrap-stacktrace (fn [_ cont] (cont :ok)))
-          response (promise)]
-      (handler {} response)
-      (is (= :ok @response))))
+    (let [handler   (wrap-stacktrace (fn [_ cont _] (cont :ok)))
+          response  (promise)
+          exception (promise)]
+      (handler {} response exception)
+      (is (= :ok @response))
+      (is (not (realized? exception)))))
 
-  (testing "exception"
-    (let [handler  (wrap-stacktrace (fn [_ cont] (throw (Exception. "fail"))))
-          response (promise)]
+  (testing "thrown exception"
+    (let [handler   (wrap-stacktrace (fn [_ cont _] (throw (Exception. "fail"))))
+          response  (promise)
+          exception (promise)]
       (binding [*err* (java.io.StringWriter.)]
-        (handler {} response))
-      (is (= 500 (:status @response))))))
+        (handler {} response exception))
+      (is (= 500 (:status @response)))
+      (is (not (realized? exception)))))
+
+  (testing "raised exception"
+    (let [handler   (wrap-stacktrace (fn [_ cont raise] (raise (Exception. "fail"))))
+          response  (promise)
+          exception (promise)]
+      (binding [*err* (java.io.StringWriter.)]
+        (handler {} response exception))
+      (is (= 500 (:status @response)))
+      (is (not (realized? exception))))))

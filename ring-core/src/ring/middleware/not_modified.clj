@@ -51,5 +51,7 @@
   (fn
     ([request]
      (-> (handler request) (not-modified-response request)))
-    ([request cont]
-     (handler request (fn [response] (cont (not-modified-response response request)))))))
+    ([request cont raise]
+     (handler request
+              (fn [response] (cont (not-modified-response response request)))
+              raise))))

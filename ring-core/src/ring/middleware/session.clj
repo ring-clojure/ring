@@ -105,9 +105,9 @@
           (let [request (session-request request options)]
             (-> (handler request)
                 (session-response request options))))
-         ([request cont]
+         ([request cont raise]
           (let [request (session-request request options)]
-            (handler
-             request
-             (fn [response]
-               (cont (session-response response request options))))))))))
+            (handler request
+                     (fn [response]
+                       (cont (session-response response request options)))
+                     raise)))))))

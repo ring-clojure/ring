@@ -132,5 +132,5 @@
   (fn
     ([request]
      (handler (multipart-params-request request options)))
-    ([request cont]
-     (handler (multipart-params-request request options) cont))))
+    ([request cont raise]
+     (handler (multipart-params-request request options) cont raise))))

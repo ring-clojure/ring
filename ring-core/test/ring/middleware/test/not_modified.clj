@@ -29,14 +29,16 @@
 
 (deftest wrap-not-modified-cps-test
   (testing "etag match"
-    (let [etag     "known-etag"
-          handler  (wrap-not-modified
-                    (fn [req cont]
-                      (cont {:status 200, :headers {"etag" etag}, :body ""})))
-          request  {:request-method :get, :headers {"if-none-match" etag}}
-          response (promise)]
-      (handler request response)
-      (is (= 304 (:status @response))))))
+    (let [etag      "known-etag"
+          handler   (wrap-not-modified
+                     (fn [req cont _]
+                       (cont {:status 200, :headers {"etag" etag}, :body ""})))
+          request   {:request-method :get, :headers {"if-none-match" etag}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
+      (is (= 304 (:status @response)))
+      (is (not (realized? exception))))))
 
 (deftest test-not-modified-response  
   (testing "etag match"

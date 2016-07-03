@@ -7,7 +7,7 @@
    {:status 200
     :headers {"X-method" (name (:request-method req))}
     :body "Foobar"})
-  ([req cont]
+  ([req cont raise]
    (cont
     {:status 200
      :headers {"X-method" (name (:request-method req))}
@@ -23,16 +23,20 @@
 
 (deftest wrap-head-cps-test
   (testing "HEAD request"
-    (let [response (promise)]
-      ((wrap-head handler) {:request-method :head} response)
+    (let [response  (promise)
+          exception (promise)]
+      ((wrap-head handler) {:request-method :head} response exception)
       (is (nil? (:body @response)))
-      (is (= "get" (get-in @response [:headers "X-method"])))))
+      (is (= "get" (get-in @response [:headers "X-method"])))
+      (is (not (realized? exception)))))
 
   (testing "POST request"
-    (let [response (promise)]
-      ((wrap-head handler) {:request-method :post} response)
+    (let [response  (promise)
+          exception (promise)]
+      ((wrap-head handler) {:request-method :post} response exception)
       (is (= "Foobar" (:body @response)))
-      (is (= "post" (get-in @response [:headers "X-method"]))))))
+      (is (= "post" (get-in @response [:headers "X-method"])))
+      (is (not (realized? exception))))))
 
 (deftest head-request-test
   (is (fn? head-request)))

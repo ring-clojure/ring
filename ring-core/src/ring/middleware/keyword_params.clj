@@ -34,5 +34,5 @@
   (fn
     ([request]
      (handler (keyword-params-request request)))
-    ([request cont]
-     (handler (keyword-params-request request) cont))))
+    ([request cont raise]
+     (handler (keyword-params-request request) cont raise))))

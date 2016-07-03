@@ -192,17 +192,21 @@
 
 (deftest wrap-cookies-cps-test
   (testing "read cookie"
-    (let [request  {:headers {"cookie" "a=b"}}
-          handler  (wrap-cookies (fn [req cont] (cont (:cookies req))))
-          response (promise)]
-      (handler request response)
-      (is (= {"a" {:value "b"}} @response))))
+    (let [handler   (wrap-cookies (fn [req cont _] (cont (:cookies req))))
+          request   {:headers {"cookie" "a=b"}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
+      (is (= {"a" {:value "b"}} @response))
+      (is (not (realized? exception)))))
 
   (testing "write cookie"
-    (let [handler  (wrap-cookies (fn [req cont] (cont {:cookies {"a" "b"}})))
-          response (promise)]
-      (handler {} response)
-      (is (= {"Set-Cookie" (list "a=b")} (:headers @response))))))
+    (let [handler   (wrap-cookies (fn [_ cont _] (cont {:cookies {"a" "b"}})))
+          response  (promise)
+          exception (promise)]
+      (handler {} response exception)
+      (is (= {"Set-Cookie" (list "a=b")} (:headers @response)))
+      (is (not (realized? exception))))))
 
 (deftest cookies-response-test
   (is (fn? cookies-response)))

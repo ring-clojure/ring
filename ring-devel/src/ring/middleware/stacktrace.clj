@@ -11,13 +11,6 @@
             [clj-stacktrace.repl :refer :all]
             [ring.util.response :refer [content-type response status]]))
 
-(defn- catch-and-log [f color?]
-  (try
-    (f)
-    (catch Throwable ex
-      (pst-on *err* color? ex)
-      (throw ex))))
-
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown.
   Accepts the following options:
@@ -27,9 +20,17 @@
   [handler & [{color? :color?}]]
   (fn
     ([request]
-     (catch-and-log #(handler request) color?))
-    ([request cont]
-     (catch-and-log #(handler request cont) color?))))
+     (try
+       (handler request)
+       (catch Throwable ex
+         (pst-on *err* color? ex)
+         (throw ex))))
+    ([request cont raise]
+     (try
+       (handler request cont (fn [ex] (pst-on *err* color? ex) (raise ex)))
+       (catch Throwable ex
+         (pst-on *err* color? ex)
+         (throw ex))))))
 
 (defn- style-resource [path]
   (html [:style {:type "text/css"} (slurp (io/resource path))]))
@@ -93,9 +94,9 @@
        (handler request)
        (catch Throwable ex
          (ex-response request ex))))
-    ([request cont]
+    ([request cont raise]
      (try
-       (handler request cont)
+       (handler request cont (fn [ex] (cont (ex-response request ex))))
        (catch Throwable ex
          (cont (ex-response request ex)))))))
 

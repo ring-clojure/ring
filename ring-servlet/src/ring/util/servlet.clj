@@ -122,6 +122,8 @@
        (fn [response-map]
          (when response-map
            (update-servlet-response response response-map))
+         (.complete context))
+       (fn [exception]
          (.complete context))))))
 
 (defn make-service-method

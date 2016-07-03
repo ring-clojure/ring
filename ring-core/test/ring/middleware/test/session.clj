@@ -199,21 +199,27 @@
 
 (deftest wrap-sesssion-cps-test
   (testing "reading session"
-    (let [memory   (atom {"test" {:foo "bar"}})
-          store    (memory-store memory)
-          handler  (wrap-session (fn [req cont] (cont (:session req))) {:store store})
-          response (promise)]
-      (handler {:cookies {"ring-session" {:value "test"}}} response)
+    (let [memory    (atom {"test" {:foo "bar"}})
+          store     (memory-store memory)
+          handler   (wrap-session (fn [req cont _] (cont (:session req))) {:store store})
+          request   {:cookies {"ring-session" {:value "test"}}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
       (is (= {:foo "bar"} @response))
-      (is (= {"test" {:foo "bar"}} @memory))))
+      (is (= {"test" {:foo "bar"}} @memory))
+      (is (not (realized? exception)))))
 
   (testing "writing session"
-    (let [memory   (atom {"test" {}})
-          store    (memory-store memory)
-          handler  (wrap-session
-                    (fn [req cont] (cont {:session {:foo "bar"}, :body "foo"}))
-                    {:store store})
-          response (promise)]
-      (handler {:cookies {"ring-session" {:value "test"}}} response)
+    (let [memory    (atom {"test" {}})
+          store     (memory-store memory)
+          handler   (wrap-session
+                     (fn [req cont _] (cont {:session {:foo "bar"}, :body "foo"}))
+                     {:store store})
+          request   {:cookies {"ring-session" {:value "test"}}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
       (is (= "foo" (:body @response)))
-      (is (= {"test" {:foo "bar"}} @memory)))))
+      (is (= {"test" {:foo "bar"}} @memory))
+      (is (not (realized? exception))))))

@@ -35,6 +35,9 @@
          (fn [response-map]
            (servlet/update-servlet-response response response-map)
            (.complete context)
+           (.setHandled base-request true))
+         (fn [exception]
+           (.complete context)
            (.setHandled base-request true)))))))
 
 (defn- ^ServerConnector server-connector [server & factories]

@@ -69,7 +69,8 @@
     ([request]
      (-> (handler request)
          (file-info-response request mime-types)))
-    ([request cont]
+    ([request cont raise]
      (handler request
               (fn [response]
-                (cont (file-info-response response request mime-types)))))))
+                (cont (file-info-response response request mime-types)))
+              raise))))

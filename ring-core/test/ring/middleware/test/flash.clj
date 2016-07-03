@@ -48,18 +48,22 @@
 
 (deftest wrap-flash-cps-test
   (testing "flash added to session"
-    (let [message  {:error "Could not save"}
-          handler  (wrap-flash (fn [req cont] (cont {:flash message})))
-          response (promise)]
-      (handler {:session {}} response)
-      (is (= (:session @response) {:_flash message}))))
+    (let [message   {:error "Could not save"}
+          handler   (wrap-flash (fn [_ cont _] (cont {:flash message})))
+          response  (promise)
+          exception (promise)]
+      (handler {:session {}} response exception)
+      (is (= (:session @response) {:_flash message}))
+      (is (not (realized? exception)))))
 
   (testing "flash retrieved from session"
-    (let [message  {:error "Could not save"}
-          handler  (wrap-flash (fn [req cont] (cont {:result (:flash req)})))
-          response (promise)]
-      (handler {:session {:_flash message}} response)
-      (is (= (:result @response) message)))))
+    (let [message   {:error "Could not save"}
+          handler   (wrap-flash (fn [req cont _] (cont {:result (:flash req)})))
+          response  (promise)
+          exception (promise)]
+      (handler {:session {:_flash message}} response exception)
+      (is (= (:result @response) message))
+      (is (not (realized? exception))))))
 
 (deftest flash-request-test
   (is (fn? flash-request)))

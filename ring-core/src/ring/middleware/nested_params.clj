@@ -85,5 +85,5 @@
   (fn
     ([request]
      (handler (nested-params-request request options)))
-    ([request cont]
-     (handler (nested-params-request request options) cont))))
+    ([request cont raise]
+     (handler (nested-params-request request options) cont raise))))

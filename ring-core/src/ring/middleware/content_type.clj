@@ -29,8 +29,9 @@
   (fn
     ([request]
      (some-> (handler request) (content-type-response request options)))
-    ([request cont]
+    ([request cont raise]
      (handler
       request
       (fn [response]
-        (cont (some-> response (content-type-response request options))))))))
+        (cont (some-> response (content-type-response request options))))
+      raise))))
