@@ -93,8 +93,16 @@
   according to the current Ring specification. An exception is raised if either
   the request or response is invalid."
   [handler]
-  (fn [req]
-    (check-req req)
-    (let [resp (handler req)]
-      (check-resp resp)
-      resp)))
+  (fn
+    ([request]
+     (check-req request)
+     (let [response (handler request)]
+       (check-resp response)
+       response))
+    ([request cont raise]
+     (check-req request)
+     (handler request
+              (fn [response]
+                (check-resp response)
+                (cont response))
+              raise))))

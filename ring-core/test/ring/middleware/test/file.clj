@@ -49,6 +49,27 @@
     (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
     (is (= foo-html body))))
 
+(deftest wrap-file-cps-test
+  (let [dynamic-response {:status 200, :headers {}, :body "foo"}
+        handler          (wrap-file (fn [req cont _] (cont dynamic-response)) public-dir)]
+    (testing "file response"
+      (let [request   {:request-method :get :uri "/foo.html"}
+            response  (promise)
+            exception (promise)]
+        (handler request response exception)
+        (is (= 200 (:status @response)))
+        (is (= #{"Content-Length" "Last-Modified"} (-> @response :headers keys set)))
+        (is (= foo-html (:body @response)))
+        (is (not (realized? exception)))))
+
+    (testing "non-file response"
+      (let [request   {:request-method :get :uri "/dynamic"}
+            response  (promise)
+            exception (promise)]
+        (handler request response exception)
+        (is (= dynamic-response @response))
+        (is (not (realized? exception)))))))
+
 (deftest file-request-test
   (is (fn? file-request)))
 

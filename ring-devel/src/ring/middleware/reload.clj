@@ -33,6 +33,10 @@
                :or {dirs ["src"]
                     reload-compile-errors? true}}]]
   (let [reload! (reloader dirs reload-compile-errors?)]
-    (fn [request]
-      (reload!)
-      (handler request))))
+    (fn
+      ([request]
+       (reload!)
+       (handler request))
+      ([request cont raise]
+       (reload!)
+       (handler request cont raise)))))

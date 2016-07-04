@@ -1,7 +1,8 @@
 (ns ring.middleware.test.session
   (:require [clojure.test :refer :all]
             [ring.middleware.session :refer :all]
-            [ring.middleware.session.store :refer :all]))
+            [ring.middleware.session.store :refer :all]
+            [ring.middleware.session.memory :refer [memory-store]]))
 
 (defn- make-store [reader writer deleter]
   (reify SessionStore
@@ -195,3 +196,30 @@
     (testing "session was not written with :recreate metadata intact"
       (let [[[_ written]] (trace writer)]
         (is (not (:recreate (meta written))))))))
+
+(deftest wrap-sesssion-cps-test
+  (testing "reading session"
+    (let [memory    (atom {"test" {:foo "bar"}})
+          store     (memory-store memory)
+          handler   (wrap-session (fn [req cont _] (cont (:session req))) {:store store})
+          request   {:cookies {"ring-session" {:value "test"}}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
+      (is (= {:foo "bar"} @response))
+      (is (= {"test" {:foo "bar"}} @memory))
+      (is (not (realized? exception)))))
+
+  (testing "writing session"
+    (let [memory    (atom {"test" {}})
+          store     (memory-store memory)
+          handler   (wrap-session
+                     (fn [req cont _] (cont {:session {:foo "bar"}, :body "foo"}))
+                     {:store store})
+          request   {:cookies {"ring-session" {:value "test"}}}
+          response  (promise)
+          exception (promise)]
+      (handler request response exception)
+      (is (= "foo" (:body @response)))
+      (is (= {"test" {:foo "bar"}} @memory))
+      (is (not (realized? exception))))))

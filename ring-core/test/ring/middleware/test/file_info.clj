@@ -71,5 +71,28 @@
            (known-file-app
              {:headers {"if-modified-since" "Wed, 13 Jan 2010 22:00:00 +0000"}})))))
 
+(deftest wrap-file-info-cps-test
+  (testing "file response"
+    (with-last-modified [known-file 1263506400]
+      (let [handler   (wrap-file-info (fn [_ cont _] (cont {:headers {} :body known-file})))
+            response  (promise)
+            exception (promise)]
+        (handler {:headers {}} response exception)
+        (is (= {:headers {"Content-Type"   "text/plain"
+                          "Content-Length" "6"
+                          "Last-Modified"  "Thu, 14 Jan 2010 22:00:00 +0000"}
+                :body    known-file}
+               @response))
+        (is (not (realized? exception))))))
+  
+  (testing "non-file response"
+    (let [handler   (wrap-file-info (fn [_ cont _] (cont {:headers {} :body "body"})))
+          response  (promise)
+          exception (promise)]
+      (handler {:headers {}} response exception)
+      (is (= {:headers {} :body "body"}
+             @response))
+      (is (not (realized? exception))))))
+
 (deftest file-info-response-test
   (is (fn? file-info-response)))

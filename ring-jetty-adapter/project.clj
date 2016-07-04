@@ -7,7 +7,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring/ring-core "1.6.0-beta1"]
                  [ring/ring-servlet "1.6.0-beta1"]
-                 [org.eclipse.jetty/jetty-server "9.2.10.v20150310"]]
+                 [org.eclipse.jetty/jetty-server "9.2.17.v20160517"]]
   :profiles
   {:dev {:dependencies [[clj-http "2.2.0"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}

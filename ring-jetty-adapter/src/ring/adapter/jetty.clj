@@ -15,6 +15,7 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
+           [javax.servlet AsyncContext]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- ^AbstractHandler proxy-handler [handler]
@@ -22,9 +23,22 @@
     (handle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
-        (when response-map
-          (servlet/update-servlet-response response response-map)
-          (.setHandled base-request true))))))
+        (servlet/update-servlet-response response response-map)
+        (.setHandled base-request true)))))
+
+(defn- ^AbstractHandler async-proxy-handler [handler]
+  (proxy [AbstractHandler] []
+    (handle [_ ^Request base-request request response]
+      (let [^AsyncContext context (.startAsync request)]
+        (handler
+         (servlet/build-request-map request)
+         (fn [response-map]
+           (servlet/update-servlet-response response response-map)
+           (.complete context)
+           (.setHandled base-request true))
+         (fn [exception]
+           (.complete context)
+           (.setHandled base-request true)))))))
 
 (defn- ^ServerConnector server-connector [server & factories]
   (ServerConnector. server (into-array ConnectionFactory factories)))
@@ -102,6 +116,7 @@
   supplied options:
 
   :configurator         - a function called with the Jetty Server instance
+  :async?               - if true, treat the handler as asynchronous
   :port                 - the port to listen on (defaults to 80)
   :host                 - the hostname to listen on
   :join?                - blocks the thread until server ends (defaults to true)
@@ -128,9 +143,9 @@
   :response-header-size - the maximum size of a response header (default 8192)
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))]
-    (doto server
-      (.setHandler (proxy-handler handler)))
+  (let [server (create-server (dissoc options :configurator))
+        proxyf (if (:async? options) async-proxy-handler proxy-handler)]
+    (.setHandler server (proxyf handler))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try

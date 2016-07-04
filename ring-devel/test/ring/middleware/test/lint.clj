@@ -129,3 +129,20 @@
 (lints-resp :body
   [nil "thebody" (list "foo" "bar") (string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
   [123 :thebody])
+
+(deftest wrap-lint-cps-test
+  (testing "valid request and response"
+    (let [handler   (wrap-lint (fn [_ cont _] (cont valid-response)))
+          response  (promise)
+          exception (promise)]
+      (handler valid-request response exception)
+      (is (= valid-response @response))
+      (is (not (realized? exception)))))
+
+  (testing "invalid request"
+    (let [handler (wrap-lint (fn [_ cont _] (cont valid-response)))]
+      (is-lint-error #(handler {} (fn [_]) (fn [_])))))
+
+  (testing "invalid response"
+    (let [handler (wrap-lint (fn [_ cont _] (cont {})))]
+      (is-lint-error #(handler valid-request (fn [_]) (fn [_]))))))

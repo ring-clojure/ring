@@ -65,6 +65,12 @@
   {:arglists '([handler] [handler mime-types])
    :deprecated "1.2"}
   [handler & [mime-types]]
-  (fn [req]
-    (-> (handler req)
-        (file-info-response req mime-types))))
+  (fn
+    ([request]
+     (-> (handler request)
+         (file-info-response request mime-types)))
+    ([request cont raise]
+     (handler request
+              (fn [response]
+                (cont (file-info-response response request mime-types)))
+              raise))))

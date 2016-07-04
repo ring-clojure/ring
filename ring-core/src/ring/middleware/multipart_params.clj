@@ -129,5 +129,8 @@
                  content-length, and item-count."
   {:arglists '([handler] [handler options])}
   [handler & [options]]
-  (fn [request]
-    (handler (multipart-params-request request options))))
+  (fn
+    ([request]
+     (handler (multipart-params-request request options)))
+    ([request cont raise]
+     (handler (multipart-params-request request options) cont raise))))

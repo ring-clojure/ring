@@ -23,3 +23,30 @@
     (let [{:keys [status headers]} (assert-app js-req)]
       (is (= 500 status))
       (is (= {"Content-Type" "text/javascript"} headers)))))
+
+(deftest wrap-stacktrace-cps-test
+  (testing "no exception"
+    (let [handler   (wrap-stacktrace (fn [_ cont _] (cont :ok)))
+          response  (promise)
+          exception (promise)]
+      (handler {} response exception)
+      (is (= :ok @response))
+      (is (not (realized? exception)))))
+
+  (testing "thrown exception"
+    (let [handler   (wrap-stacktrace (fn [_ cont _] (throw (Exception. "fail"))))
+          response  (promise)
+          exception (promise)]
+      (binding [*err* (java.io.StringWriter.)]
+        (handler {} response exception))
+      (is (= 500 (:status @response)))
+      (is (not (realized? exception)))))
+
+  (testing "raised exception"
+    (let [handler   (wrap-stacktrace (fn [_ cont raise] (raise (Exception. "fail"))))
+          response  (promise)
+          exception (promise)]
+      (binding [*err* (java.io.StringWriter.)]
+        (handler {} response exception))
+      (is (= 500 (:status @response)))
+      (is (not (realized? exception))))))

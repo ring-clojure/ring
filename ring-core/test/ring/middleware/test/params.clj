@@ -44,6 +44,19 @@
     (is (= (:params resp) {"hello" "world"}))
     (is (= (:form-params resp) {"hello" "world"}))))
 
+(deftest wrap-params-cps-test
+  (let [handler   (wrap-params (fn [req cont _] (cont req)))
+        request   {:query-string "foo=bar"
+                   :headers      {"content-type" "application/x-www-form-urlencoded"}
+                   :body         (string-input-stream "biz=bat%25")}
+        response  (promise)
+        exception (promise)]
+    (handler request response exception)
+    (is (= {"foo" "bar"}  (:query-params @response)))
+    (is (= {"biz" "bat%"} (:form-params @response)))
+    (is (= {"foo" "bar" "biz" "bat%"} (:params @response)))
+    (is (not (realized? exception)))))
+
 (deftest params-request-test
   (is (fn? params-request)))
 

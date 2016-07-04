@@ -60,5 +60,14 @@
         {"a.b.c" "d"}    {"a" {"b" {"c" "d"}}}
         {"a" "b", "c" "d"} {"a" "b", "c" "d"}))))
 
+(deftest wrap-nested-params-cps-test
+  (let [handler   (wrap-nested-params (fn [req cont _] (cont (:params req))))
+        request   {:params {"x[y]" "z"}}
+        response  (promise)
+        exception (promise)]
+    (handler request response exception)
+    (is (= {"x" {"y" "z"}} @response))
+    (is (not (realized? exception)))))
+
 (deftest nested-params-request-test
   (is (fn? nested-params-request)))

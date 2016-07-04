@@ -15,6 +15,10 @@
       (hasMoreElements [] (not (empty? @e)))
       (nextElement [] (let [f (first @e)] (swap! e rest) f)))))
 
+(defn- async-context [completed]
+  (proxy [javax.servlet.AsyncContext] []
+    (complete [] (reset! completed true))))
+
 (defn- servlet-request [request]
   (let [attributes {"javax.servlet.request.X509Certificate"
                     [(request :ssl-client-cert)]}]
@@ -34,7 +38,8 @@
       (getContentLength [] (or (request :content-length) -1))
       (getCharacterEncoding [] (request :character-encoding))
       (getAttribute [k] (attributes k))
-      (getInputStream [] (request :body)))))
+      (getInputStream [] (request :body))
+      (startAsync [] (async-context (request :completed))))))
 
 (defn- servlet-response [response]
   (proxy [javax.servlet.http.HttpServletResponse] []
@@ -54,11 +59,14 @@
   (proxy [javax.servlet.ServletConfig] []
     (getServletContext [] nil)))
 
-(defn- run-servlet [handler request response]
-  (doto (servlet handler)
-    (.init (servlet-config))
-    (.service (servlet-request request)
-              (servlet-response response))))
+(defn- run-servlet
+  ([handler request response]
+   (run-servlet handler request response {}))
+  ([handler request response options]
+   (doto (servlet handler options)
+     (.init (servlet-config))
+     (.service (servlet-request request)
+               (servlet-response response)))))
 
 (deftest servlet-test
   (let [body (proxy [javax.servlet.ServletInputStream] [])
@@ -118,6 +126,29 @@
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))
         (is (= (take-while (complement zero?) (@response :body))
                (seq (.getBytes "Hello World"))))))))
+
+(deftest servlet-cps-test
+  (let [handler  (fn [req cont _]
+                   (cont {:status  200
+                          :headers {"Content-Type" "text/plain"}
+                          :body    "Hello World"}))
+        request  {:completed      (atom false)
+                  :server-port    8080
+                  :server-name    "foobar"
+                  :remote-addr    "127.0.0.1"
+                  :uri            "/foo"
+                  :scheme         :http
+                  :request-method :get
+                  :protocol       "HTTP/1.1"
+                  :headers        {}
+                  :body           nil}
+        response (atom {})]
+    (run-servlet handler request response {:async? true})
+    (is (= @(:completed request) true))
+    (is (= (@response :status) 200))
+    (is (= (@response :content-type) "text/plain"))
+    (is (= (take-while (complement zero?) (@response :body))
+           (seq (.getBytes "Hello World"))))))
 
 (defservice "foo-"
   (fn [_]

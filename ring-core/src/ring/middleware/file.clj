@@ -23,9 +23,10 @@
    :added "1.2"}
   [req root-path & [opts]]
   (let [opts (merge {:root (str root-path), :index-files? true, :allow-symlinks? false} opts)]
-    (if (= :get (:request-method req))
+    (if (#{:get :head} (:request-method req))
       (let [path (subs (codec/url-decode (request/path-info req)) 1)]
-        (response/file-response path opts)))))
+        (-> (response/file-response path opts)
+            (head/head-response req))))))
 
 (defn wrap-file
   "Wrap an handler such that the directory at the given root-path is checked for
@@ -39,6 +40,10 @@
   {:arglists '([handler root-path] [handler root-path options])}
   [handler root-path & [opts]]
   (ensure-dir root-path)
-  (fn [req]
-    (or ((head/wrap-head #(file-request % root-path opts)) req)
-        (handler req))))
+  (fn
+    ([request]
+     (or (file-request request root-path opts) (handler request)))
+    ([request cont raise]
+     (if-let [response (file-request request root-path opts)]
+       (cont response)
+       (handler request cont raise)))))

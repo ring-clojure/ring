@@ -16,21 +16,26 @@
   {:arglists '([response request])
    :added "1.2"}
   [response {:keys [session flash] :as request}]
-  (let [session (if (contains? response :session)
-                  (response :session)
-                  session)
-        session (if-let [flash (response :flash)]
-                  (assoc (response :session session) :_flash flash)
-                  session)]
-    (if (or flash (response :flash) (contains? response :session))
-      (assoc response :session session)
-      response)))
+  (if response
+    (let [session (if (contains? response :session)
+                    (response :session)
+                    session)
+          session (if-let [flash (response :flash)]
+                    (assoc (response :session session) :_flash flash)
+                    session)]
+      (if (or flash (response :flash) (contains? response :session))
+        (assoc response :session session)
+        response))))
 
 (defn wrap-flash
   "If a :flash key is set on the response by the handler, a :flash key with
   the same value will be set on the next request that shares the same session.
   This is useful for small messages that persist across redirects."
   [handler]
-  (fn [request]
-    (if-let [resp (handler (flash-request request))]
-      (flash-response resp (flash-request request)))))
+  (fn
+    ([request]
+     (let [request (flash-request request)]
+       (-> (handler request) (flash-response request))))
+    ([request cont raise]
+     (let [request (flash-request request)]
+       (handler request (fn [response] (cont (flash-response response request))) raise)))))

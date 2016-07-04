@@ -60,5 +60,8 @@
               character encoding is set."
   {:arglists '([handler] [handler options])}
   [handler & [options]]
-  (fn [request]
-    (handler (params-request request options))))
+  (fn
+    ([request]
+     (handler (params-request request options)))
+    ([request cont raise]
+     (handler (params-request request options) cont raise))))
