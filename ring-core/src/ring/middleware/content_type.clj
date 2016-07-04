@@ -9,10 +9,11 @@
   ([response request]
    (content-type-response response request {}))
   ([response request options]
-   (if (get-header response "Content-Type")
-     response
-     (let [mime-type (ext-mime-type (:uri request) (:mime-types options))]
-       (content-type response (or mime-type "application/octet-stream"))))))
+   (if response
+     (if (get-header response "Content-Type")
+       response
+       (let [mime-type (ext-mime-type (:uri request) (:mime-types options))]
+         (content-type response (or mime-type "application/octet-stream")))))))
 
 (defn wrap-content-type
   "Middleware that adds a content-type header to the response if one is not
@@ -30,10 +31,8 @@
   ([handler options]
    (fn
      ([request]
-      (some-> (handler request) (content-type-response request options)))
+      (-> (handler request) (content-type-response request options)))
      ([request cont raise]
-      (handler
-       request
-       (fn [response]
-         (cont (some-> response (content-type-response request options))))
-       raise)))))
+      (handler request
+               (fn [response] (cont (content-type-response response request options)))
+               raise)))))

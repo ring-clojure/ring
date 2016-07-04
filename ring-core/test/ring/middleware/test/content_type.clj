@@ -59,4 +59,8 @@
       (is (not (realized? exception))))))
 
 (deftest content-type-response-test
-  (is (fn? content-type-response)))
+  (testing "function exists"
+    (is (fn? content-type-response)))
+  
+  (testing "nil response"
+    (is (nil? (content-type-response nil {})))))
