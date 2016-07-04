@@ -104,22 +104,26 @@
 
 (defn cookies-request
   "Parses cookies in the request map. See: wrap-cookies."
-  {:arglists '([request] [request options])
-   :added "1.2"}
-  [request & [{:keys [decoder] :or {decoder codec/form-decode-str}}]]
-  (if (request :cookies)
-    request
-    (assoc request :cookies (parse-cookies request decoder))))
+  {:added "1.2"}
+  ([request]
+   (cookies-request request {}))
+  ([request options]
+   (let [{:keys [decoder] :or {decoder codec/form-decode-str}} options]
+     (if (request :cookies)
+       request
+       (assoc request :cookies (parse-cookies request decoder))))))
 
 (defn cookies-response
   "For responses with :cookies, adds Set-Cookie header and returns response
   without :cookies. See: wrap-cookies."
-  {:arglists '([response] [response options])
-   :added "1.2"}
-  [response & [{:keys [encoder] :or {encoder codec/form-encode}}]]
-  (-> response
-      (set-cookies encoder)
-      (dissoc :cookies)))
+  {:added "1.2"}
+  ([response]
+   (cookies-response response {}))
+  ([response options]
+   (let [{:keys [encoder] :or {encoder codec/form-encode}} options]
+     (-> response
+         (set-cookies encoder)
+         (dissoc :cookies)))))
 
 (defn wrap-cookies
   "Parses the cookies in the request map, then assocs the resulting map
@@ -150,18 +154,16 @@
   :secure    - set to true if the cookie requires HTTPS, prevent HTTP access
   :http-only - set to true if the cookie is valid for HTTP and HTTPS only
                (ie. prevent JavaScript access)"
-  {:arglists '([handler] [handler options])}
-  [handler & [{:keys [decoder encoder]
-               :or {decoder codec/form-decode-str
-                    encoder codec/form-encode}}]]
-  (fn
-    ([request]
-     (-> request
-         (cookies-request {:decoder decoder})
-         handler
-         (cookies-response {:encoder encoder})))
-    ([request cont raise]
-     (handler (cookies-request request {:decoder decoder})
-              (fn [response]
-                (cont (cookies-response response {:encoder encoder})))
-              raise))))
+  ([handler]
+   (wrap-cookies handler {}))
+  ([handler options]
+   (fn
+     ([request]
+      (-> request
+          (cookies-request options)
+          handler
+          (cookies-response options)))
+     ([request cont raise]
+      (handler (cookies-request request options)
+               (fn [response] (cont (cookies-response response options)))
+               raise)))))

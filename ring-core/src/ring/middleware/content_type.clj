@@ -5,13 +5,14 @@
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
-  {:arglists '([response request] [response request options])
-   :added "1.2"}
-  [resp req & [opts]]
-  (if (get-header resp "Content-Type")
-    resp
-    (let [mime-type (ext-mime-type (:uri req) (:mime-types opts))]
-      (content-type resp (or mime-type "application/octet-stream")))))
+  {:added "1.2"}
+  ([response request]
+   (content-type-response response request {}))
+  ([response request options]
+   (if (get-header response "Content-Type")
+     response
+     (let [mime-type (ext-mime-type (:uri request) (:mime-types options))]
+       (content-type response (or mime-type "application/octet-stream"))))))
 
 (defn wrap-content-type
   "Middleware that adds a content-type header to the response if one is not
@@ -24,14 +25,15 @@
   :mime-types - a map of filename extensions to mime-types that will be
                 used in addition to the ones defined in
                 ring.util.mime-types/default-mime-types"
-  {:arglists '([handler] [handler options])}
-  [handler & [options]]
-  (fn
-    ([request]
-     (some-> (handler request) (content-type-response request options)))
-    ([request cont raise]
-     (handler
-      request
-      (fn [response]
-        (cont (some-> response (content-type-response request options))))
-      raise))))
+  ([handler]
+   (wrap-content-type handler {}))
+  ([handler options]
+   (fn
+     ([request]
+      (some-> (handler request) (content-type-response request options)))
+     ([request cont raise]
+      (handler
+       request
+       (fn [response]
+         (cont (some-> response (content-type-response request options))))
+       raise)))))

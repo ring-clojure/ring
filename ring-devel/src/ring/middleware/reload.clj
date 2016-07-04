@@ -28,15 +28,15 @@
                             Defaults to [\"src\"].
   :reload-compile-errors? - If true, keep attempting to reload namespaces
                             that have compile errors.  Defaults to true."
-  {:arglists '([handler] [handler options])}
-  [handler & [{:keys [dirs reload-compile-errors?]
-               :or {dirs ["src"]
-                    reload-compile-errors? true}}]]
-  (let [reload! (reloader dirs reload-compile-errors?)]
-    (fn
-      ([request]
-       (reload!)
-       (handler request))
-      ([request cont raise]
-       (reload!)
-       (handler request cont raise)))))
+  ([handler]
+   (wrap-reload handler {}))
+  ([handler options]
+   (let [reload! (reloader (:dirs options ["src"])
+                           (:reload-compile-errors? options true))]
+     (fn
+       ([request]
+        (reload!)
+        (handler request))
+       ([request cont raise]
+        (reload!)
+        (handler request cont raise))))))

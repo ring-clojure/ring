@@ -16,21 +16,23 @@
   Accepts the following options:
 
   :color? - if true, apply ANSI colors to stacktrace (default false)"
-  {:arglists '([handler] [handler options])}
-  [handler & [{color? :color?}]]
-  (fn
-    ([request]
-     (try
-       (handler request)
-       (catch Throwable ex
-         (pst-on *err* color? ex)
-         (throw ex))))
-    ([request cont raise]
-     (try
-       (handler request cont (fn [ex] (pst-on *err* color? ex) (raise ex)))
-       (catch Throwable ex
-         (pst-on *err* color? ex)
-         (throw ex))))))
+  ([handler]
+   (wrap-stacktrace-log handler {}))
+  ([handler options]
+   (let [color? (:color? options)]
+     (fn
+       ([request]
+        (try
+          (handler request)
+          (catch Throwable ex
+            (pst-on *err* color? ex)
+            (throw ex))))
+       ([request cont raise]
+        (try
+          (handler request cont (fn [ex] (pst-on *err* color? ex) (raise ex)))
+          (catch Throwable ex
+            (pst-on *err* color? ex)
+            (throw ex))))))))
 
 (defn- style-resource [path]
   (html [:style {:type "text/css"} (slurp (io/resource path))]))
@@ -109,7 +111,9 @@
 
   :color? - if true, apply ANSI colors to terminal stacktrace (default false)"
   {:arglists '([handler] [handler options])}
-  [handler & [{:as options}]]
-  (-> handler
-      (wrap-stacktrace-log options)
-      (wrap-stacktrace-web)))
+  ([handler]
+   (wrap-stacktrace handler {}))
+  ([handler options]
+   (-> handler
+       (wrap-stacktrace-log options)
+       (wrap-stacktrace-web))))

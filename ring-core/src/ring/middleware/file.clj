@@ -19,14 +19,18 @@
 (defn file-request
   "If request matches a static file, returns it in a response. Otherwise
   returns nil. See: wrap-file."
-  {:arglists '([request root-path] [request root-path options])
-   :added "1.2"}
-  [req root-path & [opts]]
-  (let [opts (merge {:root (str root-path), :index-files? true, :allow-symlinks? false} opts)]
-    (if (#{:get :head} (:request-method req))
-      (let [path (subs (codec/url-decode (request/path-info req)) 1)]
-        (-> (response/file-response path opts)
-            (head/head-response req))))))
+  {:added "1.2"}
+  ([request root-path]
+   (file-request request root-path {}))
+  ([request root-path options]
+   (let [options (merge {:root (str root-path)
+                         :index-files? true
+                         :allow-symlinks? false}
+                        options)]
+     (if (#{:get :head} (:request-method request))
+       (let [path (subs (codec/url-decode (request/path-info request)) 1)]
+         (-> (response/file-response path options)
+             (head/head-response request)))))))
 
 (defn wrap-file
   "Wrap an handler such that the directory at the given root-path is checked for
@@ -37,13 +41,14 @@
 
   :index-files?    - look for index.* files in directories, defaults to true
   :allow-symlinks? - serve files through symbolic links, defaults to false"
-  {:arglists '([handler root-path] [handler root-path options])}
-  [handler root-path & [opts]]
-  (ensure-dir root-path)
-  (fn
-    ([request]
-     (or (file-request request root-path opts) (handler request)))
-    ([request cont raise]
-     (if-let [response (file-request request root-path opts)]
-       (cont response)
-       (handler request cont raise)))))
+  ([handler root-path]
+   (wrap-file handler root-path {}))
+  ([handler root-path options]
+   (ensure-dir root-path)
+   (fn
+     ([request]
+      (or (file-request request root-path options) (handler request)))
+     ([request cont raise]
+      (if-let [response (file-request request root-path options)]
+        (cont response)
+        (handler request cont raise))))))

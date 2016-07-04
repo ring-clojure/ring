@@ -90,20 +90,21 @@
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request.
   See: wrap-multipart-params."
-  {:arglists '([request] [request options])
-   :added "1.2"}
-  [request & [options]]
-  (let [store    (or (:store options) @default-store)
-        encoding (or (:encoding options)
-                     (req/character-encoding request)
-                     "UTF-8")
-        progress (:progress-fn options)
-        params   (if (multipart-form? request)
-                   (parse-multipart-params request encoding store progress)
-                   {})]
-    (merge-with merge request
-                {:multipart-params params}
-                {:params params})))
+  {:added "1.2"}
+  ([request]
+   (multipart-params-request request {}))
+  ([request options]
+   (let [store    (or (:store options) @default-store)
+         encoding (or (:encoding options)
+                      (req/character-encoding request)
+                      "UTF-8")
+         progress (:progress-fn options)
+         params   (if (multipart-form? request)
+                    (parse-multipart-params request encoding store progress)
+                    {})]
+     (merge-with merge request
+                 {:multipart-params params}
+                 {:params params}))))
 
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
@@ -127,10 +128,11 @@
   :progress-fn - a function that gets called during uploads. The function
                  should expect four parameters: request, bytes-read,
                  content-length, and item-count."
-  {:arglists '([handler] [handler options])}
-  [handler & [options]]
-  (fn
-    ([request]
-     (handler (multipart-params-request request options)))
-    ([request cont raise]
-     (handler (multipart-params-request request options) cont raise))))
+  ([handler]
+   (wrap-multipart-params handler {}))
+  ([handler options]
+   (fn
+     ([request]
+      (handler (multipart-params-request request options)))
+     ([request cont raise]
+      (handler (multipart-params-request request options) cont raise)))))

@@ -9,11 +9,13 @@
   "If request matches a static resource, returns it in a response map.
   Otherwise returns nil."
   {:added "1.2"}
-  [request root-path & [{:keys [loader]}]]
-  (if (#{:head :get} (:request-method request))
-    (let [path (subs (codec/url-decode (request/path-info request)) 1)]
-      (-> (response/resource-response path {:root root-path :loader loader})
-          (head/head-response request)))))
+  ([request root-path]
+   (resource-request request root-path {}))
+  ([request root-path options]
+   (if (#{:head :get} (:request-method request))
+     (let [path (subs (codec/url-decode (request/path-info request)) 1)]
+       (-> (response/resource-response path {:root root-path :loader (:loader options)})
+           (head/head-response request))))))
 
 (defn wrap-resource
   "Middleware that first checks to see whether the request map matches a static
@@ -22,12 +24,14 @@
   added to the beginning of the resource path. If the optional :loader key is
   provided in the option map, the resource will be resolved by the given class
   loader instead of the context class loader."
-  [handler root-path & [{:keys [loader]}]]
-  (fn
-    ([request]
-     (or (resource-request request root-path {:loader loader})
-         (handler request)))
-    ([request cont raise]
-     (if-let [response (resource-request request root-path {:loader loader})]
-       (cont response)
-       (handler request cont raise)))))
+  ([handler root-path]
+   (wrap-resource handler root-path {}))
+  ([handler root-path options]
+   (fn
+     ([request]
+      (or (resource-request request root-path options)
+          (handler request)))
+     ([request cont raise]
+      (if-let [response (resource-request request root-path options)]
+        (cont response)
+        (handler request cont raise))))))

@@ -33,25 +33,27 @@
 
 (defn file-info-response
   "Adds headers to response as described in wrap-file-info."
-  {:arglists '([response request] [response request mime-types])
-   :added "1.2"
-   :deprecated "1.2"}
-  [{:keys [body] :as response} req & [mime-types]]
-  (if (instance? File body)
-    (let [file-type   (guess-mime-type body mime-types)
-          file-length (.length ^File body)
-          lmodified   (last-modified-date body)
-          response    (-> response
-                          (res/content-type file-type)
-                          (res/header
-                           "Last-Modified"
-                           (.format (make-http-format) lmodified)))]
-      (if (not-modified-since? req lmodified)
-        (-> response (res/status 304)
-            (res/header "Content-Length" 0)
-            (assoc :body ""))
-        (-> response (res/header "Content-Length" file-length))))
-    response))
+  {:added "1.2", :deprecated "1.2"}
+  ([response request]
+   (file-info-response response request {}))
+  ([response request mime-types]
+   (let [body (:body response)]
+     (if (instance? File body)
+       (let [file-type   (guess-mime-type body mime-types)
+             file-length (.length ^File body)
+             lmodified   (last-modified-date body)
+             response    (-> response
+                             (res/content-type file-type)
+                             (res/header
+                              "Last-Modified"
+                              (.format (make-http-format) lmodified)))]
+         (if (not-modified-since? request lmodified)
+           (-> response
+               (res/status 304)
+               (res/header "Content-Length" 0)
+               (assoc :body ""))
+           (-> response (res/header "Content-Length" file-length))))
+       response))))
 
 (defn wrap-file-info
   "Wrap a handler such that responses with a file for a body will have
@@ -62,15 +64,16 @@
   modification date of the file, a 304 Not Modified response is returned.
   If two arguments are given, the second is taken to be a map of file extensions
   to content types that will supplement the default, built-in map."
-  {:arglists '([handler] [handler mime-types])
-   :deprecated "1.2"}
-  [handler & [mime-types]]
-  (fn
-    ([request]
-     (-> (handler request)
-         (file-info-response request mime-types)))
-    ([request cont raise]
-     (handler request
-              (fn [response]
-                (cont (file-info-response response request mime-types)))
-              raise))))
+  {:deprecated "1.2"}
+  ([handler]
+   (wrap-file-info handler {}))
+  ([handler mime-types]
+   (fn
+     ([request]
+      (-> (handler request)
+          (file-info-response request mime-types)))
+     ([request cont raise]
+      (handler request
+               (fn [response]
+                 (cont (file-info-response response request mime-types)))
+               raise)))))

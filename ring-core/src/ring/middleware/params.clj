@@ -31,18 +31,19 @@
 (defn params-request
   "Adds parameters from the query string and the request body to the request
   map. See: wrap-params."
-  {:arglists '([request] [request options])
-   :added "1.2"}
-  [request & [opts]]
-  (let [encoding (or (:encoding opts)
-                     (req/character-encoding request)
-                     "UTF-8")
-        request  (if (:form-params request)
-                   request
-                   (assoc-form-params request encoding))]
-    (if (:query-params request)
-      request
-      (assoc-query-params request encoding))))
+  {:added "1.2"}
+  ([request]
+   (params-request request {}))
+  ([request options]
+   (let [encoding (or (:encoding options)
+                      (req/character-encoding request)
+                      "UTF-8")
+         request  (if (:form-params request)
+                    request
+                    (assoc-form-params request encoding))]
+     (if (:query-params request)
+       request
+       (assoc-query-params request encoding)))))
 
 (defn wrap-params
   "Middleware to parse urlencoded parameters from the query string and form
@@ -58,10 +59,11 @@
   :encoding - encoding to use for url-decoding. If not specified, uses
               the request character encoding, or \"UTF-8\" if no request
               character encoding is set."
-  {:arglists '([handler] [handler options])}
-  [handler & [options]]
-  (fn
-    ([request]
-     (handler (params-request request options)))
-    ([request cont raise]
-     (handler (params-request request options) cont raise))))
+  ([handler]
+   (wrap-params handler {}))
+  ([handler options]
+   (fn
+     ([request]
+      (handler (params-request request options)))
+     ([request cont raise]
+      (handler (params-request request options) cont raise)))))

@@ -12,20 +12,21 @@
     (assoc request :session session, :flash flash)))
 
 (defn flash-response
-  "If response has a :flash key, saves it in :_flash of session for next request."
-  {:arglists '([response request])
-   :added "1.2"}
-  [response {:keys [session flash] :as request}]
-  (if response
-    (let [session (if (contains? response :session)
-                    (response :session)
-                    session)
-          session (if-let [flash (response :flash)]
-                    (assoc (response :session session) :_flash flash)
-                    session)]
-      (if (or flash (response :flash) (contains? response :session))
-        (assoc response :session session)
-        response))))
+  "If response has a :flash key, saves it in :_flash of session for next
+  request."
+  {:added "1.2"}
+  [response request]
+  (let [{:keys [session flash]} request]
+    (if response
+      (let [session (if (contains? response :session)
+                      (response :session)
+                      session)
+            session (if-let [flash (response :flash)]
+                      (assoc (response :session session) :_flash flash)
+                      session)]
+        (if (or flash (response :flash) (contains? response :session))
+          (assoc response :session session)
+          response)))))
 
 (defn wrap-flash
   "If a :flash key is set on the response by the handler, a :flash key with

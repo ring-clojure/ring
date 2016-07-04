@@ -22,7 +22,7 @@
                           {:path root}))})
 
 (defn- bare-session-request
-  [request & [{:keys [store cookie-name]}]]
+  [request {:keys [store cookie-name]}]
   (let [req-key  (get-in request [:cookies cookie-name :value])
         session  (store/read-session store req-key)
         session-key (if session req-key)]
@@ -32,15 +32,16 @@
 (defn session-request
   "Reads current HTTP session map and adds it to :session key of the request.
   See: wrap-session."
-  {:arglists '([request] [request options])
-   :added "1.2"}
-  [request & [options]]
-  (-> request
-      cookies/cookies-request
-      (bare-session-request options)))
+  {:added "1.2"}
+  ([request]
+   (session-request request))
+  ([request options]
+   (-> request
+       cookies/cookies-request
+       (bare-session-request options))))
 
 (defn- bare-session-response
-  [response {session-key :session/key}  & [{:keys [store cookie-name cookie-attrs]}]]
+  [response {session-key :session/key} {:keys [store cookie-name cookie-attrs]}]
   (let [new-session-key (if (contains? response :session)
                          (if-let [session (response :session)]
                             (if (:recreate (meta session))
@@ -64,13 +65,14 @@
 
 (defn session-response
   "Updates session based on :session key in response. See: wrap-session."
-  {:arglists '([response request] [response request options])
-   :added "1.2"}
-  [response request & [options]]
-  (if response
-    (-> response
-        (bare-session-response request options)
-        cookies/cookies-response)))
+  {:added "1.2"}
+  ([response request]
+   (session-response response request {}))
+  ([response request options]
+   (if response
+     (-> response
+         (bare-session-response request options)
+         cookies/cookies-response))))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
