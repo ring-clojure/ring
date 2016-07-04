@@ -5,8 +5,18 @@ response maps, each of which are described below.
 
 == Handlers
 Ring handlers constitute the core logic of the web application. Handlers are 
-implemented as Clojure functions that process a given request map to generate 
-and return a response map.
+implemented as Clojure functions.
+
+A synchronous handler takes 1 argument, a request map, and returns a response
+map.
+
+An asynchronous handler takes 3 arguments: a request map, a callback function
+for sending a response and a callback function for raising an exception. The
+response callback takes a response map as its argument. The exception callback
+takes an exception as its argument.
+
+A handler function may simultaneously support synchronous and asynchronous
+behavior by accepting both arities.
 
 
 == Middleware
