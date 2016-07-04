@@ -244,3 +244,16 @@
               (Thread/sleep 250)
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
+
+(defn- hello-world-cps [request cont raise]
+  (cont {:status  200
+         :headers {"Content-Type" "text/plain"}
+         :body    "Hello World"}))
+
+(deftest run-jetty-cps-test
+  (with-server hello-world-cps {:port test-port, :async? true}
+    (let [response (http/get test-url)]
+      (is (= (:status response) 200))
+      (is (.startsWith (get-in response [:headers "content-type"])
+                       "text/plain"))
+      (is (= (:body response) "Hello World")))))
