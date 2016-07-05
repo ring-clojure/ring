@@ -49,8 +49,10 @@
 (defn handle-dump
   "Returns a HTML response that shows the information in the request map.
   Also prints the request map to STDOUT."
-  [request]
-  (pprint/pprint request)
-  (println)
-  (-> (response (template request))
-      (content-type "text/html")))
+  ([request]
+   (pprint/pprint request)
+   (println)
+   (-> (response (template request))
+       (content-type "text/html")))
+  ([request respond raise]
+   (respond (handle-dump request))))
