@@ -192,7 +192,7 @@
 
 (deftest wrap-cookies-cps-test
   (testing "read cookie"
-    (let [handler   (wrap-cookies (fn [req cont _] (cont (:cookies req))))
+    (let [handler   (wrap-cookies (fn [req respond _] (respond (:cookies req))))
           request   {:headers {"cookie" "a=b"}}
           response  (promise)
           exception (promise)]
@@ -201,7 +201,7 @@
       (is (not (realized? exception)))))
 
   (testing "write cookie"
-    (let [handler   (wrap-cookies (fn [_ cont _] (cont {:cookies {"a" "b"}})))
+    (let [handler   (wrap-cookies (fn [_ respond _] (respond {:cookies {"a" "b"}})))
           response  (promise)
           exception (promise)]
       (handler {} response exception)

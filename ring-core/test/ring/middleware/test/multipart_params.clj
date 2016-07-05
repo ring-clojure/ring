@@ -78,7 +78,7 @@
            100))))
 
 (deftest wrap-multipart-params-cps-test
-  (let [handler   (wrap-multipart-params (fn [req cont _] (cont req)))
+  (let [handler   (wrap-multipart-params (fn [req respond _] (respond req)))
         form-body (str "--XXXX\r\n"
                        "Content-Disposition: form-data;"
                        "name=\"foo\"\r\n\r\n"

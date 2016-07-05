@@ -245,10 +245,10 @@
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
 
-(defn- hello-world-cps [request cont raise]
-  (cont {:status  200
-         :headers {"Content-Type" "text/plain"}
-         :body    "Hello World"}))
+(defn- hello-world-cps [request respond raise]
+  (respond {:status  200
+            :headers {"Content-Type" "text/plain"}
+            :body    "Hello World"}))
 
 (deftest run-jetty-cps-test
   (with-server hello-world-cps {:port test-port, :async? true}

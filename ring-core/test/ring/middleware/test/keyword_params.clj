@@ -20,7 +20,7 @@
     {:foo {:bar "baz"}}))
 
 (deftest wrap-keyword-params-cps-test
-  (let [handler   (wrap-keyword-params (fn [req cont _] (cont (:params req))))
+  (let [handler   (wrap-keyword-params (fn [req respond _] (respond (:params req))))
         response  (promise)
         exception (promise)]
     (handler {:params {"foo" "bar" :baz "quz"}} response exception)

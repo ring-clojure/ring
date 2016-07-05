@@ -65,5 +65,5 @@
    (fn
      ([request]
       (handler (params-request request options)))
-     ([request cont raise]
-      (handler (params-request request options) cont raise)))))
+     ([request respond raise]
+      (handler (params-request request options) respond raise)))))

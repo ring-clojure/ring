@@ -128,10 +128,10 @@
                (seq (.getBytes "Hello World"))))))))
 
 (deftest servlet-cps-test
-  (let [handler  (fn [req cont _]
-                   (cont {:status  200
-                          :headers {"Content-Type" "text/plain"}
-                          :body    "Hello World"}))
+  (let [handler  (fn [_ respond _]
+                   (respond {:status  200
+                             :headers {"Content-Type" "text/plain"}
+                             :body    "Hello World"}))
         request  {:completed      (atom false)
                   :server-port    8080
                   :server-name    "foobar"

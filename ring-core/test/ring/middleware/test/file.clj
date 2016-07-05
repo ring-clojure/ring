@@ -51,7 +51,8 @@
 
 (deftest wrap-file-cps-test
   (let [dynamic-response {:status 200, :headers {}, :body "foo"}
-        handler          (wrap-file (fn [req cont _] (cont dynamic-response)) public-dir)]
+        handler          (-> (fn [_ respond _] (respond dynamic-response))
+                             (wrap-file public-dir))]
     (testing "file response"
       (let [request   {:request-method :get :uri "/foo.html"}
             response  (promise)

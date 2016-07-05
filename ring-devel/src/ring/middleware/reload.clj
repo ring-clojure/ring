@@ -37,6 +37,6 @@
        ([request]
         (reload!)
         (handler request))
-       ([request cont raise]
+       ([request respond raise]
         (reload!)
-        (handler request cont raise))))))
+        (handler request respond raise))))))

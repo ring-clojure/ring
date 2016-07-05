@@ -45,7 +45,7 @@
     (is (= (:form-params resp) {"hello" "world"}))))
 
 (deftest wrap-params-cps-test
-  (let [handler   (wrap-params (fn [req cont _] (cont req)))
+  (let [handler   (wrap-params (fn [req respond _] (respond req)))
         request   {:query-string "foo=bar"
                    :headers      {"content-type" "application/x-www-form-urlencoded"}
                    :body         (string-input-stream "biz=bat%25")}

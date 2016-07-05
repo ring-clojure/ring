@@ -31,7 +31,7 @@
      ([request]
       (or (resource-request request root-path options)
           (handler request)))
-     ([request cont raise]
+     ([request respond raise]
       (if-let [response (resource-request request root-path options)]
-        (cont response)
-        (handler request cont raise))))))
+        (respond response)
+        (handler request respond raise))))))

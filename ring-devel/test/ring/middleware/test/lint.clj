@@ -132,7 +132,7 @@
 
 (deftest wrap-lint-cps-test
   (testing "valid request and response"
-    (let [handler   (wrap-lint (fn [_ cont _] (cont valid-response)))
+    (let [handler   (wrap-lint (fn [_ respond _] (respond valid-response)))
           response  (promise)
           exception (promise)]
       (handler valid-request response exception)
@@ -140,9 +140,9 @@
       (is (not (realized? exception)))))
 
   (testing "invalid request"
-    (let [handler (wrap-lint (fn [_ cont _] (cont valid-response)))]
+    (let [handler (wrap-lint (fn [_ respond _] (respond valid-response)))]
       (is-lint-error #(handler {} (fn [_]) (fn [_])))))
 
   (testing "invalid response"
-    (let [handler (wrap-lint (fn [_ cont _] (cont {})))]
+    (let [handler (wrap-lint (fn [_ respond _] (respond {})))]
       (is-lint-error #(handler valid-request (fn [_]) (fn [_]))))))

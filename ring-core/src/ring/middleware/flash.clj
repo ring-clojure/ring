@@ -37,6 +37,8 @@
     ([request]
      (let [request (flash-request request)]
        (-> (handler request) (flash-response request))))
-    ([request cont raise]
+    ([request respond raise]
      (let [request (flash-request request)]
-       (handler request (fn [response] (cont (flash-response response request))) raise)))))
+       (handler request
+                (fn [response] (respond (flash-response response request)))
+                raise)))))

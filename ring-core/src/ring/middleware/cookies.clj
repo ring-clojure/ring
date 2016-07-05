@@ -163,7 +163,7 @@
           (cookies-request options)
           handler
           (cookies-response options)))
-     ([request cont raise]
+     ([request respond raise]
       (handler (cookies-request request options)
-               (fn [response] (cont (cookies-response response options)))
+               (fn [response] (respond (cookies-response response options)))
                raise)))))

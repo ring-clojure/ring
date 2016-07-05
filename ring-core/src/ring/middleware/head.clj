@@ -31,7 +31,7 @@
          head-request
          handler
          (head-response request)))
-    ([request cont raise]
+    ([request respond raise]
      (handler (head-request request)
-              (fn [response] (cont (head-response response request)))
+              (fn [response] (respond (head-response response request)))
               raise))))

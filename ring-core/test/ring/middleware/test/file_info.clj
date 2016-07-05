@@ -74,7 +74,8 @@
 (deftest wrap-file-info-cps-test
   (testing "file response"
     (with-last-modified [known-file 1263506400]
-      (let [handler   (wrap-file-info (fn [_ cont _] (cont {:headers {} :body known-file})))
+      (let [handler   (wrap-file-info
+                       (fn [_ respond _] (respond {:headers {} :body known-file})))
             response  (promise)
             exception (promise)]
         (handler {:headers {}} response exception)
@@ -86,7 +87,8 @@
         (is (not (realized? exception))))))
   
   (testing "non-file response"
-    (let [handler   (wrap-file-info (fn [_ cont _] (cont {:headers {} :body "body"})))
+    (let [handler   (wrap-file-info
+                     (fn [_ respond _] (respond {:headers {} :body "body"})))
           response  (promise)
           exception (promise)]
       (handler {:headers {}} response exception)

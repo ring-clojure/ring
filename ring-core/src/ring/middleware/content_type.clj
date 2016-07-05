@@ -32,7 +32,7 @@
    (fn
      ([request]
       (-> (handler request) (content-type-response request options)))
-     ([request cont raise]
+     ([request respond raise]
       (handler request
-               (fn [response] (cont (content-type-response response request options)))
+               (fn [response] (respond (content-type-response response request options)))
                raise)))))

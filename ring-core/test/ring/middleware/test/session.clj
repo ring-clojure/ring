@@ -201,7 +201,8 @@
   (testing "reading session"
     (let [memory    (atom {"test" {:foo "bar"}})
           store     (memory-store memory)
-          handler   (wrap-session (fn [req cont _] (cont (:session req))) {:store store})
+          handler   (-> (fn [req respond _] (respond (:session req)))
+                        (wrap-session {:store store}))
           request   {:cookies {"ring-session" {:value "test"}}}
           response  (promise)
           exception (promise)]
@@ -213,9 +214,8 @@
   (testing "writing session"
     (let [memory    (atom {"test" {}})
           store     (memory-store memory)
-          handler   (wrap-session
-                     (fn [req cont _] (cont {:session {:foo "bar"}, :body "foo"}))
-                     {:store store})
+          handler   (-> (fn [_ respond _] (respond {:session {:foo "bar"}, :body "foo"}))
+                        (wrap-session {:store store}))
           request   {:cookies {"ring-session" {:value "test"}}}
           response  (promise)
           exception (promise)]

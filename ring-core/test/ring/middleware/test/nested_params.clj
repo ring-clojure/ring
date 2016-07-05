@@ -61,7 +61,7 @@
         {"a" "b", "c" "d"} {"a" "b", "c" "d"}))))
 
 (deftest wrap-nested-params-cps-test
-  (let [handler   (wrap-nested-params (fn [req cont _] (cont (:params req))))
+  (let [handler   (wrap-nested-params (fn [req respond _] (respond (:params req))))
         request   {:params {"x[y]" "z"}}
         response  (promise)
         exception (promise)]

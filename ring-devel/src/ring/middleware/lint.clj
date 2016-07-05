@@ -99,10 +99,10 @@
      (let [response (handler request)]
        (check-resp response)
        response))
-    ([request cont raise]
+    ([request respond raise]
      (check-req request)
      (handler request
               (fn [response]
                 (check-resp response)
-                (cont response))
+                (respond response))
               raise))))

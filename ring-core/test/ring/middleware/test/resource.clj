@@ -38,7 +38,8 @@
       {:request-method :get, :uri "/foo.html"} "foo-in-jar")))
 
 (deftest wrap-resource-cps-test
-  (let [handler (wrap-resource (fn [req cont _] (cont (test-handler req))) "/ring/assets")]
+  (let [handler (-> (fn [req respond _] (respond (test-handler req)))
+                    (wrap-resource "/ring/assets"))]
     (testing "resource response"
       (let [response  (promise)
             exception (promise)]

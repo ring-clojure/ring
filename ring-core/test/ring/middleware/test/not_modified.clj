@@ -31,8 +31,8 @@
   (testing "etag match"
     (let [etag      "known-etag"
           handler   (wrap-not-modified
-                     (fn [req cont _]
-                       (cont {:status 200, :headers {"etag" etag}, :body ""})))
+                     (fn [req respond _]
+                       (respond {:status 200, :headers {"etag" etag}, :body ""})))
           request   {:request-method :get, :headers {"if-none-match" etag}}
           response  (promise)
           exception (promise)]

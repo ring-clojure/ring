@@ -48,7 +48,7 @@
    (fn
      ([request]
       (or (file-request request root-path options) (handler request)))
-     ([request cont raise]
+     ([request respond raise]
       (if-let [response (file-request request root-path options)]
-        (cont response)
-        (handler request cont raise))))))
+        (respond response)
+        (handler request respond raise))))))

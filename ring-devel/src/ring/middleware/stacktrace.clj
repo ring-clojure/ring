@@ -27,9 +27,9 @@
           (catch Throwable ex
             (pst-on *err* color? ex)
             (throw ex))))
-       ([request cont raise]
+       ([request respond raise]
         (try
-          (handler request cont (fn [ex] (pst-on *err* color? ex) (raise ex)))
+          (handler request respond (fn [ex] (pst-on *err* color? ex) (raise ex)))
           (catch Throwable ex
             (pst-on *err* color? ex)
             (throw ex))))))))
@@ -96,11 +96,11 @@
        (handler request)
        (catch Throwable ex
          (ex-response request ex))))
-    ([request cont raise]
+    ([request respond raise]
      (try
-       (handler request cont (fn [ex] (cont (ex-response request ex))))
+       (handler request respond (fn [ex] (respond (ex-response request ex))))
        (catch Throwable ex
-         (cont (ex-response request ex)))))))
+         (respond (ex-response request ex)))))))
 
 (defn wrap-stacktrace
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
