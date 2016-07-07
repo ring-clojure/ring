@@ -1,3 +1,8 @@
+## 1.6.0 (TBD)
+
+* Added `ring.core.protocols` namespace
+* Updated SPEC to accept response bodies that satisfy `ring.core.protocols/ResponseBody`
+
 ## 1.5.0 (2016-06-08)
 
 * Added `:http?` option to Jetty adapter to allow HTTP to be turned off
@@ -9,7 +14,6 @@
 * Fixed issue with `:recreate` metadata not being removed from sessions
 * Fixed exception in `wrap-nested-params` on bad input
 * Updated Ring-Codec to 1.0.1 to fix exceptions on bad URL encoding
-
 
 ## 1.4.0 (2015-07-09)
 
