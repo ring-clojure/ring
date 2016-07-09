@@ -34,7 +34,6 @@
          (servlet/build-request-map request)
          (fn [response-map]
            (servlet/update-servlet-response response response-map)
-           (.complete context)
            (.setHandled base-request true))
          (fn [exception]
            (.complete context)

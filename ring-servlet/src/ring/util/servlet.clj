@@ -83,34 +83,38 @@
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type)))
 
-(defn- set-body
-  "Update a HttpServletResponse body with a String, ISeq, File or InputStream."
-  [^HttpServletResponse response, body]
-  (protocols/write-body body (.getOutputStream response)))
+(defn- make-output-stream
+  [^HttpServletResponse response ^AsyncContext context]
+  (if (nil? context)
+    (.getOutputStream response)
+    (proxy [java.io.FilterOutputStream] [(.getOutputStream response)]
+      (close []
+        (.complete context)
+        (proxy-super close)))))
 
 (defn update-servlet-response
-  "Update the HttpServletResponse using a response map."
-  {:arglists '([response response-map])}
-  [^HttpServletResponse response, {:keys [status headers body]}]
-  (when-not response
-    (throw (Exception. "Null response given.")))
-  (when status
-    (set-status response status))
-  (doto response
-    (set-headers headers)
-    (set-body body)))
-
-(defn- handler-nil-exception []
-  (NullPointerException. "Handler returned nil"))
+  "Update the HttpServletResponse using a response map. Takes an optional
+  AsyncContext."
+  ([response response-map]
+   (update-servlet-response response nil response-map))
+  ([^HttpServletResponse response context response-map]
+   (let [{:keys [status headers body]} response-map]
+     (when (nil? response)
+       (throw (NullPointerException. "HttpServletResponse is nil")))
+     (when (nil? response-map)
+       (throw (NullPointerException. "Response map is nil")))
+     (when status
+       (set-status response status))
+     (set-headers response headers)
+     (protocols/write-body body (make-output-stream response context)))))
 
 (defn- make-blocking-service-method [handler]
   (fn [servlet request response]
-    (let [request-map (-> request
-                          (build-request-map)
-                          (merge-servlet-keys servlet request response))]
-      (if-let [response-map (handler request-map)]
-        (update-servlet-response response response-map)
-        (throw (handler-nil-exception))))))
+    (-> request
+        (build-request-map)
+        (merge-servlet-keys servlet request response)
+        (handler)
+        (->> (update-servlet-response response)))))
 
 (defn- make-async-service-method [handler]
   (fn [servlet request response]
@@ -120,9 +124,7 @@
            (build-request-map)
            (merge-servlet-keys servlet request response))
        (fn [response-map]
-         (when response-map
-           (update-servlet-response response response-map))
-         (.complete context))
+         (update-servlet-response response context response-map))
        (fn [exception]
          (.complete context))))))
 

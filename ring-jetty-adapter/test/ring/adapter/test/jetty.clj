@@ -1,7 +1,9 @@
 (ns ring.adapter.test.jetty
   (:require [clojure.test :refer :all]
             [ring.adapter.jetty :refer :all]
-            [clj-http.client :as http])
+            [clj-http.client :as http]
+            [clojure.java.io :as io]
+            [ring.core.protocols :as p])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
@@ -250,10 +252,36 @@
             :headers {"Content-Type" "text/plain"}
             :body    "Hello World"}))
 
+(defn- hello-world-streaming [request respond raise]
+  (future
+    (respond
+     {:status  200
+      :headers {"Content-Type" "text/event-stream"}
+      :body    (reify p/ResponseBody
+                 (write-body [_ output]
+                   (future
+                     (with-open [w (io/writer output)]
+                       (Thread/sleep 100)
+                       (.write w "data: hello\n\n")
+                       (.flush w)
+                       (Thread/sleep 100)
+                       (.write w "data: world\n\n")
+                       (.flush w)))))})))
+
 (deftest run-jetty-cps-test
-  (with-server hello-world-cps {:port test-port, :async? true}
-    (let [response (http/get test-url)]
-      (is (= (:status response) 200))
-      (is (.startsWith (get-in response [:headers "content-type"])
-                       "text/plain"))
-      (is (= (:body response) "Hello World")))))
+  (testing "async response"
+    (with-server hello-world-cps {:port test-port, :async? true}
+      (let [response (http/get test-url)]
+        (is (= (:status response) 200))
+        (is (.startsWith (get-in response [:headers "content-type"])
+                         "text/plain"))
+        (is (= (:body response) "Hello World")))))
+
+  (testing "streaming response"
+    (with-server hello-world-streaming {:port test-port, :async? true}
+      (let [response (http/get test-url)]
+        (is (= (:status response) 200))
+        (is (.startsWith (get-in response [:headers "content-type"])
+                         "text/event-stream"))
+        (is (= (:body response)
+               "data: hello\n\ndata: world\n\n"))))))

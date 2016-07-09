@@ -18,10 +18,12 @@
         (.write writer (str chunk)))))
   java.io.InputStream
   (write-body [body output]
-    (with-open [input body]
-      (io/copy input output)))
+    (with-open [output output, body body]
+      (io/copy body output)))
   java.io.File
   (write-body [body output]
-    (io/copy body output))
+    (with-open [output output]
+      (io/copy body output)))
   nil
-  (write-body [_ _]))
+  (write-body [_ ^java.io.OutputStream output]
+    (.close output)))
