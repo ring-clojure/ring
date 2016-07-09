@@ -42,18 +42,21 @@
       (startAsync [] (async-context (request :completed))))))
 
 (defn- servlet-response [response]
-  (proxy [javax.servlet.http.HttpServletResponse] []
-    (getOutputStream []
-      (proxy [javax.servlet.ServletOutputStream] []
-        (write [body & _]
-          (swap! response assoc :body body))))
-    (setStatus [status]
-      (swap! response assoc :status status))
-    (setHeader [name value]
-      (swap! response assoc-in [:headers name] value))
-    (setCharacterEncoding [value])
-    (setContentType [value]
-      (swap! response assoc :content-type value))))
+  (let [output-stream (java.io.ByteArrayOutputStream.)]
+    (swap! response assoc :body output-stream)
+    (proxy [javax.servlet.http.HttpServletResponse] []
+      (getOutputStream []
+        (proxy [javax.servlet.ServletOutputStream] []
+          (write
+            ([b] (.write output-stream b))
+            ([b off len] (.write output-stream b off len)))))
+      (setStatus [status]
+        (swap! response assoc :status status))
+      (setHeader [name value]
+        (swap! response assoc-in [:headers name] value))
+      (setCharacterEncoding [value])
+      (setContentType [value]
+        (swap! response assoc :content-type value)))))
 
 (defn- servlet-config []
   (proxy [javax.servlet.ServletConfig] []
@@ -124,8 +127,7 @@
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))
-        (is (= (take-while (complement zero?) (@response :body))
-               (seq (.getBytes "Hello World"))))))))
+        (is (= (.toString (@response :body)) "Hello World"))))))
 
 (deftest servlet-cps-test
   (let [handler  (fn [_ respond _]
@@ -147,8 +149,7 @@
     (is (= @(:completed request) true))
     (is (= (@response :status) 200))
     (is (= (@response :content-type) "text/plain"))
-    (is (= (take-while (complement zero?) (@response :body))
-           (seq (.getBytes "Hello World"))))))
+    (is (= (.toString (@response :body)) "Hello World"))))
 
 (defservice "foo-"
   (fn [_]
@@ -178,5 +179,4 @@
                  (servlet-response response))
     (is (= (@response :status) 200))
     (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))
-    (is (= (take-while (complement zero?) (@response :body))
-           (seq (.getBytes "Hello World"))))))
+    (is (= (.toString (@response :body)) "Hello World"))))
