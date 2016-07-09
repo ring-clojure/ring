@@ -66,11 +66,6 @@
           :servlet-context      (.getServletContext servlet)
           :servlet-context-path (.getContextPath request)}))
 
-(defn- set-status
-  "Update a HttpServletResponse with a status code."
-  [^HttpServletResponse response, status]
-  (.setStatus response status))
-
 (defn- set-headers
   "Update a HttpServletResponse with a map of headers."
   [^HttpServletResponse response, headers]
@@ -104,7 +99,7 @@
      (when (nil? response-map)
        (throw (NullPointerException. "Response map is nil")))
      (when status
-       (set-status response status))
+       (.setStatus response status))
      (set-headers response headers)
      (protocols/write-body body (make-output-stream response context)))))
 
