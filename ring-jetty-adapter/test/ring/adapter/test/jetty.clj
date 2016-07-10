@@ -258,7 +258,7 @@
      {:status  200
       :headers {"Content-Type" "text/event-stream"}
       :body    (reify p/StreamingResponseBody
-                 (write-body-to-stream [_ output]
+                 (write-body-to-stream [_ _ output]
                    (future
                      (with-open [w (io/writer output)]
                        (Thread/sleep 100)

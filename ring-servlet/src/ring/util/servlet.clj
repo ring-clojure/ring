@@ -101,7 +101,8 @@
      (when status
        (.setStatus response status))
      (set-headers response headers)
-     (protocols/write-body-to-stream body (make-output-stream response context)))))
+     (let [output-stream (make-output-stream response context)]
+       (protocols/write-body-to-stream body response-map output-stream)))))
 
 (defn- make-blocking-service-method [handler]
   (fn [servlet request response]
