@@ -4,7 +4,7 @@
   (:require [clojure.java.io :as io]
             [ring.util.response :as response]))
 
-(defprotocol ^{:added "1.6"} StreamingResponseBody
+(defprotocol ^{:added "1.6"} StreamableResponseBody
   "A protocol for writing data to the response body via an output stream."
   (write-body-to-stream [body response output-stream]
     "Write a value representing a response body to an output stream. The stream
@@ -15,7 +15,7 @@
     (io/writer output-stream :encoding charset)
     (io/writer output-stream)))
 
-(extend-protocol StreamingResponseBody
+(extend-protocol StreamableResponseBody
   String
   (write-body-to-stream [body response output-stream]
     (with-open [writer (response-writer response output-stream)]

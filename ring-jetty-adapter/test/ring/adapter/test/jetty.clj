@@ -257,7 +257,7 @@
     (respond
      {:status  200
       :headers {"Content-Type" "text/event-stream"}
-      :body    (reify p/StreamingResponseBody
+      :body    (reify p/StreamableResponseBody
                  (write-body-to-stream [_ _ output]
                    (future
                      (with-open [w (io/writer output)]

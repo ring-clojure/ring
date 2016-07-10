@@ -121,11 +121,13 @@ corresponding values:
   sent for each such String value.
 
 :body
-  (Optional, ring.core.protocols/ResponseBody)
+  (Optional, ring.core.protocols/StreamableResponseBody)
   A representation of the response body, if a response body is appropriate for 
-  the response's status code. The response body must satisfy the ResponseBody
-  protocol located in ring.core.protocols. By default the protocol is satisfied
-  by the following types:
+  the response's status code. The response body must satisfy the
+  StreamableResponseBody protocol located in the ring.core.protocols namespace.
+
+  By default the protocol is satisfied by the following types:
+
   String:
     Contents are sent to the client as-is.
   ISeq:
