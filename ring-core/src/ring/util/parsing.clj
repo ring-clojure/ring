@@ -17,3 +17,8 @@
        :added "1.3"}
   re-value
   (str re-token "|" re-quoted))
+
+(def ^{:doc "Pattern for pulling the charset out of the content-type header"
+       :added "1.6"}
+  re-charset
+  (re-pattern (str ";(?:.*\\s)?(?i:charset)=(" re-value ")\\s*(?:;|$)")))

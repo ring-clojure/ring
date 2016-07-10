@@ -3,6 +3,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [ring.util.io :refer [last-modified-date]]
+            [ring.util.parsing :refer [re-charset]]
             [ring.util.time :refer [format-date]])
   (:import [java.io File]
            [java.util Date]
@@ -200,6 +201,13 @@
       (-> (or content-type "text/plain")
           (str/replace #";\s*charset=[^;]*" "")
           (str "; charset=" charset)))))
+
+(defn get-charset
+  "Gets the character encoding of a Ring response."
+  {:added "1.6"}
+  [resp]
+  (if-let [content-type (get-header resp "Content-Type")]
+    (second (re-find re-charset content-type))))
 
 (defn set-cookie
   "Sets a cookie on the response. Requires the handler to be wrapped in the

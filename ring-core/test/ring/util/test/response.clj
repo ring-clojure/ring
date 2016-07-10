@@ -62,6 +62,18 @@
     (is (= (charset {:status 200 :headers {"content-type" "text/html"}} "UTF-8")
            {:status 200 :headers {"content-type" "text/html; charset=UTF-8"}}))))
 
+(deftest test-get-charset
+  (testing "simple charset"
+    (is (= (get-charset {:headers {"Content-Type" "text/plain; charset=UTF-8"}})
+           "UTF-8")))
+  (testing "case insensitive"
+    (is (= (get-charset {:headers {"content-type" "text/plain; charset=UTF-16"}})
+           "UTF-16")))
+  (testing "missing charset"
+    (is (nil? (get-charset {:headers {"Content-Type" "text/plain"}}))))
+  (testing "missing content-type"
+    (is (nil? (get-charset {:headers {}})))))
+
 (deftest test-header
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
          (header {:status 200 :headers {}} "X-Foo" "Bar"))))
