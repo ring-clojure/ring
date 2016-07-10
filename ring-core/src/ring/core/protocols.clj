@@ -1,29 +1,29 @@
 (ns ring.core.protocols
   (:require [clojure.java.io :as io]))
 
-(defprotocol ResponseBody
-  "A protocol for writing data to the response body."
-  (write-body [body output-stream]
+(defprotocol StreamingResponseBody
+  "A protocol for writing data to the response body via an output stream."
+  (write-body-to-stream [body output-stream]
     "Write a value representing a response body to an output stream."))
 
-(extend-protocol ResponseBody
+(extend-protocol StreamingResponseBody
   String
-  (write-body [body output]
-    (with-open [writer (io/writer output)]
+  (write-body-to-stream [body output-stream]
+    (with-open [writer (io/writer output-stream)]
       (.write writer body)))
   clojure.lang.ISeq
-  (write-body [body output]
-    (with-open [writer (io/writer output)]
+  (write-body-to-stream [body output-stream]
+    (with-open [writer (io/writer output-stream)]
       (doseq [chunk body]
         (.write writer (str chunk)))))
   java.io.InputStream
-  (write-body [body output]
-    (with-open [output output, body body]
-      (io/copy body output)))
+  (write-body-to-stream [body output-stream]
+    (with-open [out output-stream, body body]
+      (io/copy body out)))
   java.io.File
-  (write-body [body output]
-    (with-open [output output]
-      (io/copy body output)))
+  (write-body-to-stream [body output-stream]
+    (with-open [out output-stream]
+      (io/copy body out)))
   nil
-  (write-body [_ ^java.io.OutputStream output]
-    (.close output)))
+  (write-body-to-stream [_ ^java.io.OutputStream output-stream]
+    (.close output-stream)))
