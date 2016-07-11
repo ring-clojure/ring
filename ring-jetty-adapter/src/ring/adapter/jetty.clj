@@ -28,15 +28,15 @@
 
 (defn- ^AbstractHandler async-proxy-handler [handler]
   (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request response]
+    (handle [_ ^Request base-request request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
         (handler
          (servlet/build-request-map request)
          (fn [response-map]
            (servlet/update-servlet-response response response-map)
            (.setHandled base-request true))
-         (fn [exception]
-           (.complete context)
+         (fn [^Throwable exception]
+           (.sendError response 500 (.getMessage exception))
            (.setHandled base-request true)))))))
 
 (defn- ^ServerConnector server-connector [server & factories]

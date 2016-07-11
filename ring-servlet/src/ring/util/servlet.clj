@@ -113,7 +113,7 @@
         (->> (update-servlet-response response)))))
 
 (defn- make-async-service-method [handler]
-  (fn [servlet request response]
+  (fn [servlet request ^HttpServletResponse response]
     (let [^AsyncContext context (.startAsync request)]
       (handler
        (-> request
@@ -121,8 +121,8 @@
            (merge-servlet-keys servlet request response))
        (fn [response-map]
          (update-servlet-response response context response-map))
-       (fn [exception]
-         (.complete context))))))
+       (fn [^Throwable exception]
+         (.sendError response 500 (.getMessage exception)))))))
 
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the
