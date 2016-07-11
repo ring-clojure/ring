@@ -1,12 +1,19 @@
-## 1.6.0 (TBD)
+## 1.6.0-beta3 (2016-07-09)
 
-* Added `ring.core.protocols` namespace
-* Updated SPEC to accept response bodies that satisfy `ring.core.protocols/ResponseBody`
+* Fixed responses closing when output stream is written asynchronously
+
+## 1.6.0-beta2 (2016-07-07)
+
 * Updated SPEC to accept three-arity asynchronous handlers
 * Updated all middleware to work with asynchronous handlers
 * Updated minimum servlet dependency in ring-servlet to 3.1
 * Updated ring-servlet to use `javax.servlet.AsyncContext` with async handlers
 * Updated ring-jetty-adapter to support async handlers when `:async?` option is true
+
+## 1.6.0-beta1 (2016-06-23)
+
+* Added `ring.core.protocols` namespace
+* Updated SPEC to accept response bodies that satisfy `ring.core.protocols/ResponseBody`
 
 ## 1.5.0 (2016-06-08)
 
