@@ -1,3 +1,10 @@
+## 1.6.0-beta4 (2016-07-13)
+
+* Renamed `ResponseBody` protocol to `StreamableResponseBody`
+* Renamed `write-body` protocol method to `write-body-to-stream`
+* Added `ring.util.response/get-charset` function
+* Added response map to `write-body-to-stream` for character encoding of strings
+
 ## 1.6.0-beta3 (2016-07-09)
 
 * Fixed responses closing when output stream is written asynchronously
