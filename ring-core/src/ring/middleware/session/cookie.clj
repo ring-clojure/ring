@@ -2,7 +2,7 @@
   "A session storage engine that stores session data in encrypted cookies."
   (:require [ring.middleware.session.store :refer [SessionStore]]
             [ring.util.codec :as codec]
-            [clojure.tools.reader.edn :as edn]
+            [clojure.edn :as edn]
             [crypto.random :as random]
             [crypto.equality :as crypto])
   (:import [java.security SecureRandom]
