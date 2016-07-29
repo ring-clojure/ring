@@ -33,7 +33,7 @@
         (handler
          (servlet/build-request-map request)
          (fn [response-map]
-           (servlet/update-servlet-response response response-map)
+           (servlet/update-servlet-response response context response-map)
            (.setHandled base-request true))
          (fn [^Throwable exception]
            (.sendError response 500 (.getMessage exception))
