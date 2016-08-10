@@ -7,7 +7,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring/ring-codec "1.0.1"]
                  [commons-io "2.5"]
-                 [commons-fileupload "1.3.1"]
+                 [commons-fileupload "1.3.2"]
                  [clj-time "0.11.0"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
