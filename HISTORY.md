@@ -1,3 +1,8 @@
+## 1.6.0-beta5 (2016-08-10)
+
+* Fixed bug in Jetty adapter that stopped async responses from completing
+* Removed unnecessary tools.reader dependency
+
 ## 1.6.0-beta4 (2016-07-13)
 
 * Renamed `ResponseBody` protocol to `StreamableResponseBody`
