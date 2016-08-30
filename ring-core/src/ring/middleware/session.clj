@@ -34,7 +34,7 @@
   See: wrap-session."
   {:added "1.2"}
   ([request]
-   (session-request request))
+   (session-request request {}))
   ([request options]
    (-> request
        cookies/cookies-request
