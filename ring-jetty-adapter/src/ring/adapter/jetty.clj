@@ -33,11 +33,10 @@
         (handler
          (servlet/build-request-map request)
          (fn [response-map]
-           (servlet/update-servlet-response response context response-map)
-           (.setHandled base-request true))
+           (servlet/update-servlet-response response context response-map))
          (fn [^Throwable exception]
-           (.sendError response 500 (.getMessage exception))
-           (.setHandled base-request true)))))))
+           (.sendError response 500 (.getMessage exception))))
+        (.setHandled base-request true)))))
 
 (defn- ^ServerConnector server-connector [server & factories]
   (ServerConnector. server (into-array ConnectionFactory factories)))
