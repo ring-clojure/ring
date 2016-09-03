@@ -252,6 +252,12 @@
             :headers {"Content-Type" "text/plain"}
             :body    "Hello World"}))
 
+(defn- hello-world-cps-future [request respond raise]
+  (future
+    (respond {:status  200
+            :headers {"Content-Type" "text/plain"}
+            :body    "Hello World"})))
+
 (defn- hello-world-streaming [request respond raise]
   (future
     (respond
@@ -269,6 +275,14 @@
                        (.flush w)))))})))
 
 (deftest run-jetty-cps-test
+  (testing "async response in future"
+    (with-server hello-world-cps-future {:port test-port, :async? true}
+      (let [response (http/get test-url)]
+        (is (= (:status response) 200))
+        (is (.startsWith (get-in response [:headers "content-type"])
+                         "text/plain"))
+        (is (= (:body response) "Hello World")))))
+
   (testing "async response"
     (with-server hello-world-cps {:port test-port, :async? true}
       (let [response (http/get test-url)]
