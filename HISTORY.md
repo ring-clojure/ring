@@ -1,3 +1,9 @@
+## 1.6.0-beta6 (2016-09-06)
+
+* Updated Commons FileUpload to 1.3.2
+* Fixed missing argument in `ring.middleware.sesson/session-request`
+* Fixed intermittent 404 response in async Jetty adapter
+
 ## 1.6.0-beta5 (2016-08-10)
 
 * Fixed bug in Jetty adapter that stopped async responses from completing
