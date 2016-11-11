@@ -24,6 +24,7 @@
   crypt-algorithm
   "AES/CBC/PKCS5Padding")
 
+;; Ensure cipher-algorithm classes are preloaded
 (Cipher/getInstance crypt-algorithm)
 
 (defn- hmac
