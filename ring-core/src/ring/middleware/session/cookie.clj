@@ -24,6 +24,8 @@
   crypt-algorithm
   "AES/CBC/PKCS5Padding")
 
+(Cipher/getInstance crypt-algorithm)
+
 (defn- hmac
   "Generates a Base64 HMAC with the supplied key on a string of data."
   [key data]
