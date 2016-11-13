@@ -24,6 +24,9 @@
   crypt-algorithm
   "AES/CBC/PKCS5Padding")
 
+;; Ensure cipher-algorithm classes are preloaded
+(Cipher/getInstance crypt-algorithm)
+
 (defn- hmac
   "Generates a Base64 HMAC with the supplied key on a string of data."
   [key data]
