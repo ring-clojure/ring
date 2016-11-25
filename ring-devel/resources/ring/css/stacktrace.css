@@ -48,6 +48,7 @@ h1 {
 .trace {
     width: 90%;
     margin: auto;
+    overflow: scroll;
 }
 
 .trace table {
