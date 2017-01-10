@@ -66,22 +66,30 @@
   (and (contains? set-cookie-attrs key)
        (not (.contains (str value) ";"))
        (case key
-         :max-age (or (instance? Interval value) (integer? value))
-         :expires (or (instance? DateTime value) (string? value))
+         :max-age (or (instance? Interval value)
+                      (integer? value)
+                      (fn? value))
+         :expires (or (instance? DateTime value)
+                      (string? value)
+                      (fn? value))
          true)))
+
+(defn- write-attr
+  "Write a map-entry of cookie attribute to a string."
+  [key x]
+  (cond
+    (instance? Interval x) (str ";" (set-cookie-attrs key) "=" (in-seconds x))
+    (instance? DateTime x) (str ";" (set-cookie-attrs key) "=" (unparse rfc822-formatter x))
+    (fn? x) (write-attr key (x))
+    (true? x)  (str ";" (set-cookie-attrs key))
+    (false? x) ""
+    :else (str ";" (set-cookie-attrs key) "=" x)))
 
 (defn- write-attr-map
   "Write a map of cookie attributes to a string."
   [attrs]
   {:pre [(every? valid-attr? attrs)]}
-  (for [[key value] attrs]
-    (let [attr-name (name (set-cookie-attrs key))]
-      (cond
-       (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
-       (instance? DateTime value) (str ";" attr-name "=" (unparse rfc822-formatter value))
-       (true? value)  (str ";" attr-name)
-       (false? value) ""
-       :else (str ";" attr-name "=" value)))))
+  (for [[k v] attrs] (write-attr k v)))
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
