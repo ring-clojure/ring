@@ -33,6 +33,10 @@
 * Added `ring.core.protocols` namespace
 * Updated SPEC to accept response bodies that satisfy `ring.core.protocols/ResponseBody`
 
+## 1.5.1 (2017-01-10)
+
+* Fixed path-traversal vulnerability in `resource-response` function
+
 ## 1.5.0 (2016-06-08)
 
 * Added `:http?` option to Jetty adapter to allow HTTP to be turned off

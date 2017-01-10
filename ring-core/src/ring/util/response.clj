@@ -70,11 +70,13 @@
   [resp name value]
   (assoc-in resp [:headers name] (str value)))
 
-(defn- safe-path?
-  "Is a filepath safe for a particular root?"
-  [^String root ^String path]
-  (.startsWith (.getCanonicalPath (File. root path))
-               (.getCanonicalPath (File. root))))
+(defn- canonical-path [^File file]
+  (str (.getCanonicalPath file)
+       (if (.isDirectory file) File/separatorChar)))
+
+(defn- safe-path? [^String root ^String path]
+  (.startsWith (canonical-path (File. root path))
+               (canonical-path (File. root))))
 
 (defn- directory-transversal?
   "Check if a path contains '..'."
@@ -289,17 +291,36 @@
         (content-length (:content-length data))
         (last-modified (:last-modified data)))))
 
+(defn- get-resources [path loader]
+  (-> (or loader (.getContextClassLoader (Thread/currentThread)))
+      (.getResources path)
+      (enumeration-seq)))
+
+(defn- safe-file-resource? [{:keys [body]} {:keys [root loader allow-symlinks?]}]
+  (or allow-symlinks?
+      (nil? root)
+      (let [root (.replaceAll (str root) "^/" "")]
+        (or (str/blank? root)
+            (let [path (canonical-path body)]
+              (some #(and (= "file" (.getProtocol %))
+                          (.startsWith path (canonical-path (url-as-file %))))
+                    (get-resources root loader)))))))
+
 (defn resource-response
   "Returns a Ring response to serve a packaged resource, or nil if the
   resource does not exist.
   Options:
-    :root - take the resource relative to this root
-    :loader - resolve the resource in this class loader"
+    :root            - take the resource relative to this root
+    :loader          - resolve the resource in this class loader
+    :allow-symlinks? - allow symlinks in classpath directories,
+                       defaults to false"
   [path & [{:keys [root loader] :as opts}]]
-  (let [path (-> (str (or root "") "/" path)
-                 (.replace "//" "/")
-                 (.replaceAll "^/" ""))]
-    (if-let [resource (if loader
-                        (io/resource path loader)
-                        (io/resource path))]
-      (url-response resource))))
+  (let [path      (-> (str "/" path)  (.replace "//" "/"))
+        root+path (-> (str root path) (.replaceAll "^/" ""))
+        load      #(if loader (io/resource % loader) (io/resource %))]
+    (if-not (directory-transversal? root+path)
+      (if-let [resource (load root+path)]
+        (let [response (url-response resource)]
+          (if (or (not (instance? File (:body response)))
+                  (safe-file-resource? response opts))
+            response))))))
