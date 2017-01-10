@@ -1,3 +1,9 @@
+## 1.6.0-beta7 (2016-01-10)
+
+* Backported path traversal vulnerability fix from version 1.5.1
+* Fixed reflection warnings in `ring.core.protocols`
+* Stopped `wrap-stacktrace` HTML from overflowing
+
 ## 1.6.0-beta6 (2016-09-06)
 
 * Updated Commons FileUpload to 1.3.2
