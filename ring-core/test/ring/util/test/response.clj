@@ -157,7 +157,8 @@
                                   :allow-symlinks? true}))))
 
   (testing "resource response doesn't follow symlinks by default"
-    (is (nil? (resource-response "backlink/foo.html" {:root "ring/assets/bars"}))))
+    (is (nil? (resource-response "backlink/foo.html" {:root "ring/assets/bars"})))
+    (is (nil? (resource-response "backlink/bars.txt" {:root "ring/assets/bars"}))))
 
   (testing "resource response can optionally follows symlinks"
     (let [resp (resource-response "backlink/foo.html"
@@ -200,7 +201,8 @@
       (is (= (get-in resp [:headers "Content-Length"]) "3"))
       (is (= (slurp (resp :body)) "foo")))
 
-    (is (nil? (file-response "backlink/foo.html" {:root "test/ring/assets/bars"})))))
+    (is (nil? (file-response "backlink/foo.html" {:root "test/ring/assets/bars"})))
+    (is (nil? (file-response "backlink/bars.txt" {:root "test/ring/assets/bars"})))))
 
 (deftest test-set-cookie
   (is (= {:status 200 :headers {} :cookies {"Foo" {:value "Bar"}}}

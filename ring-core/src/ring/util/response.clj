@@ -69,11 +69,13 @@
   [resp name value]
   (assoc-in resp [:headers name] (str value)))
 
-(defn- safe-path?
-  "Is a filepath safe for a particular root?"
-  [^String root ^String path]
-  (.startsWith (.getCanonicalPath (File. root path))
-               (.getCanonicalPath (File. root))))
+(defn- canonical-path [^File file]
+  (str (.getCanonicalPath file)
+       (if (.isDirectory file) File/separatorChar)))
+
+(defn- safe-path? [^String root ^String path]
+  (.startsWith (canonical-path (File. root path))
+               (canonical-path (File. root))))
 
 (defn- directory-transversal?
   "Check if a path contains '..'."
@@ -291,9 +293,9 @@
       (nil? root)
       (let [root (.replaceAll (str root) "^/" "")]
         (or (str/blank? root)
-            (let [path (.getCanonicalPath body)]
+            (let [path (canonical-path body)]
               (some #(and (= "file" (.getProtocol %))
-                          (.startsWith path (.getCanonicalPath (url-as-file %))))
+                          (.startsWith path (canonical-path (url-as-file %))))
                     (get-resources root loader)))))))
 
 (defn resource-response
