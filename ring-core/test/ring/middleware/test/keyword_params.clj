@@ -17,7 +17,9 @@
     {:foo "bar"}
     {:foo "bar"}
     {"foo" {:bar "baz"}}
-    {:foo {:bar "baz"}}))
+    {:foo {:bar "baz"}}
+    {"fòö" "bar" "bíz" "bat"}
+    {:fòö  "bar" :bíz  "bat"}))
 
 (deftest wrap-keyword-params-cps-test
   (let [handler   (wrap-keyword-params (fn [req respond _] (respond (:params req))))
