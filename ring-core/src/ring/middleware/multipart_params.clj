@@ -8,13 +8,14 @@
     ring.middleware.multipart-params.byte-array/byte-array-store
     ring.middleware.multipart-params.temp-file/temp-file-store"
   (:require [ring.util.codec :refer [assoc-conj]]
-            [ring.util.request :as req])
-  (:import [org.apache.commons.fileupload.util Streams]
-           [org.apache.commons.fileupload UploadContext
+            [ring.util.request :as req]
+            [ring.util.parsing :refer [re-charset]])
+  (:import [org.apache.commons.fileupload UploadContext
                                           FileItemIterator
                                           FileItemStream
                                           FileUpload
-                                          ProgressListener]))
+                                          ProgressListener]
+           [org.apache.commons.io IOUtils]))
 (defn- progress-listener
   "Create a progress listener that calls the supplied function."
   [request progress-fn]
@@ -55,23 +56,44 @@
     (file-item-iterator-seq
       (.getItemIterator ^FileUpload upload context))))
 
+(defn- parse-content-type-charset [^FileItemStream item]
+  (some->> (.getContentType item)
+           (re-find re-charset)
+           second))
+
+(defn- parse-html5-charset [params]
+  (when-let [charset (->> params (filter #(= (first %) "_charset_")) first second :bytes)]
+    (String. ^bytes charset "US-ASCII")))
+
+(defn- decode-string-values [fallback-encoding forced-encoding params]
+  (let [html5-encoding (parse-html5-charset params)]
+    (for [[k v] params]
+      [k (if-let [^bytes bytes (:bytes v)]
+           (String. bytes (str (or forced-encoding
+                                   html5-encoding
+                                   (:encoding v)
+                                   fallback-encoding)))
+           v)])))
+
 (defn- parse-file-item
   "Parse a FileItemStream into a key-value pair. If the request is a file the
   supplied store function is used to save it."
-  [^FileItemStream item store encoding]
+  [^FileItemStream item store]
   [(.getFieldName item)
    (if (.isFormField item)
-     (Streams/asString (.openStream item) encoding)
+     {:bytes    (IOUtils/toByteArray (.openStream item))
+      :encoding (parse-content-type-charset item)}
      (store {:filename     (.getName item)
              :content-type (.getContentType item)
              :stream       (.openStream item)}))])
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
-  [request encoding store progress-fn]
-  (->> (request-context request encoding)
+  [request fallback-encoding forced-encoding store progress-fn]
+  (->> (request-context request fallback-encoding)
        (file-item-seq request progress-fn)
-       (map #(parse-file-item % store encoding))
+       (map #(parse-file-item % store))
+       (decode-string-values fallback-encoding forced-encoding)
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
 (defn- load-var
@@ -94,14 +116,20 @@
   ([request]
    (multipart-params-request request {}))
   ([request options]
-   (let [store    (or (:store options) @default-store)
-         encoding (or (:encoding options)
-                      (req/character-encoding request)
-                      "UTF-8")
-         progress (:progress-fn options)
-         params   (if (multipart-form? request)
-                    (parse-multipart-params request encoding store progress)
-                    {})]
+   (let [store           (or (:store options) @default-store)
+         forced-encoding (:encoding options)
+         req-encoding    (or forced-encoding
+                             (:fallback-encoding options)
+                             (req/character-encoding request)
+                             "UTF-8")
+         progress        (:progress-fn options)
+         params          (if (multipart-form? request)
+                           (parse-multipart-params request
+                                                   req-encoding
+                                                   forced-encoding
+                                                   store
+                                                   progress)
+                           {})]
      (merge-with merge request
                  {:multipart-params params}
                  {:params params}))))
@@ -115,19 +143,27 @@
 
   The following options are accepted
 
-  :encoding    - character encoding to use for multipart parsing. If not
-                 specified, uses the request character encoding, or \"UTF-8\"
-                 if no request character encoding is set.
+  :encoding          - character encoding to use for multipart parsing.
+                       Overrides the encoding specified in the request. If not
+                       specified, uses the encoding specified in a part named
+                       \"_charset_\", or the content type for each part, or
+                       request character encoding if the part has no encoding,
+                       or \"UTF-8\" if no request character encoding is set.
 
-  :store       - a function that stores a file upload. The function should
-                 expect a map with :filename, content-type and :stream keys,
-                 and its return value will be used as the value for the
-                 parameter in the multipart parameter map. The default storage
-                 function is the temp-file-store.
+  :fallback-encoding - specifies the character encoding used in parsing if a
+                       part of the request does not specify encoding in its
+                       content type or no part named \"_charset_\" is present.
+                       Has no effect if :encoding is also set.
 
-  :progress-fn - a function that gets called during uploads. The function
-                 should expect four parameters: request, bytes-read,
-                 content-length, and item-count."
+  :store             - a function that stores a file upload. The function
+                       should expect a map with :filename, content-type and
+                       :stream keys, and its return value will be used as the
+                       value for the parameter in the multipart parameter map.
+                       The default storage function is the temp-file-store.
+
+  :progress-fn       - a function that gets called during uploads. The
+                       function should expect four parameters: request,
+                       bytes-read, content-length, and item-count."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]
