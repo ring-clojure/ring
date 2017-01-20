@@ -116,6 +116,25 @@
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" "Max-Age=123"}}
            (split-set-cookie (:headers resp))))))
 
+(deftest wrap-cookies-accepts-same-site
+  (testing "Allows :strict and :lax values"
+    (let [cookies {"a" {:value "b" :path "/" :same-site :strict}}
+          handler (constantly {:cookies cookies})
+          resp    ((wrap-cookies handler) {})]
+      (is (= {"Set-Cookie" #{"a=b" "Path=/" "SameSite=Strict"}}
+             (split-set-cookie (:headers resp)))))
+
+    (let [cookies {"a" {:value "b" :path "/" :same-site :lax}}
+          handler (constantly {:cookies cookies})
+          resp    ((wrap-cookies handler) {})]
+      (is (= {"Set-Cookie" #{"a=b" "Path=/" "SameSite=Lax"}}
+             (split-set-cookie (:headers resp))))))
+
+  (testing "Disallows other values"
+    (let [cookies {"a" {:value "b" :path "/" :same-site :loose}}
+          handler (constantly {:cookies cookies})]
+      (is (thrown? AssertionError ((wrap-cookies handler) {}))))))
+
 (deftest wrap-cookies-accepts-expires
   (let [cookies {"a" {:value "b", :path "/",
                       :secure true, :http-only true,
