@@ -23,7 +23,14 @@
        :doc "Attributes defined by RFC6265 that apply to the Set-Cookie header."}
   set-cookie-attrs
   {:domain "Domain", :max-age "Max-Age", :path "Path"
-   :secure "Secure", :expires "Expires", :http-only "HttpOnly"})
+   :secure "Secure", :expires "Expires", :http-only "HttpOnly"
+   :same-site "SameSite"})
+
+(def ^{:private true
+       :doc "Values defined by RFC6265 that apply to the SameSite cookie attribute header."}
+  same-site-values
+  {:strict "Strict"
+   :lax "Lax"})
 
 (def ^:private rfc822-formatter
   (with-locale (formatters :rfc822) java.util.Locale/US))
@@ -68,6 +75,7 @@
        (case key
          :max-age (or (instance? Interval value) (integer? value))
          :expires (or (instance? DateTime value) (string? value))
+         :same-site (contains? same-site-values value)
          true)))
 
 (defn- write-attr-map
@@ -77,11 +85,12 @@
   (for [[key value] attrs]
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
-       (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
-       (instance? DateTime value) (str ";" attr-name "=" (unparse rfc822-formatter value))
-       (true? value)  (str ";" attr-name)
-       (false? value) ""
-       :else (str ";" attr-name "=" value)))))
+        (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
+        (instance? DateTime value) (str ";" attr-name "=" (unparse rfc822-formatter value))
+        (true? value)  (str ";" attr-name)
+        (false? value) ""
+        (= :same-site key) (str ";" attr-name "=" (same-site-values value))
+        :else (str ";" attr-name "=" value)))))
 
 (defn- write-cookies
   "Turn a map of cookies into a seq of strings for a Set-Cookie header."
@@ -153,7 +162,8 @@
   :expires   - a date string at which the cookie will expire
   :secure    - set to true if the cookie requires HTTPS, prevent HTTP access
   :http-only - set to true if the cookie is valid for HTTP and HTTPS only
-               (ie. prevent JavaScript access)"
+               (ie. prevent JavaScript access)
+  :same-site - set to :strict or :lax to set SameSite attribute of the cookie"
   ([handler]
    (wrap-cookies handler {}))
   ([handler options]
