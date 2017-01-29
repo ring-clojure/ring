@@ -95,7 +95,7 @@
 (deftest multipart-params-request-test
   (is (fn? multipart-params-request)))
 
-(deftest test-utf8-encoding-support
+(deftest decode-with-utf8-by-default
   (let [form-body (str "--XXXX\r\n"
                        "Content-Disposition: form-data;"
                        "name=\"foo\"\r\n\r\n"
@@ -106,3 +106,57 @@
                  :body (string-input-stream form-body "UTF-8")}
         request* (multipart-params-request request)]
         (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))
+
+(deftest parts-may-have-invidual-charsets-in-content-type
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n"
+                       "Content-Type: text/plain; charset=ISO-8859-15\r\n\r\n"
+                       "äÄÖöÅå€\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX")}
+                 :body (string-input-stream form-body "ISO-8859-15")}
+        request* (multipart-params-request request)]
+    (is (= (get-in request* [:multipart-params "foo"]) "äÄÖöÅå€"))))
+
+(deftest charset-may-be-defined-html5-style-parameter
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "Øæßç®£èé\r\n"
+                       "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"_charset_\"\r\n\r\n"
+                       "UTF-8\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX; charset=US-ASCII")}
+                 :body (string-input-stream form-body "UTF-8")}
+        request* (multipart-params-request request)]
+    (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))
+
+(deftest forced-encoding-option-works
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n"
+                       "Content-Type: application/json; charset=UTF-8\r\n\r\n"
+                       "{\"åå\":\"ÄÖ\"}\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX; charset=US-ASCII")}
+                 :body (string-input-stream form-body "ISO-8859-1")}
+        request* (multipart-params-request request {:encoding "ISO-8859-1"})]
+    (is (= (get-in request* [:multipart-params "foo"]) "{\"åå\":\"ÄÖ\"}"))))
+
+(deftest fallback-encoding-option-works
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "äÄÖöÅå€\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX; charset=US-ASCII")}
+                 :body (string-input-stream form-body "ISO-8859-15")}
+        request* (multipart-params-request request {:fallback-encoding "ISO-8859-15"})]
+    (is (= (get-in request* [:multipart-params "foo"]) "äÄÖöÅå€"))))
