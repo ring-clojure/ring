@@ -70,7 +70,7 @@
   [resp name value]
   (assoc-in resp [:headers name] (str value)))
 
-(defn- canonical-path [^File file]
+(defn- canonical-path ^String [^File file]
   (str (.getCanonicalPath file)
        (if (.isDirectory file) File/separatorChar)))
 
@@ -291,7 +291,7 @@
         (content-length (:content-length data))
         (last-modified (:last-modified data)))))
 
-(defn- get-resources [path loader]
+(defn- get-resources [path ^ClassLoader loader]
   (-> (or loader (.getContextClassLoader (Thread/currentThread)))
       (.getResources path)
       (enumeration-seq)))
@@ -302,7 +302,7 @@
       (let [root (.replaceAll (str root) "^/" "")]
         (or (str/blank? root)
             (let [path (canonical-path body)]
-              (some #(and (= "file" (.getProtocol %))
+              (some #(and (= "file" (.getProtocol ^URL %))
                           (.startsWith path (canonical-path (url-as-file %))))
                     (get-resources root loader)))))))
 
