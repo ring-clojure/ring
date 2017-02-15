@@ -1,4 +1,4 @@
-## 1.6.0-beta7 (2016-01-10)
+## 1.6.0-beta7 (2017-01-10)
 
 * Backported path traversal vulnerability fix from version 1.5.1
 * Fixed reflection warnings in `ring.core.protocols`
