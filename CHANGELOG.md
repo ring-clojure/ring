@@ -1,3 +1,11 @@
+## 1.6.0-RC1 (2017-03-10)
+
+* Fixed reflection warnings (#278)
+* Added support for HTML `_charset_` field in `wrap-multipart-params` (#276)
+* Added support for `SameSite` cookie attribute (#275)
+* Added support for unicode in `wrap-keyword-params` (#271)
+* Added preload for Cipher class to improve cookie store performance (#267)
+
 ## 1.6.0-beta7 (2017-01-10)
 
 * Backported path traversal vulnerability fix from version 1.5.1
