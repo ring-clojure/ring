@@ -92,6 +92,16 @@
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))))
 
+  (testing "HTTPS server with jceks keystore"
+    (with-server hello-world {:port test-port
+                              :ssl-port test-ssl-port
+                              :keystore "test/keystore.jceks"
+                              :keystore-type "jceks"
+                              :key-password "password"}
+      (let [response (http/get test-ssl-url {:insecure? true})]
+        (is (= (:status response) 200))
+        (is (= (:body response) "Hello World")))))
+
   (testing "HTTPS-only server"
     (with-server hello-world {:http? false
                               :port test-port
@@ -202,16 +212,16 @@
           (is (= (:ssl-client-cert request-map) nil))))))
 
   (testing "sending 'Server' header in HTTP response'"
-    (testing ":send-server-version? set to default value (true)" 
+    (testing ":send-server-version? set to default value (true)"
       (with-server hello-world {:port test-port}
         (let [response (http/get test-url)]
           (is (contains? (:headers response) "Server")))))
-    (testing ":send-server-version? set to true" 
+    (testing ":send-server-version? set to true"
       (with-server hello-world {:port test-port
                                 :send-server-version? true}
         (let [response (http/get test-url)]
           (is (contains? (:headers response) "Server")))))
-    (testing ":send-server-version? set to false" 
+    (testing ":send-server-version? set to false"
       (with-server hello-world {:port test-port
                                 :send-server-version? false}
         (let [response (http/get test-url)]
