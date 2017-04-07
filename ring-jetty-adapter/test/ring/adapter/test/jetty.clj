@@ -255,8 +255,8 @@
 (defn- hello-world-cps-future [request respond raise]
   (future
     (respond {:status  200
-            :headers {"Content-Type" "text/plain"}
-            :body    "Hello World"})))
+              :headers {"Content-Type" "text/plain"}
+              :body    "Hello World"})))
 
 (defn- hello-world-streaming [request respond raise]
   (future
