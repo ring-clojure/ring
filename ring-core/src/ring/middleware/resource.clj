@@ -26,8 +26,8 @@
   Accepts the following options:
 
   :loader          - resolve the resource using this class loader
-  :allow-symlinks? - allow symlinks that lead to external paths in classpath
-                     directories (defaults to false)"
+  :allow-symlinks? - allow symlinks that lead to paths outside the root
+                     classpath directories (defaults to false)"
   ([handler root-path]
    (wrap-resource handler root-path {}))
   ([handler root-path options]

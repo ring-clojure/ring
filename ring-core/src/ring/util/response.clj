@@ -138,8 +138,9 @@
   file does not exist.
   Options:
     :root            - take the filepath relative to this root path
-    :index-files?    - look for index.* files in directories, defaults to true
-    :allow-symlinks? - serve files through symbolic links, defaults to false"
+    :index-files?    - look for index.* files in directories (defaults to true)
+    :allow-symlinks? - allow symlinks that lead to paths outside the root path
+                       (defaults to false)"
   ([filepath]
    (file-response filepath {}))
   ([filepath options]
@@ -314,8 +315,8 @@
   Options:
     :root            - take the resource relative to this root
     :loader          - resolve the resource in this class loader
-    :allow-symlinks? - allow symlinks in classpath directories,
-                       defaults to false"
+    :allow-symlinks? - allow symlinks that lead to paths outside the root
+                       classpath directories (defaults to false)"
   ([path]
    (resource-response path {}))
   ([path options]
