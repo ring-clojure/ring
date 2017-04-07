@@ -274,6 +274,14 @@
                        (.write w "data: world\n\n")
                        (.flush w)))))})))
 
+(defn- error-cps [request respond raise]
+  (raise (ex-info "test" {:foo "bar"})))
+
+(defn- sometimes-error-cps [request respond raise]
+  (if (= (:uri request) "/error")
+    (error-cps request respond raise)
+    (hello-world-cps request respond raise)))
+
 (deftest run-jetty-cps-test
   (testing "async response in future"
     (with-server hello-world-cps-future {:port test-port, :async? true}
@@ -298,4 +306,20 @@
         (is (.startsWith (get-in response [:headers "content-type"])
                          "text/event-stream"))
         (is (= (:body response)
-               "data: hello\n\ndata: world\n\n"))))))
+               "data: hello\n\ndata: world\n\n")))))
+
+  (testing "error response"
+    (with-server error-cps {:port test-port, :async? true}
+      (let [response (http/get test-url {:throw-exceptions false})]
+        (is (= (:status response) 500)))))
+
+  (testing "mixed error with normal responses"
+    (with-server sometimes-error-cps {:port test-port, :async? true}
+      (let [response (http/get (str test-url "/error") {:throw-exceptions false})]
+        (is (= (:status response) 500)))
+      (let [response (http/get test-url {:throw-exceptions false})]
+        (is (= (:status response) 200)))
+      (let [response (http/get (str test-url "/error") {:throw-exceptions false})]
+        (is (= (:status response) 500)))
+      (let [response (http/get test-url {:throw-exceptions false})]
+        (is (= (:status response) 200))))))
