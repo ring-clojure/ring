@@ -37,6 +37,17 @@
     (are [request body] (= (slurp (:body (with-loader request))) body)
       {:request-method :get, :uri "/foo.html"} "foo-in-jar")))
 
+(deftest wrap-resource-symlinks-test
+  (testing "doesn't follow symlinks by default"
+    (let [handler  (wrap-resource test-handler "/ring/assets/bars")
+          response (handler {:request-method :get, :uri "/backlink/foo.html"})]
+      (is (= (slurp (:body response)) "handler"))))
+
+  (testing "does follow symlinks when option is set"
+    (let [handler  (wrap-resource test-handler "/ring/assets/bars" {:allow-symlinks? true})
+          response (handler {:request-method :get, :uri "/backlink/foo.html"})]
+      (is (= (slurp (:body response)) "foo")))))
+
 (deftest wrap-resource-cps-test
   (let [handler (-> (fn [req respond _] (respond (test-handler req)))
                     (wrap-resource "/ring/assets"))]

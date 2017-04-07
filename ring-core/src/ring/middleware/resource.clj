@@ -7,23 +7,27 @@
 
 (defn resource-request
   "If request matches a static resource, returns it in a response map.
-  Otherwise returns nil."
+  Otherwise returns nil. See wrap-resource for the available options."
   {:added "1.2"}
   ([request root-path]
    (resource-request request root-path {}))
   ([request root-path options]
    (if (#{:head :get} (:request-method request))
      (let [path (subs (codec/url-decode (request/path-info request)) 1)]
-       (-> (response/resource-response path {:root root-path :loader (:loader options)})
+       (-> (response/resource-response path (assoc options :root root-path))
            (head/head-response request))))))
 
 (defn wrap-resource
   "Middleware that first checks to see whether the request map matches a static
   resource. If it does, the resource is returned in a response map, otherwise
   the request map is passed onto the handler. The root-path argument will be
-  added to the beginning of the resource path. If the optional :loader key is
-  provided in the option map, the resource will be resolved by the given class
-  loader instead of the context class loader."
+  added to the beginning of the resource path.
+
+  Accepts the following options:
+
+  :loader          - resolve the resource using this class loader
+  :allow-symlinks? - allow symlinks that lead to external paths in classpath
+                     directories (defaults to false)"
   ([handler root-path]
    (wrap-resource handler root-path {}))
   ([handler root-path options]
