@@ -1,3 +1,7 @@
+## 1.6.0-RC2 (2017-04-07)
+
+* Fixed missing `:allow-symlinks?` option in `wrap-resource` (#284)
+
 ## 1.6.0-RC1 (2017-03-10)
 
 * Fixed reflection warnings (#278)
