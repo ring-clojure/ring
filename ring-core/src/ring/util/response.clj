@@ -140,12 +140,14 @@
     :root            - take the filepath relative to this root path
     :index-files?    - look for index.* files in directories, defaults to true
     :allow-symlinks? - serve files through symbolic links, defaults to false"
-  [filepath & [opts]]
-  (if-let [file (find-file filepath opts)]
-    (let [data (file-data file)]
-      (-> (response (:content data))
-          (content-length (:content-length data))
-          (last-modified (:last-modified data))))))
+  ([filepath]
+   (file-response filepath {}))
+  ([filepath options]
+   (if-let [file (find-file filepath options)]
+     (let [data (file-data file)]
+       (-> (response (:content data))
+           (content-length (:content-length data))
+           (last-modified (:last-modified data)))))))
 
 ;; In Clojure 1.5.1, the as-file function does not correctly decode
 ;; UTF-8 byte sequences.
@@ -314,13 +316,17 @@
     :loader          - resolve the resource in this class loader
     :allow-symlinks? - allow symlinks in classpath directories,
                        defaults to false"
-  [path & [{:keys [root loader] :as opts}]]
-  (let [path      (-> (str "/" path)  (.replace "//" "/"))
-        root+path (-> (str root path) (.replaceAll "^/" ""))
-        load      #(if loader (io/resource % loader) (io/resource %))]
-    (if-not (directory-transversal? root+path)
-      (if-let [resource (load root+path)]
-        (let [response (url-response resource)]
-          (if (or (not (instance? File (:body response)))
-                  (safe-file-resource? response opts))
-            response))))))
+  ([path]
+   (resource-response path {}))
+  ([path options]
+   (let [path      (-> (str "/" path)  (.replace "//" "/"))
+         root+path (-> (str (:root options) path) (.replaceAll "^/" ""))
+         load      #(if-let [loader (:loader options)]
+                      (io/resource % loader)
+                      (io/resource %))]
+     (if-not (directory-transversal? root+path)
+       (if-let [resource (load root+path)]
+         (let [response (url-response resource)]
+           (if (or (not (instance? File (:body response)))
+                   (safe-file-resource? response options))
+             response)))))))
