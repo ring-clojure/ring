@@ -98,7 +98,8 @@ corresponding values:
 :headers
   (Required, clojure.lang.IPersistentMap)
   A Clojure map of downcased header name Strings to corresponding header value 
-  Strings.
+  Strings. When there are multiple headers with the same name, the header
+  values are concatenated together, separated by the "," character.
 
 :body
   (Optional, java.io.InputStream)
