@@ -156,7 +156,7 @@
      `(defservice "-" ~handler))
   ([prefix handler]
    (if (map? handler)
-     `(defservice ~prefix ~handler)
+     `(defservice "-" ~prefix ~handler)
      `(defservice ~prefix ~handler {})))
   ([prefix handler options]
      `(let [service-method# (make-service-method ~handler ~options)]
