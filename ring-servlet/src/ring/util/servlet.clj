@@ -128,7 +128,7 @@
   "Turns a handler into a function that takes the same arguments and has the
   same return value as the service method in the HttpServlet class."
   ([handler]
-   (make-service-method {}))
+   (make-service-method handler {}))
   ([handler options]
    (if (:async? options)
      (make-async-service-method handler)
