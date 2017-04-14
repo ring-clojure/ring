@@ -48,7 +48,7 @@
 
 (defn- file-item-seq
   "Create a seq of FileItem instances from a request context."
-  [request ^ProgressListener progress-fn context]
+  [request progress-fn context]
   (let [upload (if progress-fn
                  (doto (FileUpload.)
                    (.setProgressListener (progress-listener request progress-fn)))
