@@ -60,6 +60,8 @@
    :headers {}
    :body    body})
 
+(def ok "Returns a 200 'ok' response." response)
+
 (defn status
   "Returns an updated Ring response with the given status."
   [resp status]
