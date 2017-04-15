@@ -51,7 +51,7 @@
     (if-let [value (decoder (strip-quotes value))]
       [name {:value value}])))
 
-(defn- parse-cookies
+(defn parse-cookies
   "Parse the cookies from a request map."
   [request encoder]
   (if-let [cookie (get-in request [:headers "cookie"])]

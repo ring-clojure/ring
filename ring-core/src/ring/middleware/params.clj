@@ -4,7 +4,7 @@
   (:require [ring.util.codec :as codec]
             [ring.util.request :as req]))
 
-(defn- parse-params [params encoding]
+(defn parse-params [params encoding]
   (let [params (codec/form-decode params encoding)]
     (if (map? params) params {})))
 
