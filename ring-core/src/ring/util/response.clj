@@ -17,6 +17,13 @@
    :temporary-redirect 307
    :permanent-redirect 308})
 
+(defn moved-permanently 
+  "Returns a Ring response for an HTTP 301 redirect"
+  [url]
+  {:status  301
+   :headers {"Location" url}
+   :body    ""})
+
 (defn redirect
   "Returns a Ring response for an HTTP 302 redirect. Status may be 
   a key in redirect-status-codes or a numeric code. Defaults to 302"
@@ -26,6 +33,8 @@
     :headers {"Location" url}
     :body    ""}))
 
+(def found redirect)
+
 (defn redirect-after-post
   "Returns a Ring response for an HTTP 303 redirect. Deprecated in favor
   of using redirect with a :see-other status."
@@ -34,6 +43,8 @@
   {:status  303
    :headers {"Location" url}
    :body    ""})
+
+(def see-other redirect-after-post)
 
 (defn created
   "Returns a Ring response for a HTTP 201 created response."
