@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [ring.middleware.cookies :refer :all]
-            [clj-time.core :refer [date-time interval]]))
+            [clj-time.core :refer [date-time interval]]
+            [clj-time.format :refer [unparse formatter]]))
 
 (deftest wrap-cookies-basic-cookie
   (let [req  {:headers {"cookie" "a=b"}}
@@ -156,12 +157,13 @@
            (split-set-cookie (:headers resp))))))
 
 (deftest wrap-cookies-accepts-expires-from-clj-time
-  (let [cookies {"a" {:value "b", :path "/",
+  (let [expire-date (date-time 2015 12 31)
+        cookies {"a" {:value "b", :path "/",
                       :secure true, :http-only true,
-                      :expires (date-time 2015 12 31)}}
+                      :expires expire-date}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})
-        expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+        expires (unparse (formatter "E, d MMM y HH:mm:ss Z") expire-date)]
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
            (split-set-cookie (:headers resp))))))
 
