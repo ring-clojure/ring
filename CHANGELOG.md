@@ -1,3 +1,10 @@
+## 1.6.0-RC3 (2017-04-18)
+
+* Fixed erroneous type hint (#286)
+* Fixed missing arguments in servlet functions (#287 and #288)
+* Fixed missing `AsyncContext` complete after `sendError`
+* Updated SPEC to clarify how to handle request headers with the same name
+
 ## 1.6.0-RC2 (2017-04-07)
 
 * Fixed missing `:allow-symlinks?` option in `wrap-resource` (#284)
