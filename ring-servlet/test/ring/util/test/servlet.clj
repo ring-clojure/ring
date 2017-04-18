@@ -71,6 +71,24 @@
      (.service (servlet-request request)
                (servlet-response response)))))
 
+(deftest make-service-method-test
+  (let [handler (constantly {:status  201
+                             :headers {}})
+        method  (make-service-method handler)
+        servlet (doto (proxy [javax.servlet.http.HttpServlet] [])
+                  (.init (servlet-config)))
+        request {:server-port    8080
+                 :server-name    "foobar"
+                 :remote-addr    "127.0.0.1"
+                 :uri            "/foo"
+                 :scheme         :http
+                 :request-method :get
+                 :protocol       "HTTP/1.1"
+                 :headers        {}}
+        response (atom {})]
+    (method servlet (servlet-request request) (servlet-response response))
+    (is (= (@response :status) 201))))
+
 (deftest servlet-test
   (let [body (proxy [javax.servlet.ServletInputStream] [])
         cert (proxy [java.security.cert.X509Certificate] [])
