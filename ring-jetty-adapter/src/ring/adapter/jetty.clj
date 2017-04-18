@@ -35,7 +35,8 @@
          (fn [response-map]
            (servlet/update-servlet-response response context response-map))
          (fn [^Throwable exception]
-           (.sendError response 500 (.getMessage exception))))
+           (.sendError response 500 (.getMessage exception))
+           (.complete context)))
         (.setHandled base-request true)))))
 
 (defn- ^ServerConnector server-connector [server & factories]

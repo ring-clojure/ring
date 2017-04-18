@@ -122,7 +122,8 @@
        (fn [response-map]
          (update-servlet-response response context response-map))
        (fn [^Throwable exception]
-         (.sendError response 500 (.getMessage exception)))))))
+         (.sendError response 500 (.getMessage exception))
+         (.complete context))))))
 
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the
