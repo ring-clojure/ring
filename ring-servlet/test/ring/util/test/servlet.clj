@@ -151,13 +151,7 @@
     (is (= (@response :content-type) "text/plain"))
     (is (= (.toString (@response :body)) "Hello World"))))
 
-(defservice "foo-"
-  (fn [_]
-    {:status  200
-     :headers {"Content-Type" "text/plain"}
-     :body    "Hello World"}))
-
-(deftest defservice-test
+(defn- defservice-test* [service]
   (let [body     (proxy [javax.servlet.ServletInputStream] [])
         servlet  (doto (proxy [javax.servlet.http.HttpServlet] [])
                    (.init (servlet-config)))
@@ -174,9 +168,21 @@
                   :character-encoding "UTF-8"
                   :body           body}
         response (atom {})]
-    (foo-service servlet
-                 (servlet-request request)
-                 (servlet-response response))
+    (service servlet
+             (servlet-request request)
+             (servlet-response response))
     (is (= (@response :status) 200))
     (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))
     (is (= (.toString (@response :body)) "Hello World"))))
+
+(defn- service-handler [_]
+  {:status  200
+   :headers {"Content-Type" "text/plain"}
+   :body    "Hello World"})
+
+(defservice "foo-" service-handler)
+(defservice service-handler {})
+
+(deftest defservice-test
+  (defservice-test* foo-service)
+  (defservice-test* -service))
