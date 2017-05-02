@@ -1,3 +1,7 @@
+## 1.6.0 (2017-05-02)
+
+* Functionally the same as 1.6.0-RC3.
+
 ## 1.6.0-RC3 (2017-04-18)
 
 * Fixed erroneous type hint (#286)
