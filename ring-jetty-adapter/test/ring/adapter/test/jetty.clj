@@ -291,6 +291,7 @@
     (reset! thread-exceptions [])
     (with-server hello-world-cps-future {:port test-port, :async? true}
       (let [response (http/get test-url)]
+        (Thread/sleep 100)
         (is (empty? @thread-exceptions))
         (is (= (:status response) 200))
         (is (.startsWith (get-in response [:headers "content-type"])
