@@ -84,8 +84,8 @@
     (.getOutputStream response)
     (proxy [java.io.FilterOutputStream] [(.getOutputStream response)]
       (close []
-        (.complete context)
-        (proxy-super close)))))
+        (proxy-super close)
+        (.complete context)))))
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map. Takes an optional

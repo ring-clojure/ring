@@ -247,6 +247,8 @@
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
 
+(def thread-exceptions (atom []))
+
 (defn- hello-world-cps [request respond raise]
   (respond {:status  200
             :headers {"Content-Type" "text/plain"}
@@ -254,9 +256,11 @@
 
 (defn- hello-world-cps-future [request respond raise]
   (future
-    (respond {:status  200
-              :headers {"Content-Type" "text/plain"}
-              :body    "Hello World"})))
+    (try (respond {:status  200
+                   :headers {"Content-Type" "text/plain"}
+                   :body    "Hello World"})
+         (catch Exception ex
+           (swap! thread-exceptions conj ex)))))
 
 (defn- hello-world-streaming [request respond raise]
   (future
@@ -284,8 +288,10 @@
 
 (deftest run-jetty-cps-test
   (testing "async response in future"
+    (reset! thread-exceptions [])
     (with-server hello-world-cps-future {:port test-port, :async? true}
       (let [response (http/get test-url)]
+        (is (empty? @thread-exceptions))
         (is (= (:status response) 200))
         (is (.startsWith (get-in response [:headers "content-type"])
                          "text/plain"))
