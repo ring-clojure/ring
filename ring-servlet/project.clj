@@ -6,6 +6,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring/ring-core "1.6.0"]]
+  :aliases {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8" "test"]}
   :profiles
   {:provided {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}
    :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}

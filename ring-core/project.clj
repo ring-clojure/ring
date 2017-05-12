@@ -11,6 +11,7 @@
                  [clj-time "0.11.0"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
+  :aliases {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8" "test"]}
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
    :dev {:dependencies [[javax.servlet/servlet-api "2.5"]]}

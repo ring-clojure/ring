@@ -8,6 +8,7 @@
                  [ring/ring-core "1.6.0"]
                  [ring/ring-servlet "1.6.0"]
                  [org.eclipse.jetty/jetty-server "9.2.21.v20170120"]]
+  :aliases {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8" "test"]}
   :profiles
   {:dev {:dependencies [[clj-http "2.2.0"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
