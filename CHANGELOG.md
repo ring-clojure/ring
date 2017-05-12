@@ -1,3 +1,8 @@
+## 1.6.1 (2017-05-12)
+
+* Fixed unreported ClosedChannelExceptions in async Jetty
+* Updated Jetty to 9.2.21.v201701209
+
 ## 1.6.0 (2017-05-02)
 
 * Functionally the same as 1.6.0-RC3.
