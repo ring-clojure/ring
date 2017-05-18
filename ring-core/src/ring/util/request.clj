@@ -27,6 +27,12 @@
   (if-let [^String length (get-in request [:headers "content-length"])]
     (Long. length)))
 
+(defn user-agent
+  "Return the user-agent of the request, or nil if no user-agent is set."
+  [request]
+  (if-let [ua (get-in request [:headers "user-agent"])]
+    ua))
+
 (def ^:private charset-pattern
   (re-pattern (str ";(?:.*\\s)?(?i:charset)=(" re-value ")\\s*(?:;|$)")))
 

@@ -55,6 +55,13 @@
   (testing "no content type"
     (is (not (urlencoded-form? {:headers {}})))))
 
+(deftest test-user-agent
+  (testing "no user-agent"
+    (is (= (user-agent {:headers {}}) nil)))
+  (testing "a user-agent"
+    (is (= (user-agent {:headers {"user-agent" "MozSpiderBot 1.0.3"}})
+           "MozSpiderBot 1.0.3"))))
+
 (deftest test-body-string
   (testing "nil body"
     (is (= (body-string {:body nil}) nil)))
