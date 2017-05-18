@@ -22,7 +22,7 @@
   a key in redirect-status-codes or a numeric code. Defaults to 302"
   ([url] (redirect url :found))
   ([url status]
-   {:status  (redirect-status-codes status status)
+   {:status  (redirect-status-codes status)
     :headers {"Location" url}
     :body    ""}))
 
