@@ -13,6 +13,7 @@
             SslConnectionFactory
             SecureRequestCustomizer]
            [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
            [javax.servlet AsyncContext]
@@ -96,8 +97,18 @@
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
 (defn- ^ThreadPool create-threadpool [options]
-  (let [pool (QueuedThreadPool. ^Integer (options :max-threads 50))]
-    (.setMinThreads pool (options :min-threads 8))
+  (let [min-threads         (options :min-threads 8)
+        max-threads         (options :max-threads 50)
+        queue-capacity      (max min-threads 8)
+        queue-max-capacity  (options :max-queued-requests Integer/MAX_VALUE)
+        blocking-queue      (BlockingArrayQueue. queue-capacity
+                                                 queue-capacity
+                                                 queue-max-capacity)
+        thread-idle-timeout (options :thread-idle-timeout 60000)
+        pool                (QueuedThreadPool. max-threads
+                                               min-threads
+                                               thread-idle-timeout
+                                               blocking-queue)]
     (when (:daemon? options false)
       (.setDaemon pool true))
     pool))
@@ -132,6 +143,9 @@
   :trust-password       - the password to the truststore
   :max-threads          - the maximum number of threads to use (default 50)
   :min-threads          - the minimum number of threads to use (default 8)
+  :max-queued-requests  - the maximum number of requests to be queued
+  :thread-idle-timeout  - Set the maximum thread idle time. Threads that are idle
+                          for longer than this period may be stopped (default 60000)
   :max-idle-time        - the maximum idle time in milliseconds for a connection
                           (default 200000)
   :client-auth          - SSL client certificate authenticate, may be set to

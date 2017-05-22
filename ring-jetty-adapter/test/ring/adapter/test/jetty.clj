@@ -5,6 +5,7 @@
             [clojure.java.io :as io]
             [ring.core.protocols :as p])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
+           [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [java.net ServerSocket ConnectException]
@@ -170,6 +171,21 @@
       (is (= 8 (. thread-pool getMinThreads)))
       (.stop server)))
 
+  (testing "default thread-idle-timeout"
+    (let [server (run-jetty hello-world {:port test-port
+                                         :join? false})
+          thread-pool (. server getThreadPool)]
+      (is (= 60000 (. thread-pool getIdleTimeout)))
+      (.stop server)))
+
+  (testing "setting thread-idle-timeout"
+    (let [server (run-jetty hello-world {:port test-port
+                                         :join? false
+                                         :thread-idle-timeout 1000})
+          thread-pool (. server getThreadPool)]
+      (is (= 1000 (. thread-pool getIdleTimeout)))
+      (.stop server)))
+
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port test-port}
       (let [response (http/get test-url)]
@@ -202,16 +218,16 @@
           (is (= (:ssl-client-cert request-map) nil))))))
 
   (testing "sending 'Server' header in HTTP response'"
-    (testing ":send-server-version? set to default value (true)" 
+    (testing ":send-server-version? set to default value (true)"
       (with-server hello-world {:port test-port}
         (let [response (http/get test-url)]
           (is (contains? (:headers response) "Server")))))
-    (testing ":send-server-version? set to true" 
+    (testing ":send-server-version? set to true"
       (with-server hello-world {:port test-port
                                 :send-server-version? true}
         (let [response (http/get test-url)]
           (is (contains? (:headers response) "Server")))))
-    (testing ":send-server-version? set to false" 
+    (testing ":send-server-version? set to false"
       (with-server hello-world {:port test-port
                                 :send-server-version? false}
         (let [response (http/get test-url)]
