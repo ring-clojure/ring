@@ -32,7 +32,7 @@ To resolve this, include the following dependency in your dev profile:
 * ring-core - essential functions for handling parameters, cookies and more
 * ring-devel - functions for developing and debugging Ring applications
 * ring-servlet - construct Java servlets from Ring handlers
-* ring-jetty-adapter - a Ring adapter that uses the Jetty webserver
+* ring-jetty-adapter - a Ring adapter that uses the Jetty 7 webserver
 
 ## Installation
 
@@ -49,6 +49,12 @@ To include all of them:
 
 * [Wiki](https://github.com/ring-clojure/ring/wiki)
 * [API docs](http://ring-clojure.github.com/ring)
+
+## Using Ring with Jetty 9
+
+Jetty 9 requires JDK 7+. For this reason, [Jetty 9 Ring adapter](https://github.com/sunng87/ring-jetty9-adapter)
+is currently a 3rd party library and not part of Ring itself.
+
 
 ## Community
 
