@@ -93,6 +93,16 @@
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))))
 
+  (testing "HTTPS server with jceks keystore"
+    (with-server hello-world {:port test-port
+                              :ssl-port test-ssl-port
+                              :keystore "test/keystore.jceks"
+                              :keystore-type "jceks"
+                              :key-password "password"}
+      (let [response (http/get test-ssl-url {:insecure? true})]
+        (is (= (:status response) 200))
+        (is (= (:body response) "Hello World")))))
+
   (testing "HTTPS-only server"
     (with-server hello-world {:http? false
                               :port test-port

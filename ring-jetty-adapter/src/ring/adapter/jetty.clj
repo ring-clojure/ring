@@ -63,6 +63,8 @@
     (if (string? (options :keystore))
       (.setKeyStorePath context (options :keystore))
       (.setKeyStore context ^java.security.KeyStore (options :keystore)))
+    (when (string? (options :keystore-type))
+      (.setKeyStoreType context (options :keystore-type)))
     (.setKeyStorePassword context (options :key-password))
     (cond
       (string? (options :truststore))
@@ -138,6 +140,7 @@
   :exclude-ciphers      - When :ssl? is true, exclude these cipher suites
   :exclude-protocols    - When :ssl? is true, exclude these protocols
   :keystore             - the keystore to use for SSL connections
+  :keystore-type        - the keystore type (default jks)
   :key-password         - the password to the keystore
   :truststore           - a truststore to use for SSL connections
   :trust-password       - the password to the truststore
