@@ -50,7 +50,8 @@
    :content-length     (get-content-length request)
    :character-encoding (.getCharacterEncoding request)
    :ssl-client-cert    (get-client-cert request)
-   :body               (.getInputStream request)})
+   :body               (.getInputStream request)
+   :servlet-request    request})
 
 (defn merge-servlet-keys
   "Associate servlet-specific keys with the request map for use with legacy
