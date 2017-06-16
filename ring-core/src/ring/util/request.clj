@@ -44,7 +44,7 @@
   (if-let [^String type (content-type request)]
     (.startsWith type "application/x-www-form-urlencoded")))
 
-(defmulti body-string
+(defmulti ^String body-string
   "Return the request body as a string."
   {:arglists '([request]), :added "1.2"}
   (comp class :body))
