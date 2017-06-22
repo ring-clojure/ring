@@ -28,7 +28,7 @@
 
 (defn- ^AbstractHandler async-proxy-handler [handler]
   (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request ^HttpServletResponse response]
+    (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
         (handler
          (servlet/build-request-map request)
@@ -39,7 +39,7 @@
            (.complete context)))
         (.setHandled base-request true)))))
 
-(defn- ^ServerConnector server-connector [server & factories]
+(defn- ^ServerConnector server-connector [^Server server & factories]
   (ServerConnector. server (into-array ConnectionFactory factories)))
 
 (defn- ^HttpConfiguration http-config [options]
