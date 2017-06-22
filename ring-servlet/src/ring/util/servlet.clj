@@ -80,12 +80,13 @@
 
 (defn- make-output-stream
   [^HttpServletResponse response ^AsyncContext context]
-  (if (nil? context)
-    (.getOutputStream response)
-    (proxy [java.io.FilterOutputStream] [(.getOutputStream response)]
-      (close []
-        (proxy-super close)
-        (.complete context)))))
+  (let [os (.getOutputStream response)]
+    (if (nil? context)
+      os
+      (proxy [java.io.FilterOutputStream] [os]
+        (close []
+          (.close os)
+          (.complete context))))))
 
 (defn update-servlet-response
   "Update the HttpServletResponse using a response map. Takes an optional
@@ -113,7 +114,7 @@
         (->> (update-servlet-response response)))))
 
 (defn- make-async-service-method [handler]
-  (fn [servlet request ^HttpServletResponse response]
+  (fn [servlet ^HttpServletRequest request ^HttpServletResponse response]
     (let [^AsyncContext context (.startAsync request)]
       (handler
        (-> request
