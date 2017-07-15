@@ -1,3 +1,9 @@
+## 1.6.2 (2017-07-15)
+
+* Fixed reflection warnings
+* Set default `AsyncContext` timeout to zero
+* Add `:async-timeout` option to override `AsyncContext` timeout
+
 ## 1.6.1 (2017-05-12)
 
 * Fixed unreported ClosedChannelExceptions in async Jetty
