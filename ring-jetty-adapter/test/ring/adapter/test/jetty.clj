@@ -304,6 +304,19 @@
                        (.write w "data: world\n\n")
                        (.flush w)))))})))
 
+(defn- hello-world-streaming-long [request respond raise]
+  (respond
+   {:status  200
+    :headers {"Content-Type" "text/event-stream"}
+    :body    (reify p/StreamableResponseBody
+               (write-body-to-stream [_ _ output]
+                 (future
+                   (with-open [w (io/writer output)]
+                     (dotimes [i 10]
+                       (Thread/sleep 100)
+                       (.write w (str "data: " i "\n\n"))
+                       (.flush w))))))}))
+
 (defn- error-cps [request respond raise]
   (raise (ex-info "test" {:foo "bar"})))
 
@@ -355,4 +368,10 @@
       (let [response (http/get (str test-url "/error") {:throw-exceptions false})]
         (is (= (:status response) 500)))
       (let [response (http/get test-url {:throw-exceptions false})]
-        (is (= (:status response) 200))))))
+        (is (= (:status response) 200)))))
+
+  (testing "async context default"
+    (with-server hello-world-streaming-long {:port test-port, :async? true}
+      (let [response (http/get test-url)]
+        (is (= (:body response)
+               (apply str (for [i (range 10)] (str "data: " i "\n\n")))))))))
