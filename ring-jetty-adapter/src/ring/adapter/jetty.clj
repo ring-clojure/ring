@@ -26,10 +26,11 @@
         (servlet/update-servlet-response response response-map)
         (.setHandled base-request true)))))
 
-(defn- ^AbstractHandler async-proxy-handler [handler]
+(defn- ^AbstractHandler async-proxy-handler [handler timeout]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
+        (.setTimeout context timeout)
         (handler
          (servlet/build-request-map request)
          (fn [response-map]
@@ -116,6 +117,7 @@
 
   :configurator         - a function called with the Jetty Server instance
   :async?               - if true, treat the handler as asynchronous
+  :async-timeout        - async context timeout in ms (defaults to 0, no timeout)
   :port                 - the port to listen on (defaults to 80)
   :host                 - the hostname to listen on
   :join?                - blocks the thread until server ends (defaults to true)
@@ -142,9 +144,10 @@
   :response-header-size - the maximum size of a response header (default 8192)
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))
-        proxyf (if (:async? options) async-proxy-handler proxy-handler)]
-    (.setHandler server (proxyf handler))
+  (let [server (create-server (dissoc options :configurator))]
+    (if (:async? options)
+      (.setHandler server (async-proxy-handler handler (:async-timeout options 0)))
+      (.setHandler server (proxy-handler handler)))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try

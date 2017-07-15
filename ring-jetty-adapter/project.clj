@@ -10,7 +10,8 @@
                  [org.eclipse.jetty/jetty-server "9.2.21.v20170120"]]
   :aliases {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8" "test"]}
   :profiles
-  {:dev {:dependencies [[clj-http "2.2.0"]]}
+  {:dev {:dependencies [[clj-http "2.2.0"]]
+         :jvm-opts ["-Dorg.eclipse.jetty.server.HttpChannelState.DEFAULT_TIMEOUT=500"]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
    :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}})
