@@ -4,7 +4,8 @@
             [clj-http.client :as http]
             [clojure.java.io :as io]
             [ring.core.protocols :as p])
-  (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
+  (:import [org.eclipse.jetty.jmx MBeanContainer]
+           [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
@@ -258,6 +259,14 @@
           server   (run-jetty echo-handler options)]
       (try
         (is (contains? (exclude-protocols server) protocol))
+        (finally
+          (.stop server)))))
+
+  (testing "enable Jetty JMX integration"
+    (let [options {:port test-port :join? false :jmx? true}
+          ^Server server (run-jetty hello-world options)]
+      (try
+        (is (instance? MBeanContainer (.getBean server MBeanContainer)))
         (finally
           (.stop server)))))
 
