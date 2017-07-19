@@ -3,7 +3,8 @@
 
   Adapters are used to convert Ring handlers into running web servers."
   (:require [ring.util.servlet :as servlet])
-  (:import [org.eclipse.jetty.server
+  (:import [org.eclipse.jetty.jmx MBeanContainer]
+           [org.eclipse.jetty.server
             Request
             Server
             ServerConnector
@@ -16,6 +17,7 @@
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
+           [java.lang.management ManagementFactory]
            [javax.servlet AsyncContext]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
@@ -116,12 +118,17 @@
       (.setDaemon pool true))
     pool))
 
+(defn- ^MBeanContainer mbean-container []
+  (MBeanContainer. (ManagementFactory/getPlatformMBeanServer)))
+
 (defn- ^Server create-server [options]
   (let [server (Server. (create-threadpool options))]
     (when (:http? options true)
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
+    (when (:jmx? options)
+      (.addBean server (mbean-container)))
     server))
 
 (defn ^Server run-jetty
@@ -159,7 +166,8 @@
   :output-buffer-size   - the response body buffer size (default 32768)
   :request-header-size  - the maximum size of a request header (default 8192)
   :response-header-size - the maximum size of a response header (default 8192)
-  :send-server-version? - add Server header to HTTP response (default true)"
+  :send-server-version? - add Server header to HTTP response (default true)
+  :jmx?                 - if true, enable Jetty JMX integration (default false)"
   [handler options]
   (let [server (create-server (dissoc options :configurator))]
     (if (:async? options)
