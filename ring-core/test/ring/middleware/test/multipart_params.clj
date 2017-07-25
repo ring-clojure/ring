@@ -1,8 +1,8 @@
 (ns ring.middleware.test.multipart-params
   (:require [clojure.test :refer :all]
             [ring.middleware.multipart-params :refer :all]
-            [ring.util.io :refer [string-input-stream]])
-  (:import [java.io InputStream]))
+            [ring.middleware.multipart-params.byte-array :refer :all]
+            [ring.util.io :refer [string-input-stream]]))
 
 (defn string-store [item]
   (-> (select-keys item [:filename :content-type])
@@ -135,6 +135,21 @@
                  :body (string-input-stream form-body "UTF-8")}
         request* (multipart-params-request request)]
     (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))
+
+(deftest form-field-recognition-test
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"upload\"; filename=\"test.txt\"\r\n"
+                       "Content-Type: text/plain\r\n\r\n"
+                       "foo\r\n"
+                       "--XXXX--")
+        handler (wrap-multipart-params identity {:store (byte-array-store)})
+        request {:headers {"content-type" "multipart/form-data; boundary=XXXX"
+                           "content-length" (str (count form-body))}
+                 :body (string-input-stream form-body)}
+        response (handler request)]
+    (let [upload (get-in response [:multipart-params "upload"])]
+      (is (java.util.Arrays/equals (:bytes upload) (.getBytes "foo"))))))
 
 (deftest forced-encoding-option-works
   (let [form-body (str "--XXXX\r\n"
