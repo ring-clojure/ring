@@ -67,12 +67,12 @@
 
 (defn- decode-string-values [fallback-encoding forced-encoding params]
   (let [html5-encoding (parse-html5-charset params)]
-    (for [[k v] params]
-      [k (if-let [^bytes bytes (:bytes v)]
-           (String. bytes (str (or forced-encoding
-                                   html5-encoding
-                                   (:encoding v)
-                                   fallback-encoding)))
+    (for [[k v field?] params]
+      [k (if field?
+           (String. (:bytes v) (str (or forced-encoding
+                                        html5-encoding
+                                        (:encoding v)
+                                        fallback-encoding)))
            v)])))
 
 (defn- parse-file-item
@@ -85,7 +85,8 @@
       :encoding (parse-content-type-charset item)}
      (store {:filename     (.getName item)
              :content-type (.getContentType item)
-             :stream       (.openStream item)}))])
+             :stream       (.openStream item)}))
+   (.isFormField item)])
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
