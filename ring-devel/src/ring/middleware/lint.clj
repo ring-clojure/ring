@@ -17,7 +17,7 @@
     (catch Exception e
       (if-not (re-find #"^Ring lint error: " (.getMessage e))
         (throw (Exception. (format
-          "Ring lint error: exception occured when checking that %s on %s: %s"
+          "Ring lint error: exception occurred when checking that %s on %s: %s"
           message (pr-str val) (.getMessage e))))
         (throw e)))))
 
