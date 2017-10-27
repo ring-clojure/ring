@@ -65,32 +65,35 @@
       secret-key)
     (random/bytes 16)))
 
-(defn- ^String serialize [x]
-  {:post [(= x (edn/read-string %))]}
+(defn- deserialize [x options]
+  (edn/read-string (select-keys options [:readers]) x))
+
+(defn- ^String serialize [x options]
+  {:post [(= x (deserialize % options))]}
   (pr-str x))
 
 (defn- seal
   "Seal a Clojure data structure into an encrypted and HMACed string."
-  [key data]
-  (let [data (encrypt key (.getBytes (serialize data)))]
+  [key data options]
+  (let [data (encrypt key (.getBytes (serialize data options)))]
     (str (codec/base64-encode data) "--" (hmac key data))))
 
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
-  [key ^String string]
+  [key ^String string options]
   (let [[data mac] (.split string "--")
         data (codec/base64-decode data)]
     (if (crypto/eq? mac (hmac key data))
-      (edn/read-string (decrypt key data)))))
+      (deserialize (decrypt key data) options))))
 
-(deftype CookieStore [secret-key]
+(deftype CookieStore [secret-key options]
   SessionStore
   (read-session [_ data]
-    (if data (unseal secret-key data)))
+    (if data (unseal secret-key data options)))
   (write-session [_ _ data]
-    (seal secret-key data))
+    (seal secret-key data options))
   (delete-session [_ _]
-    (seal secret-key {})))
+    (seal secret-key {} options)))
 
 (ns-unmap *ns* '->CookieStore)
 
@@ -104,9 +107,13 @@
   :key - The secret key to encrypt the session cookie. Must be exactly 16 bytes
          If no key is provided then a random key will be generated. Note that in
          that case a server restart will invalidate all existing session
-         cookies."
+         cookies.
+
+  :readers - A map of data readers used to read the serialized edn from the
+             cookie. For writing, ensure that each data type has a key in the
+             clojure.core/print-method or clojure.core/print-dup multimethods."
   ([] (cookie-store {}))
   ([options]
     (let [key (get-secret-key options)]
       (assert (valid-secret-key? key) "the secret key must be exactly 16 bytes")
-      (CookieStore. (get-secret-key options)))))
+      (CookieStore. key options))))

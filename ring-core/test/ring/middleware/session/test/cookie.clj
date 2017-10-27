@@ -56,3 +56,17 @@
   (is (thrown-with-msg?
        AssertionError #"the secret key must be exactly 16 bytes"
        (cookie-store {:key (.getBytes "012345678901234567890")}))))
+
+; setup for serializing/deserializing Instant.
+(defmethod print-method java.time.Instant [dt out]
+  (.write out (str "#foo/instant \"" (.toString dt) "\"")))
+
+(defn parse-instant [x] (java.time.Instant/parse x))
+
+(deftest cookie-session-custom-type
+  (let [store    (cookie-store {:readers {'foo/instant #'parse-instant}})
+        now      (java.time.Instant/now)
+        sess-key (write-session store nil {:foo now})]
+    (is (not (nil? sess-key)))
+    (is (= (read-session store sess-key)
+           {:foo now}))))
