@@ -1,3 +1,8 @@
+## 1.6.3 (2017-10-31)
+
+* Fixed multipart field bug with byte-array-store (#301)
+* Updated Commons-FileUpload to 1.3.3 to patch exploit (#310)
+
 ## 1.6.2 (2017-07-15)
 
 * Fixed reflection warnings
