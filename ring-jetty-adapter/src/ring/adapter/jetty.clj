@@ -12,10 +12,12 @@
             HttpConnectionFactory
             SslConnectionFactory
             SecureRequestCustomizer]
-           [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.server Handler]
+           [org.eclipse.jetty.server.handler AbstractHandler HandlerList]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
+           [org.eclipse.jetty.servlet ServletHolder ServletContextHandler]
            [javax.servlet AsyncContext]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
@@ -124,6 +126,13 @@
       (.addConnector server (ssl-connector server options)))
     server))
 
+(defn- create-servlet-handlers [servlet-mapping]
+  (mapv (fn [[path-spec servlet-inst]]
+          (doto (ServletContextHandler. ServletContextHandler/SESSIONS)
+            (.setContextPath path-spec)
+            (.addServlet (ServletHolder. servlet-inst) "/")))
+        servlet-mapping))
+
 (defn ^Server run-jetty
   "Start a Jetty webserver to serve the given handler according to the
   supplied options:
@@ -159,12 +168,17 @@
   :output-buffer-size   - the response body buffer size (default 32768)
   :request-header-size  - the maximum size of a request header (default 8192)
   :response-header-size - the maximum size of a response header (default 8192)
-  :send-server-version? - add Server header to HTTP response (default true)"
+  :send-server-version? - add Server header to HTTP response (default true)
+  :servlet-mapping      - Set servlet mapping"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))]
-    (if (:async? options)
-      (.setHandler server (async-proxy-handler handler (:async-timeout options 0)))
-      (.setHandler server (proxy-handler handler)))
+  (let [server (create-server (dissoc options :configurator))
+        root-handler (HandlerList.)
+        servlet-handlers (create-servlet-handlers (:servlet-mapping options {}))
+        app-handler (if (:async? options)
+                      (async-proxy-handler handler (:async-timeout options 0))
+                      (proxy-handler handler))]
+    (.setHandlers root-handler (into-array Handler (conj servlet-handlers app-handler)))
+    (.setHandler server root-handler)
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try

@@ -9,7 +9,8 @@
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [java.net ServerSocket ConnectException]
-           [java.security KeyStore]))
+           [java.security KeyStore]
+           [HelloServlet]))
 
 (defn- hello-world [request]
   {:status  200
@@ -260,6 +261,20 @@
         (is (contains? (exclude-protocols server) protocol))
         (finally
           (.stop server)))))
+
+  (testing "setting servlet mapping"
+    (with-server hello-world {:port test-port
+                              :servlet-mapping {"/hello" (HelloServlet.)}}
+      (let [response (http/get (str test-url "/hello"))]
+        (is (= (:status response) 200))
+        (is (.startsWith (get-in response [:headers "content-type"])
+                         "text/html"))
+        (is (= (:body response) "<h1>HelloServlet</h1>")))
+      (let [response (http/get test-url)]
+        (is (= (:status response) 200))
+        (is (.startsWith (get-in response [:headers "content-type"])
+                         "text/plain"))
+        (is (= (:body response) "Hello World")))))
 
   ;; Unable to get test working with Jetty 9
   (comment
