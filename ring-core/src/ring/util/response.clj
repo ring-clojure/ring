@@ -44,6 +44,14 @@
       :headers {"Location" url}
       :body    body}))
 
+(defn bad-request
+  "Returns a 400 'bad request' response."
+  {:added "1.7"}
+  [body]
+  {:status  400
+   :headers {}
+   :body    body})
+
 (defn not-found
   "Returns a 404 'not found' response."
   {:added "1.1"}
