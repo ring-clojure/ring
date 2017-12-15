@@ -23,6 +23,10 @@
   (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
          (redirect-after-post "http://example.com"))))
 
+(deftest test-bad-request
+  (is (= {:status 400 :headers {} :body "Bad Request"}
+         (bad-request "Bad Request"))))
+
 (deftest test-not-found
   (is (= {:status 404 :headers {} :body "Not found"}
          (not-found "Not found"))))
