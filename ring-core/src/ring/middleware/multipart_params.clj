@@ -48,11 +48,11 @@
 
 (defn- file-item-seq
   "Create a seq of FileItem instances from a request context."
-  [request progress-fn context]
-  (let [upload (if progress-fn
-                 (doto (FileUpload.)
-                   (.setProgressListener (progress-listener request progress-fn)))
-                 (FileUpload.))]
+  [request progress-fn max-file-size max-request-size context]
+  (let [upload (FileUpload.)]
+    (when max-request-size (.setSizeMax upload (long max-request-size)))
+    (when max-file-size (.setFileSizeMax upload (long max-file-size)))
+    (when progress-fn (.setProgressListener upload (progress-listener request progress-fn)))
     (file-item-iterator-seq
       (.getItemIterator ^FileUpload upload context))))
 
@@ -90,11 +90,11 @@
 
 (defn- parse-multipart-params
   "Parse a map of multipart parameters from the request."
-  [request fallback-encoding forced-encoding store progress-fn]
+  [request {:keys [encoding fallback-encoding store progress-fn max-file-size max-request-size]}]
   (->> (request-context request fallback-encoding)
-       (file-item-seq request progress-fn)
+       (file-item-seq request progress-fn max-file-size max-request-size)
        (map #(parse-file-item % store))
-       (decode-string-values fallback-encoding forced-encoding)
+       (decode-string-values fallback-encoding encoding)
        (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
 
 (defn- load-var
@@ -117,20 +117,16 @@
   ([request]
    (multipart-params-request request {}))
   ([request options]
-   (let [store           (or (:store options) @default-store)
-         forced-encoding (:encoding options)
-         req-encoding    (or forced-encoding
-                             (:fallback-encoding options)
-                             (req/character-encoding request)
-                             "UTF-8")
-         progress        (:progress-fn options)
-         params          (if (multipart-form? request)
-                           (parse-multipart-params request
-                                                   req-encoding
-                                                   forced-encoding
-                                                   store
-                                                   progress)
-                           {})]
+   (let [req-encoding (or (:encoding options)
+                          (:fallback-encoding options)
+                          (req/character-encoding request)
+                          "UTF-8")
+         options      (-> options
+                          (update-in [:store] #(or % @default-store))
+                          (assoc :fallback-encoding req-encoding))
+         params       (if (multipart-form? request)
+                        (parse-multipart-params request options)
+                        {})]
      (merge-with merge request
                  {:multipart-params params}
                  {:params params}))))
@@ -164,7 +160,11 @@
 
   :progress-fn       - a function that gets called during uploads. The
                        function should expect four parameters: request,
-                       bytes-read, content-length, and item-count."
+                       bytes-read, content-length, and item-count.
+
+  :max-file-size     - maximum allowed size of a single uploaded file in bytes.
+
+  :max-request-size  - maximum allowed size of a complete request in bytes."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]
