@@ -157,7 +157,7 @@
                        Has no effect if :encoding is also set.
 
   :store             - a function that stores a file upload. The function
-                       should expect a map with :filename, content-type and
+                       should expect a map with :filename, :content-type and
                        :stream keys, and its return value will be used as the
                        value for the parameter in the multipart parameter map.
                        The default storage function is the temp-file-store.
