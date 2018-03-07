@@ -3,24 +3,27 @@
             [ring.middleware.file :refer :all])
   (:import [java.io File]))
 
+(def test-response
+  {:status 200, :headers {}, :body "test"})
+
 (deftest wrap-file-no-directory
   (is (thrown-with-msg? Exception #".*Directory does not exist.*"
-    (wrap-file (constantly :response) "not_here"))))
+    (wrap-file (constantly test-response) "not_here"))))
 
 (def public-dir "test/ring/assets")
 (def index-html (File. ^String public-dir "index.html"))
 (def foo-html   (File. ^String public-dir "foo.html"))
 
-(def app (wrap-file (constantly :response) public-dir))
+(def app (wrap-file (constantly test-response) public-dir))
 
 (deftest test-wrap-file-unsafe-method
-  (is (= :response (app {:request-method :post :uri "/foo"}))))
+  (is (= test-response (app {:request-method :post :uri "/foo"}))))
 
 (deftest test-wrap-file-forbidden-url
-  (is (= :response (app {:request-method :get :uri "/../foo"}))))
+  (is (= test-response (app {:request-method :get :uri "/../foo"}))))
 
 (deftest test-wrap-file-no-file
-  (is (= :response (app {:request-method :get :uri "/dynamic"}))))
+  (is (= test-response (app {:request-method :get :uri "/dynamic"}))))
 
 (deftest test-wrap-file-directory
   (let [{:keys [status headers body]} (app {:request-method :get :uri "/"})]
@@ -35,9 +38,9 @@
     (is (= foo-html body))))
 
 (deftest test-wrap-file-no-index
-  (let [app  (wrap-file (constantly :response) public-dir {:index-files? false})
+  (let [app  (wrap-file (constantly test-response) public-dir {:index-files? false})
         resp (app {:request-method :get :uri "/"})]
-    (is (= :response resp))))
+    (is (= test-response resp))))
 
 (deftest test-wrap-file-path-info
   (let [request {:request-method :get
