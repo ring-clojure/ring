@@ -47,7 +47,7 @@
    (ensure-dir root-path)
    (fn
      ([request]
-      (or (file-request request root-path options) (handler request)))
+      (or (handler request) (file-request request root-path options) ))
      ([request respond raise]
       (if-let [response (file-request request root-path options)]
         (respond response)
