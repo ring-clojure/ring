@@ -54,6 +54,10 @@ To include all of them:
 
 * [Google group](http://groups.google.com/group/ring-clojure)
 
+## Contributing
+
+Please see [CONTRIBUTING.md](https://github.com/ring-clojure/ring/CONTRIBUTING.md).
+
 ## Thanks
 
 This project borrows heavily from Ruby's Rack and Python's WSGI;
