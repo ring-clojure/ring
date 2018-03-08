@@ -56,7 +56,9 @@ To include all of them:
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](https://github.com/ring-clojure/ring/CONTRIBUTING.md).
+Please see [CONTRIBUTING.md][3].
+
+[3]: https://github.com/ring-clojure/ring/blob/master/CONTRIBUTING.md
 
 ## Thanks
 
