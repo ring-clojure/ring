@@ -8,7 +8,7 @@
 
 (deftest wrap-file-no-directory
   (is (thrown-with-msg? Exception #".*Directory does not exist.*"
-    (wrap-file (constantly test-response) "not_here"))))
+                        (wrap-file (constantly test-response) "not_here"))))
 
 (def public-dir "test/ring/assets")
 (def index-html (File. ^String public-dir "index.html"))
@@ -93,3 +93,42 @@
       (is (= 200 status))
       (is (= (into #{} (keys headers)) #{"Content-Length" "Last-Modified"}))
       (is (= foo-html body)))))
+
+(defn- prefer-foo-handler
+  ([request]
+   (if (= (:uri request) "/foo.html")
+     {:status 200, :headers {}, :body "override"}
+     {:status 404, :headers {}, :body "not found"}))
+  ([request respond raise]
+   (respond (prefer-foo-handler request))))
+
+(deftest test-wrap-file-with-prefer-handler
+  (let [handler (wrap-file prefer-foo-handler
+                           (File. public-dir)
+                           {:prefer-handler? true})]
+
+    (testing "middleware serves file (synchronously)"
+      (let [response (handler {:request-method :get, :uri "/index.html"})]
+        (is (= 200 (:status response)))
+        (is (= index-html (:body response)))))
+
+    (testing "middleware serves file (asynchronously)"
+      (let [response (promise)
+            error    (promise)]
+        (handler {:request-method :get, :uri "/index.html"} response error)
+        (is (= 200 (:status @response)))
+        (is (= index-html (:body @response)))
+        (is (not (realized? error)))))
+
+    (testing "handler serves file (synchronously)"
+      (let [response (handler {:request-method :get, :uri "/foo.html"})]
+        (is (= 200 (:status response)))
+        (is (= "override" (:body response)))))
+
+    (testing "handler serves file (asynchronously)"
+      (let [response (promise)
+            error    (promise)]
+        (handler {:request-method :get, :uri "/foo.html"} response error)
+        (is (= 200 (:status @response)))
+        (is (= "override" (:body @response)))
+        (is (not (realized? error)))))))

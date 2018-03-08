@@ -40,15 +40,28 @@
   Accepts the following options:
 
   :index-files?    - look for index.* files in directories, defaults to true
-  :allow-symlinks? - serve files through symbolic links, defaults to false"
+  :allow-symlinks? - serve files through symbolic links, defaults to false
+  :prefer-handler? - prioritize handler response over files, defaults to false"
   ([handler root-path]
    (wrap-file handler root-path {}))
   ([handler root-path options]
    (ensure-dir root-path)
    (fn
      ([request]
-      (or (file-request request root-path options) (handler request)))
+      (if (:prefer-handler? options)
+        (let [response (handler request)]
+          (if (= 404 (:status response))
+            (file-request request root-path options)
+            response))
+        (or (file-request request root-path options) (handler request))))
      ([request respond raise]
-      (if-let [response (file-request request root-path options)]
-        (respond response)
-        (handler request respond raise))))))
+      (if (:prefer-handler? options)
+        (handler request
+                 (fn [response]
+                   (if (= 404 (:status response))
+                     (respond (file-request request root-path options))
+                     (respond response)))
+                 raise)
+        (if-let [response (file-request request root-path options)]
+          (respond response)
+          (handler request respond raise)))))))
