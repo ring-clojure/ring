@@ -26,6 +26,15 @@
 (defn- ok-response? [response]
   (= (:status response) 200))
 
+(defn- cached-response? [request response]
+  (let [modified-since (get-header request "if-modified-since")
+        if-none-match  (get-header request "if-none-match")]
+    (if (and modified-since if-none-match)
+      (and (not-modified-since? request response)
+           (etag-match? request response))
+      (or (not-modified-since? request response)
+          (etag-match? request response)))))
+
 (defn not-modified-response
   "Returns 304 or original response based on response and request.
   See: wrap-not-modified."
@@ -33,8 +42,7 @@
   [response request]
   (if (and (read-request? request)
            (ok-response? response)
-           (or (etag-match? request response)
-               (not-modified-since? request response)))
+           (cached-response? request response))
     (do (close! (:body response))
         (-> response
             (assoc :status 304)

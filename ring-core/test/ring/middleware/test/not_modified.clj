@@ -40,14 +40,14 @@
       (is (= 304 (:status @response)))
       (is (not (realized? exception))))))
 
-(deftest test-not-modified-response  
+(deftest test-not-modified-response
   (testing "etag match"
     (let [known-etag "known-etag"
           request {:request-method :get, :headers {"if-none-match" known-etag}}
           handler-resp #(hash-map :status 200 :headers {"etag" %} :body "")]
       (is (= 304 (:status (not-modified-response (handler-resp known-etag) request))))
       (is (= 200 (:status (not-modified-response (handler-resp "unknown-etag") request))))))
-  
+
   (testing "not modified"
     (let [req #(hash-map :request-method :get, :headers {"if-modified-since" %})
           last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
@@ -56,6 +56,16 @@
       (is (= 304 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 11:52:50 GMT")))))
       (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:50 GMT")))))))
 
+  (testing "etag and modification date"
+    (let [known-etag "known-etag"
+          last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
+          req #(hash-map :request-method :get, :headers {"if-modified-since" %1 "if-none-match" %2})
+          h-resp (hash-map :status 200 :headers {"Last-Modified" last-modified "ETag" known-etag} :body "")]
+      (is (= 304 (:status (not-modified-response h-resp (req last-modified known-etag)))))
+      (is (= 200 (:status (not-modified-response h-resp (req last-modified "unknown-etag")))))
+      (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:00 GMT" known-etag)))))
+      (is (= 200 (:status (not-modified-response h-resp (req "Sun, 23 Sep 2012 10:00:00 GMT" "unknown-etag")))))))
+
   (testing "not modified body and content-length"
     (let [req   #(hash-map :request-method :get :headers {"if-modified-since" %})
           last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
@@ -63,7 +73,7 @@
           resp   (not-modified-response h-resp (req last-modified))]
       (is (nil? (:body resp)))
       (is (= (get-in resp [:headers "Content-Length"]) "0"))))
-  
+
   (testing "no modification info"
     (let [response {:status 200 :headers {} :body ""}]
       (is (= 200 (:status (not-modified-response response (etag-request "\"12345\"")))))
