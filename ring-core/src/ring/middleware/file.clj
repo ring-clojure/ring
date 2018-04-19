@@ -32,6 +32,30 @@
          (-> (response/file-response path options)
              (head/head-response request)))))))
 
+(defn- wrap-file-prefer-files [handler root-path options]
+  (fn
+    ([request]
+     (or (file-request request root-path options) (handler request)))
+    ([request respond raise]
+     (if-let [response (file-request request root-path options)]
+       (respond response)
+       (handler request respond raise)))))
+
+(defn- wrap-file-prefer-handler [handler root-path options]
+  (fn
+    ([request]
+     (let [response (handler request)]
+       (if (= 404 (:status response))
+         (file-request request root-path options)
+         response)))
+    ([request respond raise]
+     (handler request
+              (fn [response]
+                (if (= 404 (:status response))
+                  (respond (file-request request root-path options))
+                  (respond response)))
+              raise))))
+
 (defn wrap-file
   "Wrap an handler such that the directory at the given root-path is checked for
   a static file with which to respond to the request, proxying the request to
@@ -46,22 +70,6 @@
    (wrap-file handler root-path {}))
   ([handler root-path options]
    (ensure-dir root-path)
-   (fn
-     ([request]
-      (if (:prefer-handler? options)
-        (let [response (handler request)]
-          (if (= 404 (:status response))
-            (file-request request root-path options)
-            response))
-        (or (file-request request root-path options) (handler request))))
-     ([request respond raise]
-      (if (:prefer-handler? options)
-        (handler request
-                 (fn [response]
-                   (if (= 404 (:status response))
-                     (respond (file-request request root-path options))
-                     (respond response)))
-                 raise)
-        (if-let [response (file-request request root-path options)]
-          (respond response)
-          (handler request respond raise)))))))
+   (if (:prefer-handler? options)
+     (wrap-file-prefer-handler handler root-path options)
+     (wrap-file-prefer-files   handler root-path options))))
