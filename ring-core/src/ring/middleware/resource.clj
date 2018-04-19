@@ -17,6 +17,31 @@
        (-> (response/resource-response path (assoc options :root root-path))
            (head/head-response request))))))
 
+(defn- wrap-resource-prefer-resources [handler root-path options]
+  (fn
+    ([request]
+     (or (resource-request request root-path options)
+         (handler request)))
+    ([request respond raise]
+     (if-let [response (resource-request request root-path options)]
+       (respond response)
+       (handler request respond raise)))))
+
+(defn- wrap-resource-prefer-handler [handler root-path options]
+  (fn
+    ([request]
+     (let [response (handler request)]
+       (if (= 404 (:status response))
+         (resource-request request root-path options)
+         response)))
+    ([request respond raise]
+     (handler request
+              (fn [response]
+                (if (= 404 (:status response))
+                  (respond (resource-request request root-path options))
+                  (respond response)))
+              raise))))
+
 (defn wrap-resource
   "Middleware that first checks to see whether the request map matches a static
   resource. If it does, the resource is returned in a response map, otherwise
@@ -27,15 +52,12 @@
 
   :loader          - resolve the resource using this class loader
   :allow-symlinks? - allow symlinks that lead to paths outside the root
-                     classpath directories (defaults to false)"
+                     classpath directories (defaults to false)
+  :prefer-handler? - prioritize handler response over resources (defaults to
+                     false)"
   ([handler root-path]
    (wrap-resource handler root-path {}))
   ([handler root-path options]
-   (fn
-     ([request]
-      (or (resource-request request root-path options)
-          (handler request)))
-     ([request respond raise]
-      (if-let [response (resource-request request root-path options)]
-        (respond response)
-        (handler request respond raise))))))
+   (if (:prefer-handler? options)
+     (wrap-resource-prefer-handler   handler root-path options)
+     (wrap-resource-prefer-resources handler root-path options))))
