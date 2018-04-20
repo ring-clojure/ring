@@ -25,7 +25,7 @@
 
   :mime-types - a map of filename extensions to mime-types that will be
                 used in addition to the ones defined in
-                ring.util.mime-types/default-mime-types"
+                ring.util.mime-type/default-mime-types"
   ([handler]
    (wrap-content-type handler {}))
   ([handler options]
