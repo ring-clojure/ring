@@ -6,9 +6,9 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring/ring-codec "1.1.1"]
-                 [commons-io "2.5"]
+                 [commons-io "2.6"]
                  [commons-fileupload "1.3.3"]
-                 [clj-time "0.11.0"]
+                 [clj-time "0.14.3"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
   :aliases {"test-all" ["with-profile" "default:+1.6:+1.7:+1.8" "test"]}
