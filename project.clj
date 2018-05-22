@@ -3,8 +3,7 @@
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [ring/ring-core "1.6.3"]
+  :dependencies [[ring/ring-core "1.6.3"]
                  [ring/ring-devel "1.6.3"]
                  [ring/ring-jetty-adapter "1.6.3"]
                  [ring/ring-servlet "1.6.3"]]
