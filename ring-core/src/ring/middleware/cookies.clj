@@ -70,8 +70,7 @@
 (defn- valid-attr?
   "Is the attribute valid?"
   [[key value]]
-  (and (contains? set-cookie-attrs key)
-       (not (.contains (str value) ";"))
+  (and (not (.contains (str value) ";"))
        (case key
          :max-age (or (instance? Interval value) (integer? value))
          :expires (or (instance? DateTime value) (string? value))
@@ -82,7 +81,8 @@
   "Write a map of cookie attributes to a string."
   [attrs]
   {:pre [(every? valid-attr? attrs)]}
-  (for [[key value] attrs]
+  (for [[key value] attrs
+        :when (contains? set-cookie-attrs key)]
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
         (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
