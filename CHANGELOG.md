@@ -1,3 +1,19 @@
+## 1.7.0-RC1 (2018-05-23)
+
+* Fixed `wrap-not-modified` to work per spec (#323)
+* Updated minimum Clojure version to 1.7.0
+* Updated Ring-Codec to 1.1.1 to fix handling of params without values (#312)
+* Updated Jetty to 9.2.24.v20180105
+* Updated Commons-IO to 2.6
+* Updated clj-time to 0.14.3
+* Added `:max-queued-requests` option to Jetty adapter (#289)
+* Added `:thread-idle-timeout` option to Jetty adapter (#289)
+* Added `:keystore-type` option to jetty adapter (#283)
+* Added default media types for HLS and MPEG-DASH (#308)
+* Added `:readers` option to session cookie store (#307)
+* Added `ring.util.response/bad-request` (#315)
+* Added `:prefer-handler?` option to `wrap-file` and `wrap-resource` (#321)
+
 ## 1.6.3 (2017-10-31)
 
 * Fixed multipart field bug with byte-array-store (#301)
