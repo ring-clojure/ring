@@ -44,7 +44,10 @@
          (response "foobar"))))
 
 (deftest test-status
-  (is (= {:status 200 :body ""} (status {:status nil :body ""} 200))))
+  (testing "with response"
+    (is (= {:status 200 :body ""} (status {:status nil :body ""} 200))))
+  (testing "without response"
+    (is (= {:status 200 :headers {} :body nil} (status 200)))))
 
 (deftest test-content-type
   (is (= {:status 200 :headers {"Content-Type" "text/html" "Content-Length" "10"}}

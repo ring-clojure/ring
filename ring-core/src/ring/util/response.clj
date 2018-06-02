@@ -70,8 +70,12 @@
 
 (defn status
   "Returns an updated Ring response with the given status."
-  [resp status]
-  (assoc resp :status status))
+  ([status]
+   {:status  status
+    :headers {}
+    :body    nil})
+  ([resp status]
+   (assoc resp :status status)))
 
 (defn header
   "Returns an updated Ring response with the specified header added."
