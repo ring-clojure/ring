@@ -17,6 +17,10 @@
     (io/writer output-stream)))
 
 (extend-protocol StreamableResponseBody
+  (Class/forName "[B")
+  (write-body-to-stream [body _ ^OutputStream output-stream]
+    (with-open [out output-stream]
+      (.write out ^bytes body)))
   String
   (write-body-to-stream [body response output-stream]
     (with-open [writer (response-writer response output-stream)]
