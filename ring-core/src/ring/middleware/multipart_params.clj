@@ -69,10 +69,10 @@
   (let [html5-encoding (parse-html5-charset params)]
     (for [[k v field?] params]
       [k (if field?
-           (String. (:bytes v) (str (or forced-encoding
-                                        html5-encoding
-                                        (:encoding v)
-                                        fallback-encoding)))
+           (String. ^bytes (:bytes v) (str (or forced-encoding
+                                               html5-encoding
+                                               (:encoding v)
+                                               fallback-encoding)))
            v)])))
 
 (defn- parse-file-item
