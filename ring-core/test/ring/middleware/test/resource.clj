@@ -35,7 +35,14 @@
     (are [request body] (= (slurp (:body (no-loader request))) body)
          {:request-method :get, :uri "/foo.html"} "foo")
     (are [request body] (= (slurp (:body (with-loader request))) body)
-      {:request-method :get, :uri "/foo.html"} "foo-in-jar")))
+      {:request-method :get, :uri "/foo.html"} "foo-in-jar")
+    (testing "does accept trailing slash in asset path"
+      (let [no-loader-s   (wrap-resource test-handler "/ring/assets/")
+            with-loader-s (wrap-resource test-handler "/ring/assets/" {:loader loader})]
+        (are [request body] (= (slurp (:body (no-loader-s request))) body)
+          {:request-method :get, :uri "/foo.html"} "foo")
+        (are [request body] (= (slurp (:body (with-loader-s request))) body)
+          {:request-method :get, :uri "/foo.html"} "foo-in-jar")))))
 
 (deftest wrap-resource-symlinks-test
   (testing "doesn't follow symlinks by default"
