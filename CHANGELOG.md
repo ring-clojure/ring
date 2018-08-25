@@ -1,3 +1,7 @@
+## 1.7.0-RC2 (2018-08-25)
+
+* Fixed multipart parameter reflection warning (#333)
+
 ## 1.7.0-RC1 (2018-05-23)
 
 * Fixed `wrap-not-modified` to work per spec (#323)
