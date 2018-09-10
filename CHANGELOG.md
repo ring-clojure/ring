@@ -1,3 +1,7 @@
+## 1.7.0 (2018-09-10)
+
+* Functionally the same as 1.7.0-RC2.
+
 ## 1.7.0-RC2 (2018-08-25)
 
 * Fixed multipart parameter reflection warning (#333)
