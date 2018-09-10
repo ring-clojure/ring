@@ -3,7 +3,8 @@
   (:require [ring.util.codec :as codec]
             [ring.util.response :as response]
             [ring.util.request :as request]
-            [ring.middleware.head :as head]))
+            [ring.middleware.head :as head]
+            [clojure.string :as str]))
 
 (defn resource-request
   "If request matches a static resource, returns it in a response map.
@@ -58,6 +59,7 @@
   ([handler root-path]
    (wrap-resource handler root-path {}))
   ([handler root-path options]
-   (if (:prefer-handler? options)
-     (wrap-resource-prefer-handler   handler root-path options)
-     (wrap-resource-prefer-resources handler root-path options))))
+   (let [root-path (str/replace root-path #"/$" "")]
+     (if (:prefer-handler? options)
+       (wrap-resource-prefer-handler   handler root-path options)
+       (wrap-resource-prefer-resources handler root-path options)))))
