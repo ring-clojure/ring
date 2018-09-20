@@ -3,8 +3,8 @@
   (:import [org.joda.time DateTime Interval])
   (:require [ring.util.codec :as codec]
             [clojure.string :as str]
-            [clj-time.core :refer [in-seconds]]
-            [clj-time.format :refer [formatters unparse with-locale]]
+            [clj-time.core :refer [in-seconds time-zone-for-id]]
+            [clj-time.format :refer [formatter unparse with-locale]]
             [ring.util.parsing :refer [re-token]]))
 
 (def ^{:private true, :doc "RFC6265 cookie-octet"}
@@ -33,7 +33,7 @@
    :lax "Lax"})
 
 (def ^:private rfc822-formatter
-  (with-locale (formatters :rfc822) java.util.Locale/US))
+  (formatter "EEE, dd MMM yyyy HH:mm:ss z" (time-zone-for-id "GMT")))
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
