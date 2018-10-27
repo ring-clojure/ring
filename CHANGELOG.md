@@ -1,3 +1,8 @@
+## 1.7.1 (2018-10-27)
+
+* Updated Jetty to 9.4.12.v20180830
+* Fixed `wrap-resource` not working with a trailing slash
+
 ## 1.7.0 (2018-09-10)
 
 * Functionally the same as 1.7.0-RC2.
