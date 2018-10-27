@@ -17,8 +17,9 @@
   "Return the content-type of the request, or nil if no content-type is set."
   {:added "1.3"}
   [request]
-  (if-let [type (get-in request [:headers "content-type"])]
-    (second (re-find #"^(.*?)(?:;|$)" type))))
+  (if-let [type ^String (get (:headers request) "content-type")]
+    (let [i (.indexOf type ";")]
+      (if (neg? i) type (subs type 0 i)))))
 
 (defn content-length
   "Return the content-length of the request, or nil no content-length is set."
