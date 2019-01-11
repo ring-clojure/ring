@@ -181,6 +181,36 @@
       (is (= 8 (. thread-pool getMinThreads)))
       (.stop server)))
 
+  (testing "setting max-queued-requests less than 8 but not :min-threads"
+    (is (thrown-with-msg?
+         IllegalArgumentException
+         #":max-queued-requests be greater than :max-threads and greater than 8"
+         (let [server (run-jetty hello-world {:port test-port
+                                              :min-threads 4
+                                              :max-queued-requests 7
+                                              :join? false})]
+           (.stop server)))))
+
+  (testing "setting max-queued-requests less than 8 and :min-threads"
+    (is (thrown-with-msg?
+         IllegalArgumentException
+         #":max-queued-requests be greater than :max-threads and greater than 8"
+         (let [server (run-jetty hello-world {:port test-port
+                                              :min-threads 8
+                                              :max-queued-requests 7
+                                              :join? false})]
+           (.stop server)))))
+
+  (testing "setting max-queued-requests less than :min-threads but not 8"
+    (is (thrown-with-msg?
+         IllegalArgumentException
+         #":max-queued-requests be greater than :max-threads and greater than 8"
+         (let [server (run-jetty hello-world {:port test-port
+                                              :min-threads 9
+                                              :max-queued-requests 8
+                                              :join? false})]
+           (.stop server)))))
+
   (testing "default thread-idle-timeout"
     (let [server (run-jetty hello-world {:port test-port
                                          :join? false})
