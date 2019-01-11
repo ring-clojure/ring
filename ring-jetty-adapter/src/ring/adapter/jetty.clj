@@ -103,18 +103,22 @@
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
         queue-capacity      (max min-threads 8)
-        queue-max-capacity  (options :max-queued-requests Integer/MAX_VALUE)
-        blocking-queue      (BlockingArrayQueue. queue-capacity
-                                                 queue-capacity
-                                                 queue-max-capacity)
-        thread-idle-timeout (options :thread-idle-timeout 60000)
-        pool                (QueuedThreadPool. max-threads
-                                               min-threads
-                                               thread-idle-timeout
-                                               blocking-queue)]
-    (when (:daemon? options false)
-      (.setDaemon pool true))
-    pool))
+        queue-max-capacity  (options :max-queued-requests Integer/MAX_VALUE)]
+    (when (< queue-max-capacity
+             queue-capacity)
+      (throw (IllegalArgumentException.
+              ":max-queued-requests be greater than :max-threads and greater than 8")))
+    (let [blocking-queue      (BlockingArrayQueue. queue-capacity
+                                                   queue-capacity
+                                                   queue-max-capacity)
+          thread-idle-timeout (options :thread-idle-timeout 60000)
+          pool                (QueuedThreadPool. max-threads
+                                                 min-threads
+                                                 thread-idle-timeout
+                                                 blocking-queue)]
+      (when (:daemon? options false)
+        (.setDaemon pool true))
+      pool)))
 
 (defn- ^Server create-server [options]
   (let [server (Server. (create-threadpool options))]
