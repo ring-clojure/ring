@@ -1,10 +1,11 @@
 (ns ring.middleware.cookies
   "Middleware for parsing and generating cookies."
-  (:import [org.joda.time DateTime Interval])
+  (:import [java.time Duration ZonedDateTime ZoneId]
+           [java.time.format DateTimeFormatter]
+           [java.time.temporal ChronoUnit]
+           [java.util Locale])
   (:require [ring.util.codec :as codec]
             [clojure.string :as str]
-            [clj-time.core :refer [in-seconds]]
-            [clj-time.format :refer [formatters unparse with-locale]]
             [ring.util.parsing :refer [re-token]]))
 
 (def ^{:private true, :doc "RFC6265 cookie-octet"}
@@ -31,9 +32,6 @@
   same-site-values
   {:strict "Strict"
    :lax "Lax"})
-
-(def ^:private rfc822-formatter
-  (with-locale (formatters :rfc822) java.util.Locale/US))
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
@@ -67,14 +65,54 @@
   [key value encoder]
   (encoder {key value}))
 
+(defprotocol CookieInterval
+  (->seconds [this]))
+
+(defprotocol CookieDateTime
+  (rfc822-format [this]))
+
+(defn- ^Class class-by-name [s]
+  (try (Class/forName s)
+       (catch ClassNotFoundException _)))
+
+(when-let [dt (class-by-name "org.joda.time.DateTime")]
+  (extend dt
+    CookieDateTime
+    {:rfc822-format
+     (eval
+       '(let [fmtr (.. (org.joda.time.format.DateTimeFormat/forPattern "EEE, dd MMM yyyy HH:mm:ss Z")
+                       (withZone org.joda.time.DateTimeZone/UTC)
+                       (withLocale java.util.Locale/US))]
+          (fn [interval]
+            (.print fmtr ^org.joda.time.DateTime interval))))}))
+
+(when-let [interval (class-by-name "org.joda.time.Interval")]
+  (extend interval
+    CookieInterval
+    {:->seconds
+     (eval '(fn [dt] (.getSeconds (org.joda.time.Seconds/secondsIn dt))))}))
+
+(extend-protocol CookieInterval
+  Duration
+  (->seconds [this]
+    (.get this ChronoUnit/SECONDS)))
+
+(let [java-rfc822-formatter (.. (DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss Z")
+                                (withZone (ZoneId/of "UTC"))
+                                (withLocale Locale/US))]
+  (extend-protocol CookieDateTime
+    ZonedDateTime
+    (rfc822-format [this]
+      (.format java-rfc822-formatter this))))
+
 (defn- valid-attr?
   "Is the attribute valid?"
   [[key value]]
   (and (contains? set-cookie-attrs key)
        (not (.contains (str value) ";"))
        (case key
-         :max-age (or (instance? Interval value) (integer? value))
-         :expires (or (instance? DateTime value) (string? value))
+         :max-age (or (satisfies? CookieInterval value) (integer? value))
+         :expires (or (satisfies? CookieDateTime value) (string? value))
          :same-site (contains? same-site-values value)
          true)))
 
@@ -85,8 +123,8 @@
   (for [[key value] attrs]
     (let [attr-name (name (set-cookie-attrs key))]
       (cond
-        (instance? Interval value) (str ";" attr-name "=" (in-seconds value))
-        (instance? DateTime value) (str ";" attr-name "=" (unparse rfc822-formatter value))
+        (satisfies? CookieInterval value) (str ";" attr-name "=" (->seconds value))
+        (satisfies? CookieDateTime value) (str ";" attr-name "=" (rfc822-format value))
         (true? value)  (str ";" attr-name)
         (false? value) ""
         (= :same-site key) (str ";" attr-name "=" (same-site-values value))
