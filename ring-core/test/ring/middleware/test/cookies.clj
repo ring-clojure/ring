@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [ring.middleware.cookies :refer :all]
-            [clj-time.core :refer [date-time interval]]))
+            [clj-time.core :refer [date-time interval]])
+  (:import [java.time Duration ZonedDateTime ZoneId]))
 
 (deftest wrap-cookies-basic-cookie
   (let [req  {:headers {"cookie" "a=b"}}
@@ -155,10 +156,38 @@
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Max-Age=" max-age)}}
            (split-set-cookie (:headers resp))))))
 
+(defn zoned-date-time [& [year month day]]
+  (ZonedDateTime/of year
+                    (or month 1)
+                    (or day 1)
+                    0 0 0 0
+                    (ZoneId/of "UTC")))
+
+(deftest wrap-cookies-accepts-max-age-from-java-time
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :max-age (Duration/between (zoned-date-time 2012)
+                                                 (zoned-date-time 2015))}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})
+        max-age 94694400]
+    (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Max-Age=" max-age)}}
+           (split-set-cookie (:headers resp))))))
+
 (deftest wrap-cookies-accepts-expires-from-clj-time
   (let [cookies {"a" {:value "b", :path "/",
                       :secure true, :http-only true,
                       :expires (date-time 2015 12 31)}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})
+        expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+    (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
+           (split-set-cookie (:headers resp))))))
+
+(deftest wrap-cookies-accepts-expires-from-java-time
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :expires (zoned-date-time 2015 12 31)}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})
         expires "Thu, 31 Dec 2015 00:00:00 +0000"]
@@ -180,6 +209,21 @@
       (finally
         (java.util.Locale/setDefault default-locale)))))
 
+(deftest wrap-cookies-accepts-expires-from-java-time-in-non-us-locale
+  (let [default-locale (java.util.Locale/getDefault)]
+    (try
+      (java.util.Locale/setDefault java.util.Locale/FRANCE)
+      (let [cookies {"a" {:value "b", :path "/",
+                          :secure true, :http-only true,
+                          :expires (zoned-date-time 2015 12 31)}}
+            handler (constantly {:cookies cookies})
+            resp    ((wrap-cookies handler) {})
+            expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+        (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
+               (split-set-cookie (:headers resp)))))
+      (finally
+        (java.util.Locale/setDefault default-locale)))))
+
 (deftest wrap-cookies-throws-exception-when-not-using-intervals-correctly
   (let [cookies {"a" {:value "b", :path "/",
                       :secure true, :http-only true,
@@ -188,10 +232,25 @@
         handler (constantly {:cookies cookies})]
     (is (thrown? AssertionError ((wrap-cookies handler) {})))))
 
+(deftest wrap-cookies-throws-exception-when-not-using-intervals-correctly-java
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :expires (Duration/between (zoned-date-time 2012)
+                                                 (zoned-date-time 2015))}}
+        handler (constantly {:cookies cookies})]
+    (is (thrown? AssertionError ((wrap-cookies handler) {})))))
+
 (deftest wrap-cookies-throws-exception-when-not-using-datetime-correctly
   (let [cookies {"a" {:value "b", :path "/",
                       :secure true, :http-only true,
                       :max-age (date-time 2015 12 31)}}
+        handler (constantly {:cookies cookies})]
+    (is (thrown? AssertionError ((wrap-cookies handler) {})))))
+
+(deftest wrap-cookies-throws-exception-when-not-using-zoneddatetime-correctly-java
+  (let [cookies {"a" {:value "b", :path "/",
+                      :secure true, :http-only true,
+                      :max-age (zoned-date-time 2015 12 31)}}
         handler (constantly {:cookies cookies})]
     (is (thrown? AssertionError ((wrap-cookies handler) {})))))
 
