@@ -4,6 +4,12 @@
             [ring.core.protocols :refer :all]))
 
 (deftest test-write-body-defaults
+  (testing "byte-array"
+    (let [output   (java.io.ByteArrayOutputStream.)
+          response {:body (.getBytes "Hello World")}]
+      (write-body-to-stream (:body response) response output)
+      (is (= "Hello World" (.toString output)))))
+
   (testing "strings"
     (let [output   (java.io.ByteArrayOutputStream.)
           response {:body "Hello World"}]
