@@ -16,16 +16,17 @@
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory]
-           [javax.servlet AsyncContext]
+           [javax.servlet AsyncContext DispatcherType]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request request response]
-      (let [request-map  (servlet/build-request-map request)
-            response-map (handler request-map)]
-        (servlet/update-servlet-response response response-map)
-        (.setHandled base-request true)))))
+      (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
+        (let [request-map  (servlet/build-request-map request)
+              response-map (handler request-map)]
+          (servlet/update-servlet-response response response-map)
+          (.setHandled base-request true))))))
 
 (defn- ^AbstractHandler async-proxy-handler [handler timeout]
   (proxy [AbstractHandler] []
