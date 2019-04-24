@@ -375,3 +375,27 @@
       (let [response (http/get test-url)]
         (is (= (:body response)
                (apply str (for [i (range 10)] (str "data: " i "\n\n")))))))))
+
+(def call-count (atom 0))
+
+(defn- broken-handler [request]
+  (swap! call-count inc)
+  (throw (ex-info "unhandled exception" {})))
+
+(defn- broken-handler-cps [request respond raise]
+  (swap! call-count inc)
+  (raise (ex-info "unhandled exception" {})))
+
+(testing "broken handler is only called once"
+  (reset! call-count 0)
+  (with-server broken-handler {:port test-port}
+    (try (http/get test-url)
+      (catch Exception _ nil))
+    (is (= 1 @call-count))))
+
+(testing "broken async handler is only called once"
+  (reset! call-count 0)
+  (with-server broken-handler-cps {:async? true :port test-port}
+    (try (http/get test-url)
+      (catch Exception _ nil))
+    (is (= 1 @call-count))))
