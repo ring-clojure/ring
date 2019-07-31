@@ -118,7 +118,7 @@
            (split-set-cookie (:headers resp))))))
 
 (deftest wrap-cookies-accepts-same-site
-  (testing "Allows :strict and :lax values"
+  (testing "Allows :strict, :lax and :none values"
     (let [cookies {"a" {:value "b" :path "/" :same-site :strict}}
           handler (constantly {:cookies cookies})
           resp    ((wrap-cookies handler) {})]
@@ -129,6 +129,12 @@
           handler (constantly {:cookies cookies})
           resp    ((wrap-cookies handler) {})]
       (is (= {"Set-Cookie" #{"a=b" "Path=/" "SameSite=Lax"}}
+             (split-set-cookie (:headers resp)))))
+
+    (let [cookies {"a" {:value "b" :path "/" :same-site :none}}
+          handler (constantly {:cookies cookies})
+          resp    ((wrap-cookies handler) {})]
+      (is (= {"Set-Cookie" #{"a=b" "Path=/" "SameSite=None"}}
              (split-set-cookie (:headers resp))))))
 
   (testing "Disallows other values"

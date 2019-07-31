@@ -31,7 +31,8 @@
        :doc "Values defined by RFC6265 that apply to the SameSite cookie attribute header."}
   same-site-values
   {:strict "Strict"
-   :lax "Lax"})
+   :lax "Lax"
+   :none "None"})
 
 (defn- parse-cookie-header
   "Turn a HTTP Cookie header into a list of name/value pairs."
