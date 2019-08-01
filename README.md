@@ -70,3 +70,5 @@ thanks to those communities for their work.
 Copyright © 2009-2018 Mark McGranaghan, James Reeves & contributors.
 
 Released under the MIT license.
+
+This edit should not affect CI build success
