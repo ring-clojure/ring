@@ -3,6 +3,7 @@
             [ring.adapter.jetty :refer :all]
             [clj-http.client :as http]
             [clojure.java.io :as io]
+            [clojure.reflect :as r]
             [ring.core.protocols :as p])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
@@ -260,6 +261,15 @@
         (is (contains? (exclude-protocols server) protocol))
         (finally
           (.stop server)))))
+
+  (testing "max-queued-requests limited by threadpool and queue size"
+    (let [server      (run-jetty hello-world {:port test-port
+                                              :join? false
+                                              :max-queued-requests 0})
+          thread-pool (. server getThreadPool)]
+      (prn (-> thread-pool r/reflect :members))
+      ;(is (= 8 (.. thread-pool getQueue getMaxCapacity)))
+      (.stop server)))
 
   ;; Unable to get test working with Jetty 9
   (comment
