@@ -6,11 +6,11 @@
 
 (defn- reloader [dirs retry?]
   (let [modified-namespaces (ns-tracker dirs)
-        load-queue (java.util.concurrent.LinkedBlockingQueue.)]
+        load-queue (java.util.concurrent.LinkedBlockingDeque.)]
     (fn []
       (locking load-queue
-        (doseq [ns-sym (modified-namespaces)]
-          (.offer load-queue ns-sym))
+        (doseq [ns-sym (reverse (modified-namespaces))]
+          (.push load-queue ns-sym))
         (loop []
           (when-let [ns-sym (.peek load-queue)]
             (if retry?
