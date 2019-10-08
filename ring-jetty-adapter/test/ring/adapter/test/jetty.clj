@@ -16,6 +16,11 @@
    :headers {"Content-Type" "text/plain"}
    :body    "Hello World"})
 
+(defn client-cert-handler [request]
+  (if (nil? (:ssl-client-cert request))
+    {:status 403}
+    {:status 200}))
+
 (defn- content-type-handler [content-type]
   (constantly
    {:status  200
@@ -114,6 +119,43 @@
         (is (= (:body response) "Hello World")))
       (is (thrown-with-msg? ConnectException #"Connection refused"
                             (http/get test-url)))))
+
+  (testing "HTTPS server that needs client certs"
+    (with-server client-cert-handler {:client-auth :need
+                                      :keystore "test/keystore.jks"
+                                      :key-password "password"
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (is (thrown? java.io.IOException
+                   (http/get test-ssl-url {:insecure? true}))
+          "missing client certs will cause an exception")
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
+
+  (testing "HTTPS server that wants client certs"
+    (with-server client-cert-handler {:client-auth :want
+                                      :keystore "test/keystore.jks"
+                                      :key-password "password"
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :throw-exceptions false})]
+        (is (= 403 (:status response))
+            "missing client certs will result in 403 from handler"))
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
 
   (testing "configurator set to run last"
     (let [max-threads 20

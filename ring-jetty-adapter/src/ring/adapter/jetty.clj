@@ -15,7 +15,7 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
-           [org.eclipse.jetty.util.ssl SslContextFactory]
+           [org.eclipse.jetty.util.ssl SslContextFactory$Server]
            [javax.servlet AsyncContext DispatcherType]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
@@ -60,30 +60,30 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- ^SslContextFactory ssl-context-factory [options]
-  (let [context (SslContextFactory.)]
+(defn- ^SslContextFactory$Server ssl-context-factory [options]
+  (let [context-server (SslContextFactory$Server.)]
     (if (string? (options :keystore))
-      (.setKeyStorePath context (options :keystore))
-      (.setKeyStore context ^java.security.KeyStore (options :keystore)))
+      (.setKeyStorePath context-server (options :keystore))
+      (.setKeyStore context-server ^java.security.KeyStore (options :keystore)))
     (when (string? (options :keystore-type))
-      (.setKeyStoreType context (options :keystore-type)))
-    (.setKeyStorePassword context (options :key-password))
+      (.setKeyStoreType context-server (options :keystore-type)))
+    (.setKeyStorePassword context-server (options :key-password))
     (cond
       (string? (options :truststore))
-      (.setTrustStorePath context (options :truststore))
+      (.setTrustStorePath context-server (options :truststore))
       (instance? java.security.KeyStore (options :truststore))
-      (.setTrustStore context ^java.security.KeyStore (options :truststore)))
+      (.setTrustStore context-server ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
-      (.setTrustStorePassword context (options :trust-password)))
+      (.setTrustStorePassword context-server (options :trust-password)))
     (case (options :client-auth)
-      :need (.setNeedClientAuth context true)
-      :want (.setWantClientAuth context true)
+      :need (.setNeedClientAuth context-server true)
+      :want (.setWantClientAuth context-server true)
       nil)
     (if-let [exclude-ciphers (options :exclude-ciphers)]
-      (.addExcludeCipherSuites context (into-array String exclude-ciphers)))
+      (.addExcludeCipherSuites context-server (into-array String exclude-ciphers)))
     (if-let [exclude-protocols (options :exclude-protocols)]
-      (.addExcludeProtocols context (into-array String exclude-protocols)))
-    context))
+      (.addExcludeProtocols context-server (into-array String exclude-protocols)))
+    context-server))
 
 (defn- ^ServerConnector ssl-connector [server options]
   (let [ssl-port     (options :ssl-port 443)
