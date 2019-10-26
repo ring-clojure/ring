@@ -43,7 +43,7 @@
         (.setHandled base-request true)))))
 
 (defn- ^ServerConnector server-connector [^Server server & factories]
-  (ServerConnector. server (into-array ConnectionFactory factories)))
+  (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;" (into-array ConnectionFactory factories)))
 
 (defn- ^HttpConfiguration http-config [options]
   (doto (HttpConfiguration.)
