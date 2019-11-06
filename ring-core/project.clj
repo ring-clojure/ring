@@ -10,10 +10,11 @@
                  [commons-fileupload "1.3.3"]
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]]
-  :aliases {"test-all" ["with-profile" "default:+1.8:+1.9" "test"]}
+  :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
-   :dev {:dependencies [[clj-time "0.14.3"]
+   :dev  {:dependencies [[clj-time "0.14.3"]
                         [javax.servlet/servlet-api "2.5"]]}
-   :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-   :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}})
+   :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
+   :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}
+   :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}})
