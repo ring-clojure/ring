@@ -6,23 +6,30 @@
 (def assert-app    (wrap-stacktrace (fn [_] (assert (= 1 2)))))
 
 
-(def html-req {})
-(def js-req   {:headers {"accept" "text/javascript"}})
+(def html-req {:headers {"accept" "text/html"}})
+(def js-req   {:headers {"accept" "application/javascript"}})
+(def plain-req {})
 
 (deftest wrap-stacktrace-smoke
   (binding [*err* (java.io.StringWriter.)]
-    (let [{:keys [status headers] :as response} (exception-app html-req)]
-      (is (= 500 status))
-      (is (= {"Content-Type" "text/html"} headers)))
-    (let [{:keys [status headers]} (exception-app js-req)]
-      (is (= 500 status))
-      (is (= {"Content-Type" "text/javascript"} headers)))
-    (let [{:keys [status headers] :as response} (assert-app html-req)]
-      (is (= 500 status))
-      (is (= {"Content-Type" "text/html"} headers)))
-    (let [{:keys [status headers]} (assert-app js-req)]
-      (is (= 500 status))
-      (is (= {"Content-Type" "text/javascript"} headers)))))
+    (doseq [app [exception-app assert-app]]
+      (testing "requests with Accept: text/html"
+        (let [{:keys [status headers body] :as response} (app html-req)]
+          (is (= 500 status))
+          (is (= {"Content-Type" "text/html"} headers))
+          (is (.startsWith body "<!DOCTYPE html>"))))
+      (testing "requests with Accept: application/javascript"
+        (let [{:keys [status headers body]} (app js-req)]
+          (is (= 500 status))
+          (is (= {"Content-Type" "text/plain"} headers))
+          (is (or (.startsWith body "java.lang.Exception")
+                  (.startsWith body "java.lang.AssertionError")))))
+      (testing "requests without Accept header"
+        (let [{:keys [status headers body]} (app js-req)]
+          (is (= 500 status))
+          (is (= {"Content-Type" "text/plain"} headers))
+          (is (or (.startsWith body "java.lang.Exception")
+                  (.startsWith body "java.lang.AssertionError"))))))))
 
 (deftest wrap-stacktrace-cps-test
   (testing "no exception"
