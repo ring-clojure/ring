@@ -103,8 +103,8 @@
 (defn- ^ThreadPool create-threadpool [options]
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
-        queue-capacity      (max min-threads 8)
-        queue-max-capacity  (options :max-queued-requests Integer/MAX_VALUE)
+        queue-max-capacity  (-> (options :max-queued-requests Integer/MAX_VALUE) (max 8))
+        queue-capacity      (-> min-threads (max 8) (min queue-max-capacity))
         blocking-queue      (BlockingArrayQueue. queue-capacity
                                                  queue-capacity
                                                  queue-max-capacity)
