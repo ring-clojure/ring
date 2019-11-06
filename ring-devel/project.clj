@@ -8,7 +8,7 @@
                  [ring/ring-core "1.7.1"]
                  [hiccup "1.0.5"]
                  [clj-stacktrace "0.2.8"]
-                 [ns-tracker "0.3.1"]]
+                 [ns-tracker "0.4.0"]]
   :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
   :profiles
   {:1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
