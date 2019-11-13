@@ -1,3 +1,20 @@
+## 1.8.0 (2019-11-13)
+
+* Fixed confusing exception on bad queue configuration (#354)
+* Fixed poor content-type for `wrap-stacktrace` (#378)
+* Fixed client cert support broken by deprecated class (#380)
+* Fixed namespace reload order in `wrap-reload` (#377)
+* Fixed second call of handler on exceptions (#365)
+* Improved performance of `ring.request/content-type` (#332)
+* Updated Jetty to 9.4.22.v20191022
+* Updated Commons-FileUpload to 1.4
+* Updated Ring-Codec to 1.1.2
+* Updated ns-tracker to 0.4.0
+* Added `:none` to `Same-Site` cookie header (#374)
+* Added server connector type hint for GraalVM support (#381)
+* Added support for byte array response bodies (#334)
+* Removed clj-time as a mandatory dependency (#359)
+
 ## 1.7.1 (2018-10-27)
 
 * Updated Jetty to 9.4.12.v20180830
