@@ -3,8 +3,9 @@
 Ring is defined in terms of handlers, middleware, adapters, request
 maps and response maps, each of which are described below.
 
+## 1. Synchronous API
 
-## Handlers
+## 1.1. Handlers
 
 Ring handlers constitute the core logic of the web application.
 Handlers are implemented as Clojure functions.
@@ -13,44 +14,24 @@ A synchronous handler takes 1 argument, a request map, and returns a
 response map.
 
 ```clojure
-(fn [request]
-  response)
+(fn [request] response)
 ```
 
-An asynchronous handler takes 3 arguments: a request map, a callback
-function for sending a response and a callback function for raising an
-exception. The response callback takes a response map as its
-argument. The exception callback takes an exception as its argument.
-
-```clojure
-(fn [request respond raise]
-  (respond request))
-```
-
-A handler function may simultaneously support synchronous and
-asynchronous behavior by accepting both arities.
-
-```clojure
-(fn
-  ([request]
-    response)
-  ([request respond raise]
-    (respond request)))
-```
-
-
-## Middleware
+### 1.2. Middleware
 
 Ring middlware augment the functionality of handlers. Middleware is
 implemented as higher-order functions that take one or more handlers
 and configuration options as arguments and return a new handler with
 the desired additional behavior.
 
-
-## Adapters
+### 1.3. Adapters
 
 Ring adapters are side-effectful functions that take a handler and a
 map of options as arguments, and when invoked start a HTTP server.
+
+```clojure
+(run-adapter handler options)
+```
 
 Once invoked, adapters will receive HTTP requests, parse them to
 construct a request map, and then invoke their handler with this
@@ -58,12 +39,7 @@ request map as an argument. Once the handler response with a response
 map, the adapter will use it to construct and send an HTTP response to
 the client.
 
-An adapter may support synchronous handlers, or asynchronous handlers,
-or both. If it supports both, it should have an option to specify
-which one to use at the time it is invoked.
-
-
-## Request Maps
+### 1.4. Request Maps
 
 A Ring request map represents a HTTP request, and contains the
 following keys. Any key not marked as **required** may be omitted.
@@ -122,8 +98,7 @@ The resolved server name, or the server IP address.
 
 The SSL client certificate, if supplied.
 
-
-## Response Maps
+### 1.5. Response Maps
 
 A Ring response map represents a HTTP response, and contains the
 following keys. Any key not marked as **required** may be omitted.
@@ -147,3 +122,45 @@ corresponding header value Strings.
 
 The HTTP status code. Must be greater than or equal to 100, and less
 than or equal to 599.
+
+
+## 2. Asynchronous API
+
+### 2.1 Handlers
+
+An asynchronous handler takes 3 arguments: a request map, a callback
+function for sending a response and a callback function for raising an
+exception. The response callback takes a response map as its
+argument. The exception callback takes an exception as its
+argument. The return value of the function is ignored.
+
+```clojure
+(fn [request respond raise]
+  (respond response))
+```
+
+```clojure
+(fn [request respond raise]
+  (raise exception))
+```
+
+A handler function may simultaneously support synchronous and
+asynchronous behavior by accepting both arities.
+
+```clojure
+(fn
+  ([request]
+    response)
+  ([request respond raise]
+    (respond response)))
+```
+
+### 2.2 Adapters
+
+An adapter may support synchronous handlers, or asynchronous handlers,
+or both. If it supports both, it should have an option to specify
+which one to use at the time it is invoked.
+
+```clojure
+(run-adapter handler {:async? true})
+```
