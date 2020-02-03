@@ -147,7 +147,7 @@ than or equal to 599.
 
 ## 2. Asynchronous API
 
-### 2.1 Handlers
+### 2.1. Handlers
 
 An asynchronous handler takes 3 arguments: a request map, a callback
 function for sending a response and a callback function for raising an
@@ -176,7 +176,7 @@ asynchronous behavior by accepting both arities.
     (respond response)))
 ```
 
-### 2.2 Adapters
+### 2.2. Adapters
 
 An adapter may support synchronous handlers, or asynchronous handlers,
 or both. If it supports both, it should have an option to specify
