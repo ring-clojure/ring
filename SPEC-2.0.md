@@ -44,7 +44,21 @@ the client.
 A Ring request map represents a HTTP request, and contains the
 following keys. Any key not marked as **required** may be omitted.
 
-#### `:ring.request/body` → `ring.request/StreamableRequestBody`
+| Key                           | Type                               | Required |
+| ----------------------------- | ---------------------------------- | -------- |
+|`:ring.request/body`           |`ring.request/StreamableRequestBody`|          |
+|`:ring.request/headers`        |`{String [String]}`                 |          |
+|`:ring.request/method`         |`Keyword`                           | Yes      |
+|`:ring.request/path`           |`String`                            |          |
+|`:ring.request/protocol`       |`String`                            |          |
+|`:ring.request/query`          |`String`                            |          |
+|`:ring.request/remote-addr`    |`String`                            |          |
+|`:ring.request/scheme`         |`Keyword`                           |          |
+|`:ring.request/server-name`    |`String`                            |          |
+|`:ring.request/server-port`    |`Integer`                           |          |
+|`:ring.request/ssl-client-cert`|`java.security.cert.X509Certificate`|          |
+
+#### :ring.request/body
 
 A representation of the request body that satisfies the
 `StreamableRequestBody` protocol.
@@ -54,47 +68,47 @@ A representation of the request body that satisfies the
   (get-input-stream [body request]))
 ```
 
-#### `:ring.request/headers` → `{String [String]}`
+#### :ring.request/headers
 
-A Clojure map of downcased header name Strings to a vector of
-corresponding header value Strings.
+A Clojure map of lowercased header name strings to a vector of
+corresponding header value strings.
 
-#### `:ring.request/method` → `Keyword` (required)
+#### :ring.request/method
 
 The HTTP request method. Must be a lowercase keyword corresponding to
 a HTTP request method, such as `:get` or `:post`.
 
-#### `:ring.request/path` → `String`
+#### :ring.request/path
 
 The absolute path of the URI in the HTTP request. Must start with a `/`.
 
-#### `:ring.request/protocol` → `String`
+#### :ring.request/protocol
 
 The protocol the request was made with, e.g. "HTTP/1.1".
 
-#### `:ring.request/query` → `String`
+#### :ring.request/query
 
 The query segment of the URI in the HTTP request. This includes
 everything after the `?` character, but excludes the `?` itself.
 
-#### `:ring.request/remote-addr` → `String`
+#### :ring.request/remote-addr
 
 The IP address of the client or the last proxy that sent the request.
 
-#### `:ring.request/scheme` → `Keyword`
+#### :ring.request/scheme
 
 The transport protocol denoted in the scheme of the request URL. Must be
 either `:http` or `:https`.
 
-#### `:ring.request/server-name` → `String`
+#### :ring.request/server-name
 
 The port on which the request is being handled.
 
-#### `:ring.request/server-port` → `Integer`
+#### :ring.request/server-port
 
-The resolved server name, or the server IP address.
+The resolved server name, or the server IP address, as a string.
 
-#### `:ring.request/ssl-client-cert` → `java.security.cert.X509Certificate`
+#### :ring.request/ssl-client-cert
 
 The SSL client certificate, if supplied.
 
@@ -103,7 +117,14 @@ The SSL client certificate, if supplied.
 A Ring response map represents a HTTP response, and contains the
 following keys. Any key not marked as **required** may be omitted.
 
-#### `:ring.response/body` → `ring.response/StreamableResponseBody`
+| Key                   | Type                                 | Required |
+| --------------------- | ------------------------------------ | -------- |
+|`:ring.request/body`   |`ring.response/StreamableResponseBody`|          |
+|`:ring.request/headers`|`{String [String]}`                   |          |
+|`:ring.request/status` |`Integer`                             | Yes      |
+
+
+#### :ring.response/body
 
 A representation of the request body that satisfies the
 `StreamableResponseBody` protocol.
@@ -113,12 +134,12 @@ A representation of the request body that satisfies the
   (write-body-to-stream [body response output-stream]))
 ```
 
-#### `:ring.response/headers` → `{String [String]}`
+#### :ring.response/headers
 
-A Clojure map of downcased header name Strings to a vector of
-corresponding header value Strings.
+A Clojure map of lowercased header name strings to a vector of
+corresponding header value strings.
 
-#### `:ring.response/status` → `Integer` (required)
+#### :ring.response/status
 
 The HTTP status code. Must be greater than or equal to 100, and less
 than or equal to 599.
