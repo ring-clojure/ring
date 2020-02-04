@@ -1,9 +1,17 @@
 # Ring Spec (2.0-DRAFT)
 
-Ring is defined in terms of handlers, middleware, adapters, request
-maps and response maps, each of which are described below.
+Ring is an abstraction layer for building HTTP server applications in
+Clojure.
+
+The specification is divided into two parts; a synchronous API, and an
+asynchronous API. The synchronous API is simpler, but the asynchronous
+API can be more performant.
+
 
 ## 1. Synchronous API
+
+Ring is defined in terms of handlers, middleware, adapters, request
+maps and response maps, each of which are described below.
 
 ## 1.1. Handlers
 
@@ -65,7 +73,7 @@ A representation of the request body that satisfies the
 
 ```clojure
 (defprotocol StreamableRequestBody
-  (get-input-stream [body request]))
+  (get-body-stream [body request]))
 ```
 
 #### :ring.request/headers
@@ -146,6 +154,9 @@ than or equal to 599.
 
 
 ## 2. Asynchronous API
+
+The asynchronous API builds upon the synchronous API. The differences
+between the two APIs are described below.
 
 ### 2.1. Handlers
 
