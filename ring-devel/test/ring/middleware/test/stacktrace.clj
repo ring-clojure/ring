@@ -6,8 +6,8 @@
 (def assert-app    (wrap-stacktrace (fn [_] (assert (= 1 2)))))
 
 
-(def html-req {:headers {"accept" "text/html"}})
-(def js-req   {:headers {"accept" "application/javascript"}})
+(def html-req  {:headers {"accept" "text/html"}})
+(def js-req    {:headers {"accept" "application/javascript"}})
 (def plain-req {})
 
 (deftest wrap-stacktrace-smoke
@@ -25,35 +25,39 @@
           (is (or (.startsWith body "java.lang.Exception")
                   (.startsWith body "java.lang.AssertionError")))))
       (testing "requests without Accept header"
-        (let [{:keys [status headers body]} (app js-req)]
+        (let [{:keys [status headers body]} (app plain-req)]
           (is (= 500 status))
           (is (= {"Content-Type" "text/plain"} headers))
           (is (or (.startsWith body "java.lang.Exception")
                   (.startsWith body "java.lang.AssertionError"))))))))
 
+(def default-params {})
+(def non-default-params {:color? true :trimmed? true})
+
 (deftest wrap-stacktrace-cps-test
-  (testing "no exception"
-    (let [handler   (wrap-stacktrace (fn [_ respond _] (respond :ok)))
-          response  (promise)
-          exception (promise)]
-      (handler {} response exception)
-      (is (= :ok @response))
-      (is (not (realized? exception)))))
+  (doseq [params [default-params non-default-params]]
+   (testing "no exception"
+     (let [handler   (wrap-stacktrace (fn [_ respond _] (respond :ok)) params)
+           response  (promise)
+           exception (promise)]
+       (handler {} response exception)
+       (is (= :ok @response))
+       (is (not (realized? exception)))))
 
-  (testing "thrown exception"
-    (let [handler   (wrap-stacktrace (fn [_ _ _] (throw (Exception. "fail"))))
-          response  (promise)
-          exception (promise)]
-      (binding [*err* (java.io.StringWriter.)]
-        (handler {} response exception))
-      (is (= 500 (:status @response)))
-      (is (not (realized? exception)))))
+   (testing "thrown exception"
+     (let [handler   (wrap-stacktrace (fn [_ _ _] (throw (Exception. "fail"))) params)
+           response  (promise)
+           exception (promise)]
+       (binding [*err* (java.io.StringWriter.)]
+         (handler {} response exception))
+       (is (= 500 (:status @response)))
+       (is (not (realized? exception)))))
 
-  (testing "raised exception"
-    (let [handler   (wrap-stacktrace (fn [_ _ raise] (raise (Exception. "fail"))))
-          response  (promise)
-          exception (promise)]
-      (binding [*err* (java.io.StringWriter.)]
-        (handler {} response exception))
-      (is (= 500 (:status @response)))
-      (is (not (realized? exception))))))
+   (testing "raised exception"
+     (let [handler   (wrap-stacktrace (fn [_ _ raise] (raise (Exception. "fail"))) params)
+           response  (promise)
+           exception (promise)]
+       (binding [*err* (java.io.StringWriter.)]
+         (handler {} response exception))
+       (is (= 500 (:status @response)))
+       (is (not (realized? exception)))))))
