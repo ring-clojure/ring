@@ -31,6 +31,7 @@
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown.
   Accepts the following options:
+
   :color?   - if true, apply ANSI colors to stacktrace (default false)
   :trimmed? - if true, use trimmed-elems (default false)"
   ([handler]
@@ -125,6 +126,7 @@
   a HTML representation of the exception and stacktrace is returned.
 
   Accepts the following option:
+
   :color?   - if true, apply ANSI colors to HTML stacktrace (default false)
   :trimmed? - if true, use the trimmed-elems (default false)"
   ([handler]
@@ -152,6 +154,7 @@
   response.
 
   Accepts the following option:
+
   :color?   - if true, apply ANSI colors to stacktrace (default false)
   :trimmed? - if true, use the trimmed-elems (default false)"
   {:arglists '([handler] [handler options])}
