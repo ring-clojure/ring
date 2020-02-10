@@ -111,6 +111,7 @@
 
 (defn- ex-response
   "Returns a response showing debugging information about the exception.
+
   Renders HTML if that's in the accept header (indicating that the URL was
   opened in a browser), but defaults to plain text."
   [req ex color? trimmed?]
@@ -122,8 +123,9 @@
 (defn wrap-stacktrace-web
   "Wrap a handler such that exceptions are caught and a response containing
   a HTML representation of the exception and stacktrace is returned.
+
   Accepts the following option:
-  :color?   - if true, apply ANSI colors to terminal stacktrace (default false)
+  :color?   - if true, apply ANSI colors to HTML stacktrace (default false)
   :trimmed? - if true, use the trimmed-elems (default false)"
   ([handler]
    (wrap-stacktrace-web handler {}))
@@ -148,6 +150,7 @@
   "Wrap a handler such that exceptions are caught, a corresponding stacktrace is
   logged to *err*, and a HTML representation of the stacktrace is returned as a
   response.
+
   Accepts the following option:
   :color?   - if true, apply ANSI colors to stacktrace (default false)
   :trimmed? - if true, use the trimmed-elems (default false)"
