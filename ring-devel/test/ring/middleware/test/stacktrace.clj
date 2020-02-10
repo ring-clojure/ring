@@ -36,28 +36,34 @@
 
 (deftest wrap-stacktrace-cps-test
   (doseq [params [default-params non-default-params]]
-   (testing "no exception"
-     (let [handler   (wrap-stacktrace (fn [_ respond _] (respond :ok)) params)
-           response  (promise)
-           exception (promise)]
-       (handler {} response exception)
-       (is (= :ok @response))
-       (is (not (realized? exception)))))
+    (testing "no exception"
+      (let [handler   (wrap-stacktrace (fn [_ respond _]
+                                         (respond :ok))
+                                       params)
+            response  (promise)
+            exception (promise)]
+        (handler {} response exception)
+        (is (= :ok @response))
+        (is (not (realized? exception)))))
 
-   (testing "thrown exception"
-     (let [handler   (wrap-stacktrace (fn [_ _ _] (throw (Exception. "fail"))) params)
-           response  (promise)
-           exception (promise)]
-       (binding [*err* (java.io.StringWriter.)]
-         (handler {} response exception))
-       (is (= 500 (:status @response)))
-       (is (not (realized? exception)))))
+    (testing "thrown exception"
+      (let [handler   (wrap-stacktrace (fn [_ _ _]
+                                         (throw (Exception. "fail")))
+                                       params)
+            response  (promise)
+            exception (promise)]
+        (binding [*err* (java.io.StringWriter.)]
+          (handler {} response exception))
+        (is (= 500 (:status @response)))
+        (is (not (realized? exception)))))
 
-   (testing "raised exception"
-     (let [handler   (wrap-stacktrace (fn [_ _ raise] (raise (Exception. "fail"))) params)
-           response  (promise)
-           exception (promise)]
-       (binding [*err* (java.io.StringWriter.)]
-         (handler {} response exception))
-       (is (= 500 (:status @response)))
-       (is (not (realized? exception)))))))
+    (testing "raised exception"
+      (let [handler   (wrap-stacktrace (fn [_ _ raise]
+                                         (raise (Exception. "fail")))
+                                       params)
+            response  (promise)
+            exception (promise)]
+        (binding [*err* (java.io.StringWriter.)]
+          (handler {} response exception))
+        (is (= 500 (:status @response)))
+        (is (not (realized? exception)))))))
