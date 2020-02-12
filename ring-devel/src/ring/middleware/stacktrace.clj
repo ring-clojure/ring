@@ -98,7 +98,7 @@
        (handler request)
        (catch Throwable ex
          (ex-response request ex))))
-    ([request respond raise]
+    ([request respond _]
      (try
        (handler request respond (fn [ex] (respond (ex-response request ex))))
        (catch Throwable ex
