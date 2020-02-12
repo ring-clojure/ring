@@ -13,6 +13,7 @@
 
 (defn wrap-stacktrace-log
   "Wrap a handler such that exceptions are logged to *err* and then rethrown.
+
   Accepts the following options:
 
   :color? - if true, apply ANSI colors to stacktrace (default false)"
