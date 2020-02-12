@@ -40,32 +40,32 @@
 (defn- elem-partial [elem]
   (if (:clojure elem)
     [:tr.clojure
-      [:td.source (h (source-str elem))]
-      [:td.method (h (clojure-method-str elem))]]
+     [:td.source (h (source-str elem))]
+     [:td.method (h (clojure-method-str elem))]]
     [:tr.java
-      [:td.source (h (source-str elem))]
-      [:td.method (h (java-method-str elem))]]))
+     [:td.source (h (source-str elem))]
+     [:td.method (h (java-method-str elem))]]))
 
 (defn- html-exception [ex]
   (let [[ex & causes] (iterate :cause (parse-exception ex))]
     (html5
-      [:head
-        [:title "Ring: Stacktrace"]
-        (style-resource "ring/css/stacktrace.css")]
-      [:body
-        [:div#exception
-          [:h1 (h (.getName ^Class (:class ex)))]
-          [:div.message (h (:message ex))]
+     [:head
+      [:title "Ring: Stacktrace"]
+      (style-resource "ring/css/stacktrace.css")]
+     [:body
+      [:div#exception
+       [:h1 (h (.getName ^Class (:class ex)))]
+       [:div.message (h (:message ex))]
+       [:div.trace
+        [:table
+         [:tbody (map elem-partial (:trace-elems ex))]]]
+       (for [cause causes :while cause]
+         [:div#causes
+          [:h2 "Caused by " [:span.class (h (.getName ^Class (:class cause)))]]
+          [:div.message (h (:message cause))]
           [:div.trace
-            [:table
-              [:tbody (map elem-partial (:trace-elems ex))]]]
-         (for [cause causes :while cause]
-           [:div#causes
-             [:h2 "Caused by " [:span.class (h (.getName ^Class (:class cause)))]]
-             [:div.message (h (:message cause))]
-             [:div.trace
-               [:table
-                 [:tbody (map elem-partial (:trace-elems cause))]]]])]])))
+           [:table
+            [:tbody (map elem-partial (:trace-elems cause))]]]])]])))
 
 (defn- text-ex-response [e]
   (-> (response (with-out-str (pst e)))
