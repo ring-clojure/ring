@@ -205,35 +205,45 @@ A HTTP request can be promoted into a websocket by means of an
 In this situation, a Ring handler may choose to respond with a
 websocket response instead of a HTTP response.
 
-
 ### 3.1. Websocket Responses
 
-A websocket response is a map that has the `:ring.websocket/handler`
-key, which maps to a websocket handler function, described in section
-3.2.
+A websocket response is a map that has the `:ring.websocket/listener`
+key, which maps to a websocket listener, described in section 3.2.
 
 ```clojure
 (fn [request]
-  #:ring.websocket{:handler websocket-handler})
+  #:ring.websocket{:listener websocket-listener})
 ```
 
-A websocket response may be returned from a synchronous handler, or
-via the response callback of an asynchronous handler.
+A websocket response may be returned from a synchronous listener, or
+via the response callback of an asynchronous listener.
 
 ```clojure
 (fn [request respond raise]
-  (respond #:ring.websocket{:handler websocket-handler}))
+  (respond #:ring.websocket{:listener websocket-listener}))
 ```
 
-### 3.2. Websocket Handlers
+### 3.2. Websocket Listeners
 
-A websocket handler is a side-effectful function that expects two
-arguments: a socket and a event map, which are described in sections
-3.3 and 3.4 respectively. The return value is ignored.
+A websocket listener satisfies the `ring.websocket/Listener` protocol:
 
 ```clojure
-(fn [socket event])
+(defprotocol Listener
+  (on-open   [listener socket])
+  (on-binary [listener socket bytes])
+  (on-text   [listener socket string])
+  (on-error  [listener socket throwable])
+  (on-close  [listener socket code reason]))
 ```
+
+The arguments are described as follows:
+
+* `socket`    - described in section 3.3.
+* `bytes`     - a byte array containing a binary message
+* `string`    - a string containing a text message
+* `throwable` - an error inheriting from `java.lang.Throwable`
+* `code`      - an integer from 1000 to 4999
+* `reason`    - a string describing the reason for closing the socket
 
 ### 3.3. Websocket Sockets
 
@@ -245,48 +255,6 @@ A socket satisfies the `ring.websocket/Socket` protocol:
   (send-text   [socket string])
   (send-close  [socket status reason]))
 ```
-
-### 3.4. Websocket Events
-
-A websocket event is a map with the following keys:
-
-| Key                         | Type      | Required |
-| --------------------------- | --------- | -------- |
-|`:ring.websocket/binary-data`|`byte[]`   |          |
-|`:ring.websocket/error`      |`Throwable`|          |
-|`:ring.websocket/event`      |`Keyword`  | Yes      |
-|`:ring.websocket/reason`     |`String`   |          |
-|`:ring.websocket/status`     |`Integer`  |          |
-|`:ring.websocket/text-data`  |`String`   |          |
-
-#### :ring.websocket/binary-data
-
-A byte array representing the binary data of a websocket `:message`
-event.
-
-#### :ring.websocket/error
-
-An exception deriving from `java.lang.Throwable` that defines the
-error of a `:error` event.
-
-#### :ring.websocket/event
-
-The type of event occurring. Must be either: `:open`, `:message`,
-`:error` or `:close`.
-
-#### :ring.websocket/reason
-
-A reason phrase string associated with a `:close` event.
-
-#### :ring.websocket/status
-
-A status code integer associated with a `:close` event. Must be
-greater than or equal to 1000, and less than or equal to 4999.
-
-#### :ring.websocket/text-data
-
-A byte array representing the text data of a websocket `:message`
-event.
 
 
 ## 4. HTTP/2 Server Push
