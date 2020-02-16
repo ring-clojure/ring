@@ -229,18 +229,16 @@ A websocket listener satisfies the `ring.websocket/Listener` protocol:
 
 ```clojure
 (defprotocol Listener
-  (on-open   [listener socket])
-  (on-binary [listener socket bytes])
-  (on-text   [listener socket string])
-  (on-error  [listener socket throwable])
-  (on-close  [listener socket code reason]))
+  (on-open    [listener socket])
+  (on-message [listener socket message])
+  (on-error   [listener socket throwable])
+  (on-close   [listener socket code reason]))
 ```
 
 The arguments are described as follows:
 
 * `socket`    - described in section 3.3.
-* `bytes`     - a byte array containing a binary message
-* `string`    - a string containing a text message
+* `message`   - a string or byte array containing a text/binary message
 * `throwable` - an error inheriting from `java.lang.Throwable`
 * `code`      - an integer from 1000 to 4999
 * `reason`    - a string describing the reason for closing the socket
@@ -251,9 +249,8 @@ A socket satisfies the `ring.websocket/Socket` protocol:
 
 ```clojure
 (defprotocol Socket
-  (send-binary [socket bytes])
-  (send-text   [socket string])
-  (send-close  [socket status reason]))
+  (send-message [socket message])
+  (send-close   [socket status reason]))
 ```
 
 
