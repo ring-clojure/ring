@@ -365,7 +365,198 @@ names have to be lowercased.
 
 ## Websockets
 
-TBD
+A Ring websocket API has been discussed a number of times over Ring's
+history without a concrete resolution. Previously my feeling was that
+websockets were out of scope for Ring, but I've since reconsidered.
+
+Websockets are a separate protocol to HTTP, but they share a common
+initial request, and if there is an error or if access is denied, a
+HTTP response may be returned instead of a websocket. Given this, it
+makes sense to model a websocket as a special kind of response to a
+Ring request.
+
+Secondly, no websocket standard has yet emerged outside of
+Ring. Current websocket implementations are bespoke, tied to one
+particular web server. A websocket abstraction standard would allow
+the same websocket code to be used against multiple webservers, and
+Ring is a good place for such a standard to live.
+
+### Designs Considered
+
+Many websocket APIs, most notably the one for Javascript, provide some
+sort of listener interface where different events are passed to
+different methods. In Clojure this approach would be achieved through
+a protocol:
+
+```clojure
+(require '[ring.websocket :as ws])
+
+(reify ws/Listener
+  (on-open    [_ socket] ...)
+  (on-message [_ socket message] ...)
+  (on-close   [_ socket code reason] ...)
+  (on-error   [_ socket throwable] ...))
+```
+
+An alternative approach is to have a single function that receives
+data from all events:
+
+```clojure
+(fn [event]
+  (case (::ws/event event)
+    :open    ...
+    :message ...
+    :close   ...
+    :error   ...))
+```
+
+Equally we can handle sending and closing a channel via a protocol:
+
+```clojure
+(reify ws/Listener
+  (on-open [_ socket]
+    (ws/send socket "Hello")
+    (ws/close socket 1000)))
+```
+
+Or via a callback that receives a data structure:
+
+```clojure
+(fn [event send]
+  (send {::ws/text-data "Hello"})
+  (send {::ws/close-status 1000}))
+```
+
+Or even via two callbacks, one to send and one to close:
+
+```clojure
+(fn [event send close]
+  (send "Hello")
+  (close 1000))
+```
+
+Out of these possible designs, Ring 2 has opted to use protocols for
+both the listener and the socket. The reason for this design is
+covered by the next section.
+
+### Functions vs. Protocols
+
+Ring uses functions and maps to handle HTTP, so the natural question
+to ask is: why not use the same design for websockets? Why not use a
+function that sends and receives maps, instead of a protocol?
+
+HTTP, even modern versions of it, is a request/response protocol. Each
+request to the server results in a corresponding response. Even push
+promises don't fundamentally change this; they're just a predictive
+tool for sending responses for requests that may occur in future. This
+is mirrors the operation of function, which takes an argument as input
+and returns a value as output.
+
+In contrast to HTTP, a websocket has more than one type of event, and
+more than one type of reaction. A message from the client need not
+generate a reaction from the server and vice versa. The open and close
+events are also often significant for setting up communication between
+multiple clients.
+
+So something that is suitable to represent HTTP may not be the right
+abstraction to represent a websocket. In the simplest case, a Ring
+handler is a function that takes the request as an argument and
+returns a response. The design of asynchronous handlers builds upon
+that, allowing middleware to be written that can handle both
+synchronous and asychronous handlers. However, Websockets have no such
+compatibility concerns, so we can consider their design in
+isolation.
+
+Protocols have a few advantages that led to their choice in the
+specification.
+
+First, protocols are most similar to the design of websockets we see
+in Javascript and other languages. While familiarity is not
+necessarily a critical consideration, it is a nice bonus.
+
+Second, protocols have more efficient dispatch. Again, this is not a
+major consideration as dispatching off a map key isn't that
+inefficient, but it is a benefit.
+
+Third, a function can satisfy a protocol, so we can still use
+functions that satisfy the listener protocol outlined in the
+specification. A function could be simpler interface that targets the
+most common use-cases of handling message and close events. For
+example:
+
+```clojure
+(fn [socket message]
+  (ws/send socket message)
+  (ws/close socket))
+```
+
+In this case the message is either a string, byte array, or `nil` if
+the socket is being closed.
+
+Forth, we can partially implement a protocol via reify:
+
+```clojure
+(reify ws/Listener
+  (on-open [_ socket]
+    (ws/send socket "Hello")
+    (ws/close socket 1000)))
+```
+
+Other methods on the protocol will generate an `AbstractMethodError`
+exception when called, which can be ignored by the adapter. When
+dealing with a function that handles events, we place the burden of
+ignoring irrelevant events on the developer.
+
+Fifth, by using a protocol for output, we can write low-level methods
+that can be augmented by higher level functions. For example, a
+`close` function can be written that has useful defaults when called
+with one argument:
+
+```clojure
+(defn close
+  ([socket]
+   (close socket 1000 "Normal Closure"))
+  ([socket code reason
+   (send-close socket code reason)))
+```
+
+### Websocket Response
+
+In order to distinguish a HTTP response from a websocket response, we
+use a distinct key:
+
+```clojure
+{:ring.websocket/listener
+ (reify ws/Listener
+  (on-open [_ socket]
+    (ws/send socket "Hello")
+    (ws/close socket 1000)))}
+```
+
+We use this rather than checking for the protocol itself, as a common
+type (such as a function) may satisfy several protocols. Using a
+unique key is unambiguous, and keeps the return type (a map) the same
+
+### Compatibility with Serlvets
+
+Websocket support was introduced in the Servlet 3.1 specification.
+Unfortunately Java servlets emphasize ease of use over a simple
+design, making it hard to write good tooling around them.
+
+That said, there's a lot we can do to facilitate integration in Ring,
+and the Ring 2.0 specification is flexible enough to allow websocket
+integration in even the most restrictive environments. A request map
+needs only the method to be valid, and a request that returns a
+websocket must always be a `GET`. Therefore, at minimum, a websocket
+request can be:
+
+```clojure
+#:ring.request{:method :get}
+```
+
+Of course ideally we should also know the path, and it would be nice
+to know the headers involved as well. However, having a valid minimal
+base is useful for broader integration.
 
 ## Push Notifications
 
