@@ -558,6 +558,27 @@ Of course ideally we should also know the path, and it would be nice
 to know the headers involved as well. However, having a valid minimal
 base is useful for broader integration.
 
-## Push Notifications
+## Push Promises
 
-TBD
+HTTP/2 introduced push promises, a predictive optimisation that allows
+HTTP responses to be sent to the client before they are requested.
+Support for push promises was introduced in Java Servlets 4.0.
+
+The implementation for Ring 2 reuses the `respond` function passed to
+asynchronous handlers. Behind the scenes a push request and its
+corresponding response are passed to the client, but for the handler
+we need only specify the request, since the response can be found by
+calling the handler again.
+
+To differentiate the push request from a normal request, the
+`ring.push` namespace is used.
+
+The servlet implementation uses a [PushBuilder][] object. Fortunately
+this fits in well with Ring's design, allowing for easy integration
+with existing servlets.
+
+It's worth noting that [nginx][], a common proxy for Ring applications,
+does not support push promises.
+
+[pushbuilder]: https://javaee.github.io/javaee-spec/javadocs/javax/servlet/http/PushBuilder.html
+[nginx]: https://nginx.org/
