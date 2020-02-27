@@ -520,6 +520,45 @@ with one argument:
    (send-close socket code reason)))
 ```
 
+### Methods and Message Types
+
+Some implementations of websocket listeners distinguish between binary
+and text messages. In Clojure this might be implemented as:
+
+```clojure
+(defprotocol Listener
+  (on-binary  [listener socket bytes])
+  (on-text    [listener socket string])
+  ...)
+```
+
+We might also do the same for sending messages:
+
+```clojure
+(defprotocol Socket
+  (send-binary [socket bytes])
+  (send-text   [socket string])
+  ...)
+```
+
+The advantage of this approach is that it simplifies implementation;
+an adapter that supports websockets does not need to dispatch off the
+type of the message.
+
+However, by using the more generic `on-message` and `send-message`
+methods we open up the possibility of listener middleware. We can wrap
+a listener in another listener that adds functionality, such as
+automatically serializing data structures to and from JSON or
+edn:
+
+```clojure
+(wrap-edn-listener
+ (reify ws/Listener
+   (on-open [_ socket]
+     (ws/send socket {:pure "data"})
+     (ws/close))))
+```
+
 ### Websocket Response
 
 In order to distinguish a HTTP response from a websocket response, we
@@ -557,6 +596,41 @@ request can be:
 Of course ideally we should also know the path, and it would be nice
 to know the headers involved as well. However, having a valid minimal
 base is useful for broader integration.
+
+### Compatibility with Channels
+
+There are good tools in Clojure for representing a channel or stream
+of messages, such as [core.async][], or Zach Tellman's [Manifold][].
+
+Rather than building a websocket listener directly, we might create a
+library that constructs the listener given two core.async channels, or
+a single Manifold duplex stream.
+
+```clojure
+(fn [request]
+  (let [in  (a/chan)
+        out (a/chan)]
+    (go (let [name (<! in)]
+          (>! out (str "Hello " name))
+          (a/close! in)
+          (a/close! out)))
+    #::ws{:listener (websocket-chan-listener in out)}))
+```
+
+We might go even further and abstract the entire handler:
+
+```clojure
+(websocket-chan-handler
+ (fn [in out]
+   (go (let [name (<! in)]
+         (>! out (str "Hello " name))
+         (a/close! in)
+         (a/close! out)))))
+```
+
+The protocols that Ring presents give us a common basis to build on,
+but the interface used by the end developer may look something more
+like the above examples.
 
 ## Push Promises
 
