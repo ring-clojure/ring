@@ -110,11 +110,11 @@ either: `:http`, `:https`, `:ws` or `:wss`.
 
 #### :ring.request/server-name
 
-The port on which the request is being handled.
+The resolved server name, or the server IP address, as a string.
 
 #### :ring.request/server-port
 
-The resolved server name, or the server IP address, as a string.
+The port on which the request is being handled.
 
 #### :ring.request/ssl-client-cert
 
