@@ -74,7 +74,7 @@ information.
 
 ### Required Request Maps Keys
 
-In Ring 1, the `:server-port`, `:server-name` and `:remove-addr`
+In Ring 1, the `:server-port`, `:server-name` and `:remote-addr`
 keys are required. These provide useful information about the
 underlying TCP connection, but a HTTP request could be delivered
 through a Unix socket, or stored in a file. These aren't necessarily
