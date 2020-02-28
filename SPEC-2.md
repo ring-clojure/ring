@@ -125,11 +125,11 @@ The SSL client certificate, if supplied.
 A Ring response map represents a HTTP response, and contains the
 following keys. Any key not marked as **required** may be omitted.
 
-| Key                   | Type                                 | Required |
-| --------------------- | ------------------------------------ | -------- |
-|`:ring.request/body`   |`ring.response/StreamableResponseBody`|          |
-|`:ring.request/headers`|`{String [String]}`                   |          |
-|`:ring.request/status` |`Integer`                             | Yes      |
+| Key                    | Type                                 | Required |
+| ---------------------- | ------------------------------------ | -------- |
+|`:ring.response/body`   |`ring.response/StreamableResponseBody`|          |
+|`:ring.response/headers`|`{String [String]}`                   |          |
+|`:ring.response/status` |`Integer`                             | Yes      |
 
 #### :ring.response/body
 
