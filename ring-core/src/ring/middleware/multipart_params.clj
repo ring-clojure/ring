@@ -9,11 +9,13 @@
     ring.middleware.multipart-params.temp-file/temp-file-store"
   (:require [ring.util.codec :refer [assoc-conj]]
             [ring.util.request :as req]
+            [ring.util.response :as response]
             [ring.util.parsing :refer [re-charset]])
   (:import [org.apache.commons.fileupload UploadContext
                                           FileItemIterator
                                           FileItemStream
                                           FileUpload
+                                          InvalidFileNameException
                                           ProgressListener]
            [org.apache.commons.io IOUtils]))
 (defn- progress-listener
@@ -135,41 +137,73 @@
                  {:multipart-params params}
                  {:params params}))))
 
+(defn default-invalid-filename-handler
+  ([request]
+   (response/bad-request
+    (str "Invalid filename in multipart upload: "
+         (::invalid-filename request))))
+  ([request respond raise]
+   (respond (default-invalid-filename-handler request))))
+
+(defn- add-invalid-filename-to-req
+  [request ^InvalidFileNameException invalid-filename-exception]
+  (assoc request ::invalid-filename (.getName invalid-filename-exception)))
+
 (defn wrap-multipart-params
-  "Middleware to parse multipart parameters from a request. Adds the
-  following keys to the request map:
+  "Middleware to parse multipart parameters from a request. Adds the following
+  keys to the request map:
 
   :multipart-params - a map of multipart parameters
   :params           - a merged map of all types of parameter
 
-  The following options are accepted
+  The following options are accepted:
 
-  :encoding          - character encoding to use for multipart parsing.
-                       Overrides the encoding specified in the request. If not
-                       specified, uses the encoding specified in a part named
-                       \"_charset_\", or the content type for each part, or
-                       request character encoding if the part has no encoding,
-                       or \"UTF-8\" if no request character encoding is set.
+  :encoding
+  - Character encoding to use for multipart parsing. Overrides the encoding
+    specified in the request. If not specified,uses the encoding specified in a
+    part named \"_charset_\", or the content type for each part, or request
+    character encoding if the part has no encoding, or \"UTF-8\" if no request
+    character encoding is set.
 
-  :fallback-encoding - specifies the character encoding used in parsing if a
-                       part of the request does not specify encoding in its
-                       content type or no part named \"_charset_\" is present.
-                       Has no effect if :encoding is also set.
+  :fallback-encoding
+  - Specifies the character encoding used in parsing if a part of the request
+    does not specify encoding in its content type or no part named \"_charset_\"
+    is present.  Has no effect if :encoding is also set.
 
-  :store             - a function that stores a file upload. The function
-                       should expect a map with :filename, :content-type and
-                       :stream keys, and its return value will be used as the
-                       value for the parameter in the multipart parameter map.
-                       The default storage function is the temp-file-store.
+  :store
+  - A function that stores a file upload. The function should expect a map with
+    :filename, :content-type and :stream keys, and its return value will be used
+    as the value for the parameter in the multipart parameter map. The default
+    storage function is the temp-file-store.
 
-  :progress-fn       - a function that gets called during uploads. The
-                       function should expect four parameters: request,
-                       bytes-read, content-length, and item-count."
+  :progress-fn
+  - A function that gets called during uploads. The function should expect four
+    parameters: request, bytes-read, content-length, and item-count.
+
+  :invalid-filename-handler
+  - A handler that gets called when the file being uploaded has an invalid name.
+    When this handler receives the request it can expect one additional key,
+    ::invalid-filename, which contains the name of the invalid file."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]
-   (fn
-     ([request]
-      (handler (multipart-params-request request options)))
-     ([request respond raise]
-      (handler (multipart-params-request request options) respond raise)))))
+   (let [invalid-filename-handler
+         (:invalid-filename-handler options default-invalid-filename-handler)]
+     (fn ([request]
+          (let [req-or-ex (try
+                            (multipart-params-request request options)
+                            (catch InvalidFileNameException ex ex))]
+            (if (instance? InvalidFileNameException req-or-ex)
+              (-> request
+                  (add-invalid-filename-to-req req-or-ex)
+                  invalid-filename-handler)
+              (handler req-or-ex))))
+       ([request respond raise]
+        (let [req-or-ex (try
+                          (multipart-params-request request options)
+                          (catch InvalidFileNameException ex ex))]
+          (if (instance? InvalidFileNameException req-or-ex)
+            (-> request
+                (add-invalid-filename-to-req req-or-ex)
+                (invalid-filename-handler respond raise))
+            (handler req-or-ex respond raise))))))))

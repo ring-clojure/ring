@@ -1,8 +1,9 @@
 (ns ring.middleware.test.multipart-params
   (:require [clojure.test :refer :all]
-            [ring.middleware.multipart-params :refer :all]
+            [ring.middleware.multipart-params :refer :all :as multipart-params]
             [ring.middleware.multipart-params.byte-array :refer :all]
-            [ring.util.io :refer [string-input-stream]]))
+            [ring.util.io :refer [string-input-stream]])
+  (:import org.apache.commons.fileupload.InvalidFileNameException))
 
 (defn string-store [item]
   (-> (select-keys item [:filename :content-type])
@@ -175,3 +176,34 @@
                  :body (string-input-stream form-body "ISO-8859-15")}
         request* (multipart-params-request request {:fallback-encoding "ISO-8859-15"})]
     (is (= (get-in request* [:multipart-params "foo"]) "äÄÖöÅå€"))))
+
+(deftest wrap-multipart-params-error-test
+  (let [invalid-filename (str "foo" \u0000 ".bar")
+        form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=foo; filename=" invalid-filename "\r\n"
+                       "Content-Type: text/plain\r\n\r\n"
+                       "foo\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX; charset=US-ASCII")}
+                 :body (string-input-stream form-body "ISO-8859-1")}
+        invalid-filename-exception
+        (try
+          (org.apache.commons.fileupload.util.Streams/checkFileName invalid-filename)
+          (catch Exception e (println (.getName e)) e))
+        err-response (default-invalid-filename-handler
+                      {::multipart-params/invalid-filename
+                       (.getName invalid-filename-exception)})]
+    (testing "Synchronous error response"
+      (let [handler (wrap-multipart-params identity)]
+        (is (= err-response (handler request)))))
+    (testing "Asynchronous error response"
+      (let [handler (wrap-multipart-params (fn [req respond _]
+                                             (respond req)))
+            response (promise)
+            exception (promise)
+            request (assoc request :body (string-input-stream form-body "ISO-8859-1"))]
+        (handler request response exception)
+        (is (= err-response (deref response 2000 :timed-out)))
+        (is (not (realized? exception)))))))
