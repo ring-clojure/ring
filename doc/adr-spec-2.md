@@ -449,7 +449,7 @@ HTTP, even modern versions of it, is a request/response protocol. Each
 request to the server results in a corresponding response. Even push
 promises don't fundamentally change this; they're just a predictive
 tool for sending responses for requests that may occur in future. This
-is mirrors the operation of function, which takes an argument as input
+mirrors the operation of function, which takes an argument as input
 and returns a value as output.
 
 In contrast to HTTP, a websocket has more than one type of event, and
