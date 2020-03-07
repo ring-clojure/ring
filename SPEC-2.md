@@ -245,14 +245,20 @@ The arguments are described as follows:
 
 ### 3.3. Websocket Sockets
 
-A socket satisfies the `ring.websocket/Socket` protocol:
+A socket must satisfy the `ring.websocket/BaseSocket` protocol:
 
 ```clojure
-(defprotocol Socket
+(defprotocol BaseSocket
   (send-message [socket message])
   (send-close   [socket status reason]))
 ```
 
+It *may* also satisfy the `ring.websocket/AsyncSocket` protocol:
+
+```clojure
+(defprotocol AsyncSocket
+  (send-message [socket message callback]))
+```
 
 ## 4. HTTP/2 Server Push
 
