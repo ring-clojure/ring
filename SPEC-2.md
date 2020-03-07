@@ -68,7 +68,7 @@ following keys. Any key not marked as **required** may be omitted.
 
 #### :ring.request/body
 
-A representation of the request body that satisfies the
+A representation of the request body that must satisfy the
 `StreamableRequestBody` protocol.
 
 ```clojure
@@ -133,7 +133,7 @@ following keys. Any key not marked as **required** may be omitted.
 
 #### :ring.response/body
 
-A representation of the request body that satisfies the
+A representation of the request body that must satisfy the
 `StreamableResponseBody` protocol.
 
 ```clojure
@@ -225,7 +225,8 @@ via the response callback of an asynchronous listener.
 
 ### 3.2. Websocket Listeners
 
-A websocket listener satisfies the `ring.websocket/Listener` protocol:
+A websocket listener must satisfy the `ring.websocket/Listener`
+protocol:
 
 ```clojure
 (defprotocol Listener
