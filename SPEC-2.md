@@ -73,7 +73,7 @@ A representation of the request body that must satisfy the
 
 ```clojure
 (defprotocol StreamableRequestBody
-  (get-body-stream [body request]))
+  (-body-stream [body request]))
 ```
 
 #### :ring.request/headers
@@ -138,7 +138,7 @@ A representation of the request body that must satisfy the
 
 ```clojure
 (defprotocol StreamableResponseBody
-  (write-body-to-stream [body response output-stream]))
+  (-write-body-to-stream [body response output-stream]))
 ```
 
 #### :ring.response/headers
@@ -250,15 +250,15 @@ A socket must satisfy the `ring.websocket/BaseSocket` protocol:
 
 ```clojure
 (defprotocol BaseSocket
-  (send-message [socket message])
-  (send-close   [socket status reason]))
+  (-send  [socket message])
+  (-close [socket status reason]))
 ```
 
 It *may* also satisfy the `ring.websocket/AsyncSocket` protocol:
 
 ```clojure
 (defprotocol AsyncSocket
-  (send-message [socket message callback]))
+  (-send-async [socket message callback]))
 ```
 
 ## 4. HTTP/2 Server Push
