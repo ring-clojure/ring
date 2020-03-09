@@ -1,5 +1,5 @@
 (ns ring.core.protocols
-  "Protocols necessary for Ring."
+  "Core protocols for Ring 1."
   {:added "1.6"}
   (:import [java.io Writer OutputStream])
   (:require [clojure.java.io :as io]
