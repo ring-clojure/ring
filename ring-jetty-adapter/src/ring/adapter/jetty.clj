@@ -21,7 +21,7 @@
 
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request response]
+    (handle [_ ^Request base-request ^HttpServletRequest request response]
       (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
         (let [request-map  (servlet/build-request-map request)
               response-map (handler request-map)]
