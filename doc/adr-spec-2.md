@@ -68,7 +68,7 @@ Example:
 ```
 
 Having at least one mandatory key is necessary for efficient
-identification of requests and reponses. However, too many
+identification of requests and responses. However, too many
 requirements make it difficult to build requests that may have partial
 information.
 
@@ -104,7 +104,7 @@ proxy. Therefore this key is made optional.
 
 
 The `:request-method` key is required in Ring 1, and will be required
-for Ring 2 also. It's both a madantory part of all HTTP requests,
+for Ring 2 also. It's both a mandatory part of all HTTP requests,
 whatever the version of the protocol, and it's a necessary element to
 check. Methods like `HEAD` and `OPTIONS` will always behave
 differently to other methods.
@@ -112,7 +112,7 @@ differently to other methods.
 The `:protocol` key is part of the request line in HTTP 1.1, and also
 part of the connection preface of HTTP/2. It's a known quantity, but
 in general not a useful one. We rarely need to know the protocol used
-in order to process a HTTP request, and in general there protocol of
+in order to process a HTTP request, and in general the protocol of
 the request doesn't affect the content of the response. For this
 reason, the protocol is optional in Ring 2.
 
@@ -159,7 +159,7 @@ In Ring 1, the request body is an `java.io.InputStream` object. In
 Ring 2, the request body must at least satisfy the
 `ring.request/StreamingRequestBody` protocol.
 
-A request body may choose to satify other protocols. In future, a
+A request body may choose to satisfy other protocols. In future, a
 protocol for asynchronous reads of the request body will be
 introduced. However, the fallback of a streaming request protocol will
 always be available, at least for any JVM implementations of Ring.
@@ -194,7 +194,7 @@ With a handler written for Ring 2:
 
 (defn handler [request]
   (let [name (-> request :body req/get-body-stream slurp)]
-    #::resp{:status 200, :body (str "Hello " name)})
+    #::resp{:status 200, :body (str "Hello " name)}))
 ```
 
 While this is somewhat harder to write, it does break Ring's reliance
@@ -291,7 +291,7 @@ It also ensures that you don't accidentally start processing a
 concatenated list of header values.
 
 Still to be determined: whether or not an adapter should automatically
-split apart concantenated header values.
+split apart concatenated header values.
 
 ### :ring.request/method
 
@@ -337,11 +337,11 @@ part is somewhat redundant, in Ring 2 this key has been renamed to
 
 ### :ring.response/headers
 
-The Ring 1 specification is very permissable when it comes to response
+The Ring 1 specification is very permissible when it comes to response
 headers. The header name need not be lowercase, and the header value
 may be a string or a vector of strings.
 
-For example, this is a permissible reponse header map:
+For example, this is a permissible response header map:
 
 ```clojure
 {"x-foo" "1"
@@ -449,7 +449,7 @@ HTTP, even modern versions of it, is a request/response protocol. Each
 request to the server results in a corresponding response. Even push
 promises don't fundamentally change this; they're just a predictive
 tool for sending responses for requests that may occur in future. This
-is mirrors the operation of function, which takes an argument as input
+mirrors the operation of a function, which takes an argument as input
 and returns a value as output.
 
 In contrast to HTTP, a websocket has more than one type of event, and
@@ -463,7 +463,7 @@ abstraction to represent a websocket. In the simplest case, a Ring
 handler is a function that takes the request as an argument and
 returns a response. The design of asynchronous handlers builds upon
 that, allowing middleware to be written that can handle both
-synchronous and asychronous handlers. However, Websockets have no such
+synchronous and asynchronous handlers. However, Websockets have no such
 compatibility concerns, so we can consider their design in
 isolation.
 
@@ -576,7 +576,7 @@ We use this rather than checking for the protocol itself, as a common
 type (such as a function) may satisfy several protocols. Using a
 unique key is unambiguous, and keeps the return type (a map) the same
 
-### Compatibility with Serlvets
+### Compatibility with Servlets
 
 Websocket support was introduced in the Servlet 3.1 specification.
 Unfortunately Java servlets emphasize ease of use over a simple
