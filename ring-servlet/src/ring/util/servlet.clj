@@ -150,8 +150,7 @@
        (throw (NullPointerException. "HttpServletResponse is nil")))
      (when (nil? response-map)
        (throw (NullPointerException. "Response map is nil")))
-     (when status
-       (.setStatus response status))
+     (.setStatus response status)
      (doseq [[k vs] headers, v vs]
        (.addHeader response k v))
      (let [output-stream (make-output-stream response context)]
