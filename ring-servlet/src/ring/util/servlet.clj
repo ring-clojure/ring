@@ -2,7 +2,9 @@
   "Compatibility functions for turning a ring handler into a Java servlet."
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [ring.core.protocols :as protocols])
+            [ring.core.protocols :as protocols]
+            [ring.request :as req]
+            [ring.response :as resp])
   (:import [java.io File InputStream FileInputStream]
            [java.util Locale]
            [javax.servlet AsyncContext]
@@ -10,32 +12,29 @@
                                HttpServletRequest
                                HttpServletResponse]))
 
-(defn- get-headers
-  "Creates a name/value map of all the request headers."
-  [^HttpServletRequest request]
+(defn- build-header-map [^HttpServletRequest request]
   (reduce
-    (fn [headers, ^String name]
-      (assoc headers
-        (.toLowerCase name Locale/ENGLISH)
-        (->> (.getHeaders request name)
-             (enumeration-seq)
-             (string/join ","))))
-    {}
-    (enumeration-seq (.getHeaderNames request))))
+   (fn [headers ^String name]
+     (assoc headers
+            (.toLowerCase name Locale/ENGLISH)
+            (->> (.getHeaders request name)
+                 (enumeration-seq)
+                 (string/join ","))))
+   {}
+   (enumeration-seq (.getHeaderNames request))))
 
-(defn- get-content-length
-  "Returns the content length, or nil if there is no content."
-  [^HttpServletRequest request]
+(defn- get-content-length [^HttpServletRequest request]
   (let [length (.getContentLength request)]
     (if (>= length 0) length)))
 
-(defn- get-client-cert
-  "Returns the SSL client certificate of the request, if one exists."
-  [^HttpServletRequest request]
+(defn- get-client-cert [^HttpServletRequest request]
   (first (.getAttribute request "javax.servlet.request.X509Certificate")))
 
+(defn- get-request-method [^HttpServletRequest request]
+  (keyword (.toLowerCase (.getMethod request) Locale/ENGLISH)))
+
 (defn build-request-map
-  "Create the request map from the HttpServletRequest object."
+  "Create a Ring 1 request map from a HttpServletRequest object."
   [^HttpServletRequest request]
   {:server-port        (.getServerPort request)
    :server-name        (.getServerName request)
@@ -43,18 +42,42 @@
    :uri                (.getRequestURI request)
    :query-string       (.getQueryString request)
    :scheme             (keyword (.getScheme request))
-   :request-method     (keyword (.toLowerCase (.getMethod request) Locale/ENGLISH))
+   :request-method     (get-request-method request)
    :protocol           (.getProtocol request)
-   :headers            (get-headers request)
+   :headers            (build-header-map request)
    :content-type       (.getContentType request)
    :content-length     (get-content-length request)
    :character-encoding (.getCharacterEncoding request)
    :ssl-client-cert    (get-client-cert request)
    :body               (.getInputStream request)})
 
+(defn- build-header-map-2 [^HttpServletRequest request]
+  (reduce
+   (fn [headers ^String name]
+     (assoc headers
+            (.toLowerCase name Locale/ENGLISH)
+            (-> request (.getHeaders name) enumeration-seq vec)))
+   {}
+   (enumeration-seq (.getHeaderNames request))))
+
+(defn build-request-map-2
+  "Create a Ring 2 request map from a HttpServletRequest object."
+  [^HttpServletRequest request]
+  #::req{:server-port     (.getServerPort request)
+         :server-name     (.getServerName request)
+         :remote-addr     (.getRemoteAddr request)
+         :path            (.getRequestURI request)
+         :query           (.getQueryString request)
+         :scheme          (keyword (.getScheme request))
+         :method          (get-request-method request)
+         :protocol        (.getProtocol request)
+         :headers         (build-header-map-2 request)
+         :ssl-client-cert (get-client-cert request)
+         :body            (.getInputStream request)})
+
 (defn merge-servlet-keys
-  "Associate servlet-specific keys with the request map for use with legacy
-  systems."
+  "Associate servlet-specific keys with a Ring 1 request map for use with
+  legacy systems."
   [request-map
    ^HttpServlet servlet
    ^HttpServletRequest request
@@ -66,9 +89,21 @@
           :servlet-context      (.getServletContext servlet)
           :servlet-context-path (.getContextPath request)}))
 
-(defn- set-headers
-  "Update a HttpServletResponse with a map of headers."
-  [^HttpServletResponse response, headers]
+(defn merge-servlet-keys-2
+  "Associate servlet-specific keys with a Ring 2 request map for use with
+  legacy systems."
+  [request-map
+   ^HttpServlet servlet
+   ^HttpServletRequest request
+   ^HttpServletResponse response]
+  (merge request-map
+         #:ring.servlet{:servlet      servlet
+                        :request      request
+                        :response     response
+                        :context      (.getServletContext servlet)
+                        :context-path (.getContextPath request)}))
+
+(defn- set-headers [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
@@ -78,8 +113,7 @@
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type)))
 
-(defn- make-output-stream
-  [^HttpServletResponse response ^AsyncContext context]
+(defn- make-output-stream [^HttpServletResponse response ^AsyncContext context]
   (let [os (.getOutputStream response)]
     (if (nil? context)
       os
@@ -89,8 +123,8 @@
           (.complete context))))))
 
 (defn update-servlet-response
-  "Update the HttpServletResponse using a response map. Takes an optional
-  AsyncContext."
+  "Update the HttpServletResponse using a Ring 1 response map. Takes an
+  optional AsyncContext."
   ([response response-map]
    (update-servlet-response response nil response-map))
   ([^HttpServletResponse response context response-map]
@@ -104,6 +138,24 @@
      (set-headers response headers)
      (let [output-stream (make-output-stream response context)]
        (protocols/write-body-to-stream body response-map output-stream)))))
+
+(defn update-servlet-response-2
+  "Update the HttpServletResponse using a Ring 2 response map. Takes an
+  optional AsyncContext."
+  ([response response-map]
+   (update-servlet-response-2 response nil response-map))
+  ([^HttpServletResponse response context response-map]
+   (let [{:ring.response/keys [status headers body]} response-map]
+     (when (nil? response)
+       (throw (NullPointerException. "HttpServletResponse is nil")))
+     (when (nil? response-map)
+       (throw (NullPointerException. "Response map is nil")))
+     (when status
+       (.setStatus response status))
+     (doseq [[k vs] headers, v vs]
+       (.addHeader response k v))
+     (let [output-stream (make-output-stream response context)]
+       (resp/write-body-to-stream response-map output-stream)))))
 
 (defn- make-blocking-service-method [handler]
   (fn [servlet request response]
@@ -126,15 +178,40 @@
          (.sendError response 500 (.getMessage exception))
          (.complete context))))))
 
+(defn- make-blocking-service-method-2 [handler] 
+  (fn [servlet request response]
+    (-> request
+        (build-request-map-2)
+        (merge-servlet-keys-2 servlet request response)
+        (handler)
+        (->> (update-servlet-response-2 response)))))
+
+(defn- make-async-service-method-2 [handler]
+  (fn [servlet ^HttpServletRequest request ^HttpServletResponse response]
+    (let [^AsyncContext context (.startAsync request)]
+      (handler
+       (-> request
+           (build-request-map-2)
+           (merge-servlet-keys-2 servlet request response))
+       (fn [response-map]
+         (update-servlet-response-2 response context response-map))
+       (fn [^Throwable exception]
+         (.sendError response 500 (.getMessage exception))
+         (.complete context))))))
+
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the
   same return value as the service method in the HttpServlet class."
   ([handler]
    (make-service-method handler {}))
   ([handler options]
-   (if (:async? options)
-     (make-async-service-method handler)
-     (make-blocking-service-method handler))))
+   (if (= 2 (:ring options))
+     (if (:async? options)
+       (make-async-service-method-2 handler)
+       (make-blocking-service-method-2 handler)) 
+     (if (:async? options)
+       (make-async-service-method handler)
+       (make-blocking-service-method handler)))))
 
 (defn servlet
   "Create a servlet from a Ring handler."

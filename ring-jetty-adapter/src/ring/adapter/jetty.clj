@@ -42,6 +42,29 @@
            (.complete context)))
         (.setHandled base-request true)))))
 
+(defn- ^AbstractHandler proxy-handler-2 [handler]
+  (proxy [AbstractHandler] []
+    (handle [_ ^Request base-request request response]
+      (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
+        (let [request-map  (servlet/build-request-map-2 request)
+              response-map (handler request-map)]
+          (servlet/update-servlet-response-2 response response-map)
+          (.setHandled base-request true))))))
+
+(defn- ^AbstractHandler async-proxy-handler-2 [handler timeout]
+  (proxy [AbstractHandler] []
+    (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
+      (let [^AsyncContext context (.startAsync request)]
+        (.setTimeout context timeout)
+        (handler
+         (servlet/build-request-map-2 request)
+         (fn [response-map]
+           (servlet/update-servlet-response-2 response context response-map))
+         (fn [^Throwable exception]
+           (.sendError response 500 (.getMessage exception))
+           (.complete context)))
+        (.setHandled base-request true)))))
+
 (defn- ^ServerConnector server-connector [^Server server & factories]
   (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;" (into-array ConnectionFactory factories)))
 
@@ -163,9 +186,14 @@
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
   (let [server (create-server (dissoc options :configurator))]
-    (if (:async? options)
-      (.setHandler server (async-proxy-handler handler (:async-timeout options 0)))
-      (.setHandler server (proxy-handler handler)))
+    (.setHandler server
+                 (if (= (:ring options) 2)
+                   (if (:async? options)
+                     (async-proxy-handler-2 handler (:async-timeout options 0))
+                     (proxy-handler-2 handler))
+                   (if (:async? options)
+                     (async-proxy-handler handler (:async-timeout options 0))
+                     (proxy-handler handler))))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try
