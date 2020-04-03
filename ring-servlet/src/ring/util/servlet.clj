@@ -28,9 +28,9 @@
   (persistent!
    (reduce
     (fn [headers ^String name]
-      (assoc headers
-             (.toLowerCase name Locale/ENGLISH)
-             (-> request (.getHeaders name) enumeration-seq vec)))
+      (assoc! headers
+              (.toLowerCase name Locale/ENGLISH)
+              (-> request (.getHeaders name) enumeration-seq vec)))
     (transient {})
     (enumeration-seq (.getHeaderNames request)))))
 
