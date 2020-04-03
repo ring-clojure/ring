@@ -12,7 +12,7 @@
                                HttpServletRequest
                                HttpServletResponse]))
 
-(defn- build-header-map [^HttpServletRequest request]
+(defn- build-header-map-1 [^HttpServletRequest request]
   (persistent!
    (reduce
     (fn [headers ^String name]
@@ -21,6 +21,16 @@
               (->> (.getHeaders request name)
                    (enumeration-seq)
                    (string/join ","))))
+    (transient {})
+    (enumeration-seq (.getHeaderNames request)))))
+
+(defn- build-header-map-2 [^HttpServletRequest request]
+  (persistent!
+   (reduce
+    (fn [headers ^String name]
+      (assoc headers
+             (.toLowerCase name Locale/ENGLISH)
+             (-> request (.getHeaders name) enumeration-seq vec)))
     (transient {})
     (enumeration-seq (.getHeaderNames request)))))
 
@@ -45,22 +55,12 @@
    :scheme             (keyword (.getScheme request))
    :request-method     (get-request-method request)
    :protocol           (.getProtocol request)
-   :headers            (build-header-map request)
+   :headers            (build-header-map-1 request)
    :content-type       (.getContentType request)
    :content-length     (get-content-length request)
    :character-encoding (.getCharacterEncoding request)
    :ssl-client-cert    (get-client-cert request)
    :body               (.getInputStream request)})
-
-(defn- build-header-map-2 [^HttpServletRequest request]
-  (persistent!
-   (reduce
-    (fn [headers ^String name]
-      (assoc headers
-             (.toLowerCase name Locale/ENGLISH)
-             (-> request (.getHeaders name) enumeration-seq vec)))
-    (transient {})
-    (enumeration-seq (.getHeaderNames request)))))
 
 (defn build-request-map-2
   "Create a Ring 2 request map from a HttpServletRequest object."
