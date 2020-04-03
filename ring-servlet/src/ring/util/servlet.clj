@@ -153,6 +153,8 @@
      (.setStatus response status)
      (doseq [[k vs] headers, v vs]
        (.addHeader response k v))
+     (when-let [content-type (first (get headers "content-type"))]
+       (.setContentType response content-type))
      (let [output-stream (make-output-stream response context)]
        (resp/write-body-to-stream response-map output-stream)))))
 
