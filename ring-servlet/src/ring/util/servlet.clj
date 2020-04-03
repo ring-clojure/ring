@@ -13,15 +13,16 @@
                                HttpServletResponse]))
 
 (defn- build-header-map [^HttpServletRequest request]
-  (reduce
-   (fn [headers ^String name]
-     (assoc headers
-            (.toLowerCase name Locale/ENGLISH)
-            (->> (.getHeaders request name)
-                 (enumeration-seq)
-                 (string/join ","))))
-   {}
-   (enumeration-seq (.getHeaderNames request))))
+  (persistent!
+   (reduce
+    (fn [headers ^String name]
+      (assoc! headers
+              (.toLowerCase name Locale/ENGLISH)
+              (->> (.getHeaders request name)
+                   (enumeration-seq)
+                   (string/join ","))))
+    (transient {})
+    (enumeration-seq (.getHeaderNames request)))))
 
 (defn- get-content-length [^HttpServletRequest request]
   (let [length (.getContentLength request)]
@@ -52,13 +53,14 @@
    :body               (.getInputStream request)})
 
 (defn- build-header-map-2 [^HttpServletRequest request]
-  (reduce
-   (fn [headers ^String name]
-     (assoc headers
-            (.toLowerCase name Locale/ENGLISH)
-            (-> request (.getHeaders name) enumeration-seq vec)))
-   {}
-   (enumeration-seq (.getHeaderNames request))))
+  (persistent!
+   (reduce
+    (fn [headers ^String name]
+      (assoc headers
+             (.toLowerCase name Locale/ENGLISH)
+             (-> request (.getHeaders name) enumeration-seq vec)))
+    (transient {})
+    (enumeration-seq (.getHeaderNames request)))))
 
 (defn build-request-map-2
   "Create a Ring 2 request map from a HttpServletRequest object."
