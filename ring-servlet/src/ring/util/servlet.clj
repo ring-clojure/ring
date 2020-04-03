@@ -108,10 +108,12 @@
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
       (doseq [val val-or-vals]
-        (.addHeader response key val))))
-  ; Some headers must be set through specific methods
-  (when-let [content-type (get headers "Content-Type")]
-    (.setContentType response content-type)))
+        (.addHeader response key val)))
+    ; Some headers must be set through specific methods
+    (when (.equalsIgnoreCase ^String key "content-type")
+      (.setContentType response (if (string? val-or-vals)
+                                  val-or-vals
+                                  (first val-or-vals))))))
 
 (defn- make-output-stream [^HttpServletResponse response ^AsyncContext context]
   (let [os (.getOutputStream response)]
