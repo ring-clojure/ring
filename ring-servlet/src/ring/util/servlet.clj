@@ -231,7 +231,7 @@
          (.sendError response 500 (.getMessage exception))
          (.complete context))))))
 
-(defn- make-blocking-service-method-2 [handler] 
+(defn- make-blocking-service-method-2 [handler]
   (fn [servlet request response]
     (-> request
         (build-request-map-2)
@@ -261,7 +261,7 @@
    (if (= 2 (:ring options))
      (if (:async? options)
        (make-async-service-method-2 handler)
-       (make-blocking-service-method-2 handler)) 
+       (make-blocking-service-method-2 handler))
      (if (:async? options)
        (make-async-service-method handler)
        (make-blocking-service-method handler)))))
