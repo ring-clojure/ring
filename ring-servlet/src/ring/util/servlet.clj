@@ -82,7 +82,7 @@
 (defn build-request-map
   "Create a Ring request map from a HttpServletRequest object. Includes keys
   for both Ring 1 and Ring 2."
-  [^HttpServletRequest request]
+  [request]
   (-> (transient {})
       (assoc-request-fields-1! request)
       (assoc-request-fields-2! request)
@@ -91,7 +91,7 @@
 (defn build-request-map-1
   "Create a Ring request map from a HttpServletRequest object. Includes keys
   for *only* Ring 1."
-  [^HttpServletRequest request]
+  [request]
   (-> (transient {})
       (assoc-request-fields-1! request)
       persistent!))
