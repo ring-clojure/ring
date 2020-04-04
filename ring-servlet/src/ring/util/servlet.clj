@@ -104,33 +104,54 @@
       (assoc-request-fields-2! request)
       persistent!))
 
-(defn merge-servlet-keys
-  "Associate servlet-specific keys with a Ring 1 request map for use with
-  legacy systems."
+(defn- assoc-servlet-keys-1!
   [request-map
    ^HttpServlet servlet
    ^HttpServletRequest request
    ^HttpServletResponse response]
-  (merge request-map
-         {:servlet              servlet
-          :servlet-request      request
-          :servlet-response     response
-          :servlet-context      (.getServletContext servlet)
-          :servlet-context-path (.getContextPath request)}))
+  (-> request-map
+      (assoc! :servlet              servlet)
+      (assoc! :servlet-request      request)
+      (assoc! :servlet-response     response)
+      (assoc! :servlet-context      (.getServletContext servlet))
+      (assoc! :servlet-context-path (.getContextPath request))))
+
+(defn- assoc-servlet-keys-2!
+  [request-map
+   ^HttpServlet servlet
+   ^HttpServletRequest request
+   ^HttpServletResponse response]
+  (-> request-map
+      (assoc! :ring.servlet/servlet     servlet)
+      (assoc! :ring.servlet/request     request)
+      (assoc! :ring.servlet/response    response)
+      (assoc! :ring.servlet/context     (.getServletContext servlet))
+      (assoc! :ring.servle/context-path (.getContextPath request))))
+
+(defn merge-servlet-keys
+  "Associate servlet-specific keys with a request map for use with legacy
+  systems. Includes keys for both Ring 1 and Ring 2."
+  [request-map servlet request response]
+  (-> (transient request-map)
+      (assoc-servlet-keys-1! servlet request response)
+      (assoc-servlet-keys-2! servlet request response)
+      persistent!))
+
+(defn merge-servlet-keys-1
+  "Associate servlet-specific keys with a request map for use with legacy
+  systems. Includes keys for *only* Ring 1."
+  [request-map servlet request response]
+  (-> (transient request-map)
+      (assoc-servlet-keys-1! servlet request response)
+      persistent!))
 
 (defn merge-servlet-keys-2
-  "Associate servlet-specific keys with a Ring 2 request map for use with
-  legacy systems."
-  [request-map
-   ^HttpServlet servlet
-   ^HttpServletRequest request
-   ^HttpServletResponse response]
-  (merge request-map
-         #:ring.servlet{:servlet      servlet
-                        :request      request
-                        :response     response
-                        :context      (.getServletContext servlet)
-                        :context-path (.getContextPath request)}))
+  "Associate servlet-specific keys with a request map for use with legacy
+  systems. Includes keys for *only* Ring 2."
+  [request-map servlet request response]
+  (-> (transient request-map)
+      (assoc-servlet-keys-2! servlet request response)
+      persistent!))
 
 (defn- set-headers [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
