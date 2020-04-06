@@ -153,7 +153,13 @@
       (assoc-servlet-keys-2! servlet request response)
       persistent!))
 
-(defn- set-headers [^HttpServletResponse response, headers]
+(defn- validate-response [response response-map]
+  (when (nil? response)
+    (throw (NullPointerException. "HttpServletResponse is nil")))
+  (when (nil? response-map)
+    (throw (NullPointerException. "Response map is nil"))))
+
+(defn- set-headers-1 [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
@@ -165,6 +171,12 @@
                                   val-or-vals
                                   (first val-or-vals))))))
 
+(defn- set-headers-2 [^HttpServletResponse response, headers]
+  (doseq [[k vs] headers, v vs]
+    (.addHeader response k v))
+  (when-let [content-type (first (get headers "content-type"))]
+    (.setContentType response content-type)))
+
 (defn- make-output-stream [^HttpServletResponse response ^AsyncContext context]
   (let [os (.getOutputStream response)]
     (if (nil? context)
@@ -174,20 +186,17 @@
           (.close os)
           (.complete context))))))
 
-(defn update-servlet-response
+(defn update-servlet-response-1
   "Update the HttpServletResponse using a Ring 1 response map. Takes an
   optional AsyncContext."
   ([response response-map]
-   (update-servlet-response response nil response-map))
+   (update-servlet-response-1 response nil response-map))
   ([^HttpServletResponse response context response-map]
+   (validate-response response response-map)
    (let [{:keys [status headers body]} response-map]
-     (when (nil? response)
-       (throw (NullPointerException. "HttpServletResponse is nil")))
-     (when (nil? response-map)
-       (throw (NullPointerException. "Response map is nil")))
      (when status
        (.setStatus response status))
-     (set-headers response headers)
+     (set-headers-1 response headers)
      (let [output-stream (make-output-stream response context)]
        (protocols/write-body-to-stream body response-map output-stream)))))
 
@@ -197,18 +206,22 @@
   ([response response-map]
    (update-servlet-response-2 response nil response-map))
   ([^HttpServletResponse response context response-map]
+   (validate-response response response-map)
    (let [{:ring.response/keys [status headers body]} response-map]
-     (when (nil? response)
-       (throw (NullPointerException. "HttpServletResponse is nil")))
-     (when (nil? response-map)
-       (throw (NullPointerException. "Response map is nil")))
      (.setStatus response status)
-     (doseq [[k vs] headers, v vs]
-       (.addHeader response k v))
-     (when-let [content-type (first (get headers "content-type"))]
-       (.setContentType response content-type))
+     (set-headers-2 response headers)
      (let [output-stream (make-output-stream response context)]
        (resp/write-body-to-stream response-map output-stream)))))
+
+(defn update-servlet-response
+  "Update the HttpServletResponse using a Ring 1 *or* Ring 2 response map.
+  Takes an optional AsyncContext."
+  ([response response-map]
+   (update-servlet-response-1 response nil response-map))
+  ([response context response-map]
+   (if (contains? response-map ::resp/status)
+     (update-servlet-response-2 response context response-map)
+     (update-servlet-response-1 response context response-map))))
 
 (defn- make-blocking-service-method [handler]
   (fn [servlet request response]
