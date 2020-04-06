@@ -126,7 +126,7 @@
       (assoc! :ring.servlet/request     request)
       (assoc! :ring.servlet/response    response)
       (assoc! :ring.servlet/context     (.getServletContext servlet))
-      (assoc! :ring.servle/context-path (.getContextPath request))))
+      (assoc! :ring.servlet/context-path (.getContextPath request))))
 
 (defn merge-servlet-keys
   "Associate servlet-specific keys with a request map for use with legacy
