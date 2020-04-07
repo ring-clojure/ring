@@ -29,7 +29,7 @@
 
 (defn- echo-handler [request]
   {:status 200
-   :headers {"request-map" (str (dissoc request :body))}
+   :headers {"request-map" (str (dissoc request :body :ring.request/body))}
    :body (:body request)})
 
 (defn- all-threads []
