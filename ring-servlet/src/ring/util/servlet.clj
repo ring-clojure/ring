@@ -217,7 +217,7 @@
   "Update the HttpServletResponse using a Ring 1 *or* Ring 2 response map.
   Takes an optional AsyncContext."
   ([response response-map]
-   (update-servlet-response-1 response nil response-map))
+   (update-servlet-response response nil response-map))
   ([response context response-map]
    (if (contains? response-map ::resp/status)
      (update-servlet-response-2 response context response-map)
