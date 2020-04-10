@@ -55,7 +55,7 @@ following keys. Any key not marked as **required** may be omitted.
 | Key                           | Type                               | Required |
 | ----------------------------- | ---------------------------------- | -------- |
 |`:ring.request/body`           |`ring.request/StreamableRequestBody`|          |
-|`:ring.request/headers`        |`{String [String]}`                 |          |
+|`:ring.request/headers`        |`{String String}`                   |          |
 |`:ring.request/method`         |`Keyword`                           | Yes      |
 |`:ring.request/path`           |`String`                            |          |
 |`:ring.request/protocol`       |`String`                            |          |
@@ -78,8 +78,15 @@ A representation of the request body that must satisfy the
 
 #### :ring.request/headers
 
-A Clojure map of lowercased header name strings to a vector of
-corresponding header value strings.
+A Clojure map of lowercased header name strings to corresponding
+header value strings.
+
+Where there are multiple headers with the same name, the adapter must
+concatenate the values into a single string, using the ASCII `,`
+character as a delimiter.
+
+The exception to this is the `cookie` header, which should instead use
+the ASCII `;` character as a delimiter.
 
 #### :ring.request/method
 
@@ -125,11 +132,11 @@ The SSL client certificate, if supplied.
 A Ring response map represents a HTTP response, and contains the
 following keys. Any key not marked as **required** may be omitted.
 
-| Key                    | Type                                 | Required |
-| ---------------------- | ------------------------------------ | -------- |
-|`:ring.response/body`   |`ring.response/StreamableResponseBody`|          |
-|`:ring.response/headers`|`{String [String]}`                   |          |
-|`:ring.response/status` |`Integer`                             | Yes      |
+| Key                    | Type                                   | Required |
+| ---------------------- | -------------------------------------- | -------- |
+|`:ring.response/body`   |`ring.response/StreamableResponseBody`  |          |
+|`:ring.response/headers`|`{String String}` or `{String [String]}`|          |
+|`:ring.response/status` |`Integer`                               | Yes      |
 
 #### :ring.response/body
 
@@ -143,8 +150,8 @@ A representation of the request body that must satisfy the
 
 #### :ring.response/headers
 
-A Clojure map of lowercased header name strings to a vector of
-corresponding header value strings.
+A Clojure map of lowercased header name strings to either a string or
+a vector of strings that correspond to the header value or values.
 
 #### :ring.response/status
 
@@ -287,17 +294,17 @@ must respond with one and only one response map.
 A push map represents a server push, and contains the following keys.
 Any key not marked as **required** may be omitted.
 
-| Key                | Type              | Required |
-| ------------------ | ----------------- | -------- |
-|`:ring.push/headers`|`{String [String]}`|          |
-|`:ring.push/method` |`Keyword`          |          |
-|`:ring.push/path`   |`String`           | Yes      |
-|`:ring.push/query`  |`String`           |          |
+| Key                | Type             | Required |
+| ------------------ | ---------------- | -------- |
+|`:ring.push/headers`|`{String String}` |          |
+|`:ring.push/method` |`Keyword`         |          |
+|`:ring.push/path`   |`String`          | Yes      |
+|`:ring.push/query`  |`String`          |          |
 
 #### :ring.push/headers
 
-A Clojure map of lowercased header name strings to a vector of
-corresponding header value strings.
+A Clojure map of lowercased header name strings to a corresponding
+header value string. See `:ring.request/headers` for further details.
 
 #### :ring.push/method
 
