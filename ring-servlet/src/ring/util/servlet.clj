@@ -12,25 +12,16 @@
                                HttpServletRequest
                                HttpServletResponse]))
 
-(defn- build-header-map-1 [^HttpServletRequest request]
+(defn- build-header-map [^HttpServletRequest request]
   (persistent!
    (reduce
     (fn [headers ^String name]
-      (assoc! headers
-              (.toLowerCase name Locale/ENGLISH)
-              (->> (.getHeaders request name)
-                   (enumeration-seq)
-                   (string/join ","))))
-    (transient {})
-    (enumeration-seq (.getHeaderNames request)))))
-
-(defn- build-header-map-2 [^HttpServletRequest request]
-  (persistent!
-   (reduce
-    (fn [headers ^String name]
-      (assoc! headers
-              (.toLowerCase name Locale/ENGLISH)
-              (-> request (.getHeaders name) enumeration-seq vec)))
+      (let [key (.toLowerCase name Locale/ENGLISH)]
+        (assoc! headers
+                key
+                (->> (.getHeaders request name)
+                     (enumeration-seq)
+                     (string/join (if (= key "cookie") ";" ","))))))
     (transient {})
     (enumeration-seq (.getHeaderNames request)))))
 
@@ -54,7 +45,7 @@
       (assoc! :scheme             (keyword (.getScheme request)))
       (assoc! :request-method     (get-request-method request))
       (assoc! :protocol           (.getProtocol request))
-      (assoc! :headers            (build-header-map-1 request))
+      (assoc! :headers            (build-header-map request))
       (assoc! :content-type       (.getContentType request))
       (assoc! :content-length     (get-content-length request))
       (assoc! :character-encoding (.getCharacterEncoding request))
@@ -72,7 +63,7 @@
         (assoc! ::req/scheme      (keyword (.getScheme request)))
         (assoc! ::req/method      (get-request-method request))
         (assoc! ::req/protocol    (.getProtocol request))
-        (assoc! ::req/headers     (build-header-map-2 request))
+        (assoc! ::req/headers     (build-header-map request))
         (assoc! ::req/body        (.getInputStream request))
         (cond-> (not (string/blank? query))
           (assoc! ::req/query query))
