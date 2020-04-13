@@ -187,8 +187,11 @@
                                   (first val-or-vals))))))
 
 (defn- set-headers-2 [^HttpServletResponse response, headers]
-  (doseq [[k vs] headers, v vs]
-    (.addHeader response k v))
+  (doseq [[key val-or-vals] headers]
+    (if (string? val-or-vals)
+      (.setHeader response key val-or-vals)
+      (doseq [val val-or-vals]
+        (.addHeader response key val))))
   (when-let [content-type (first (get headers "content-type"))]
     (.setContentType response content-type)))
 
