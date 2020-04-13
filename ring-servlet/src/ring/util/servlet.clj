@@ -35,65 +35,89 @@
 (defn- get-request-method [^HttpServletRequest request]
   (keyword (.toLowerCase (.getMethod request) Locale/ENGLISH)))
 
-(defn- assoc-request-fields-1! [request-map ^HttpServletRequest request]
-  (-> request-map
-      (assoc! :server-port        (.getServerPort request))
-      (assoc! :server-name        (.getServerName request))
-      (assoc! :remote-addr        (.getRemoteAddr request))
-      (assoc! :uri                (.getRequestURI request))
-      (assoc! :query-string       (.getQueryString request))
-      (assoc! :scheme             (keyword (.getScheme request)))
-      (assoc! :request-method     (get-request-method request))
-      (assoc! :protocol           (.getProtocol request))
-      (assoc! :headers            (build-header-map request))
-      (assoc! :content-type       (.getContentType request))
-      (assoc! :content-length     (get-content-length request))
-      (assoc! :character-encoding (.getCharacterEncoding request))
-      (assoc! :ssl-client-cert    (get-client-cert request))
-      (assoc! :body               (.getInputStream request))))
-
-(defn- assoc-request-fields-2! [request-map ^HttpServletRequest request]
-  (let [query (.getQueryString request)
-        cert  (get-client-cert request)]
-    (-> request-map
-        (assoc! ::req/server-port (.getServerPort request))
-        (assoc! ::req/server-name (.getServerName request))
-        (assoc! ::req/remote-addr (.getRemoteAddr request))
-        (assoc! ::req/path        (.getRequestURI request))
-        (assoc! ::req/scheme      (keyword (.getScheme request)))
-        (assoc! ::req/method      (get-request-method request))
-        (assoc! ::req/protocol    (.getProtocol request))
-        (assoc! ::req/headers     (build-header-map request))
-        (assoc! ::req/body        (.getInputStream request))
-        (cond-> (not (string/blank? query))
-          (assoc! ::req/query query))
-        (cond-> (some? cert)
-          (assoc! ::req/ssl-client-cert cert)))))
-
 (defn build-request-map
   "Create a Ring request map from a HttpServletRequest object. Includes keys
   for both Ring 1 and Ring 2."
   [request]
-  (-> (transient {})
-      (assoc-request-fields-1! request)
-      (assoc-request-fields-2! request)
-      persistent!))
+  (let [server-port (.getServerPort request)
+        server-name (.getServerName request)
+        remote-addr (.getRemoteAddr request)
+        path        (.getRequestURI request)
+        query       (.getQueryString request)
+        scheme      (keyword (.getScheme request))
+        method      (get-request-method request)
+        protocol    (.getProtocol request)
+        headers     (build-header-map request)
+        cert        (get-client-cert request)
+        body        (.getInputStream request)]
+    (-> (transient {:server-port        server-port
+                    ::req/server-port   server-port
+                    :server-name        server-name
+                    ::req/server-name   server-name
+                    :remote-addr        remote-addr
+                    ::req/remote-addr   remote-addr
+                    :uri                path
+                    ::req/path          path
+                    :scheme             scheme
+                    ::req/scheme        scheme
+                    :request-method     method
+                    ::req/method        method
+                    :protocol           protocol
+                    ::req/protocol      protocol
+                    :headers            headers
+                    ::req/headers       headers
+                    :body               body
+                    ::req/body          body
+                    :query-string       query
+                    :ssl-client-cert    cert
+                    :content-type       (.getContentType request)
+                    :content-length     (get-content-length request)
+                    :character-encoding (.getCharacterEncoding request)})
+        (cond-> (not (string/blank? query))
+          (assoc! ::req/query query))
+        (cond-> (some? cert)
+          (assoc! ::req/ssl-client-cert cert))
+        persistent!)))
 
 (defn build-request-map-1
   "Create a Ring request map from a HttpServletRequest object. Includes keys
   for *only* Ring 1."
   [request]
-  (-> (transient {})
-      (assoc-request-fields-1! request)
-      persistent!))
+  {:server-port        (.getServerPort request)
+   :server-name        (.getServerName request)
+   :remote-addr        (.getRemoteAddr request)
+   :uri                (.getRequestURI request)
+   :query-string       (.getQueryString request)
+   :scheme             (keyword (.getScheme request))
+   :request-method     (get-request-method request)
+   :protocol           (.getProtocol request)
+   :headers            (build-header-map request)
+   :content-type       (.getContentType request)
+   :content-length     (get-content-length request)
+   :character-encoding (.getCharacterEncoding request)
+   :ssl-client-cert    (get-client-cert request)
+   :body               (.getInputStream request)})
 
 (defn build-request-map-2
   "Create a Ring request map from a HttpServletRequest object. Includes keys
   for *only* Ring 2."
   [^HttpServletRequest request]
-  (-> (transient {})
-      (assoc-request-fields-2! request)
-      persistent!))
+  (let [query (.getQueryString request)
+        cert  (get-client-cert request)]
+    (-> (transient #::req{:server-port (.getServerPort request)
+                          :server-name (.getServerName request)
+                          :remote-addr (.getRemoteAddr request)
+                          :path        (.getRequestURI request)
+                          :scheme      (keyword (.getScheme request))
+                          :method      (get-request-method request)
+                          :protocol    (.getProtocol request)
+                          :headers     (build-header-map request)
+                          :body        (.getInputStream request)})
+        (cond-> (not (string/blank? query))
+          (assoc! ::req/query query))
+        (cond-> (some? cert)
+          (assoc! ::req/ssl-client-cert cert))
+        persistent!)))
 
 (defn- assoc-servlet-keys-1!
   [request-map
