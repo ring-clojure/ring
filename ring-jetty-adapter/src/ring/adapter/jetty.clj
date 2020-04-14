@@ -19,47 +19,35 @@
            [javax.servlet AsyncContext DispatcherType]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
-(defn- ^AbstractHandler proxy-handler [handler]
+(defn- proxy-functions [{:keys [ring]}]
+  (case ring
+    1   {:build-request   servlet/build-request-map-1
+         :update-response servlet/update-servlet-response-1}
+    2   {:build-request   servlet/build-request-map-2
+         :update-response servlet/update-servlet-response-2}
+    nil {:build-request   servlet/build-request-map
+         :update-response servlet/update-servlet-response}))
+
+(defn- ^AbstractHandler proxy-handler
+  [handler {:keys [build-request update-response]}]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request request response]
       (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
-        (let [request-map  (servlet/build-request-map request)
+        (let [request-map  (build-request request)
               response-map (handler request-map)]
-          (servlet/update-servlet-response response response-map)
+          (update-response response response-map)
           (.setHandled base-request true))))))
 
-(defn- ^AbstractHandler async-proxy-handler [handler timeout]
+(defn- ^AbstractHandler async-proxy-handler
+  [handler {:keys [build-request update-response]} timeout]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
         (.setTimeout context timeout)
         (handler
-         (servlet/build-request-map request)
+         (build-request request)
          (fn [response-map]
-           (servlet/update-servlet-response response context response-map))
-         (fn [^Throwable exception]
-           (.sendError response 500 (.getMessage exception))
-           (.complete context)))
-        (.setHandled base-request true)))))
-
-(defn- ^AbstractHandler proxy-handler-2 [handler]
-  (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request response]
-      (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
-        (let [request-map  (servlet/build-request-map-2 request)
-              response-map (handler request-map)]
-          (servlet/update-servlet-response-2 response response-map)
-          (.setHandled base-request true))))))
-
-(defn- ^AbstractHandler async-proxy-handler-2 [handler timeout]
-  (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
-      (let [^AsyncContext context (.startAsync request)]
-        (.setTimeout context timeout)
-        (handler
-         (servlet/build-request-map-2 request)
-         (fn [response-map]
-           (servlet/update-servlet-response-2 response context response-map))
+           (update-response response context response-map))
          (fn [^Throwable exception]
            (.sendError response 500 (.getMessage exception))
            (.complete context)))
@@ -187,15 +175,13 @@
   :response-header-size - the maximum size of a response header (default 8192)
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))]
+  (let [server    (create-server (dissoc options :configurator))
+        proxy-fns (proxy-functions options)
+        timeout   (:async-timeout options 0)]
     (.setHandler server
-                 (if (= (:ring options) 2)
-                   (if (:async? options)
-                     (async-proxy-handler-2 handler (:async-timeout options 0))
-                     (proxy-handler-2 handler))
-                   (if (:async? options)
-                     (async-proxy-handler handler (:async-timeout options 0))
-                     (proxy-handler handler))))
+                 (if (:async? options)
+                   (async-proxy-handler handler proxy-fns timeout)
+                   (proxy-handler handler proxy-fns)))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try
