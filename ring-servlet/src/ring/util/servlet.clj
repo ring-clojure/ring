@@ -192,8 +192,11 @@
       (.setHeader response key val-or-vals)
       (doseq [val val-or-vals]
         (.addHeader response key val))))
-  (when-let [content-type (first (get headers "content-type"))]
-    (.setContentType response content-type)))
+  ; Some headers must be set through specific methods
+  (when-let [val-or-vals (get headers "content-type")]
+    (.setContentType response (if (string? val-or-vals)
+                                val-or-vals
+                                (first val-or-vals)))))
 
 (defn- make-output-stream [^HttpServletResponse response ^AsyncContext context]
   (let [os (.getOutputStream response)]
