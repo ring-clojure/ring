@@ -15,7 +15,7 @@
   (-write-body-to-stream (::body response) response output-stream))
 
 (defn- get-charset [request]
-  (when-let [content-type (-> request ::headers (get "content-type") first)]
+  (when-let [content-type (-> request ::headers (get "content-type"))]
     (second (re-find parsing/re-charset content-type))))
 
 (defn- ^java.io.Writer response-writer [response output-stream]

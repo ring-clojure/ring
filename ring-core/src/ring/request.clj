@@ -13,7 +13,7 @@
   (-body-stream (::body request) request))
 
 (defn- get-charset [request]
-  (when-let [content-type (-> request ::headers (get "content-type") first)]
+  (when-let [content-type (-> request ::headers (get "content-type"))]
     (second (re-find parsing/re-charset content-type))))
 
 (extend-protocol StreamableRequestBody
