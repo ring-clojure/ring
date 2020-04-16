@@ -19,35 +19,26 @@
            [javax.servlet AsyncContext DispatcherType]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
-(defn- proxy-functions [{:keys [ring]}]
-  (case ring
-    1   {:build-request   servlet/build-request-map-1
-         :update-response servlet/update-servlet-response-1}
-    2   {:build-request   servlet/build-request-map-2
-         :update-response servlet/update-servlet-response-2}
-    nil {:build-request   servlet/build-request-map
-         :update-response servlet/update-servlet-response}))
-
 (defn- ^AbstractHandler proxy-handler
-  [handler {:keys [build-request update-response]}]
+  [handler {:keys [build-request-map update-servlet-response]}]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request request response]
       (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
-        (let [request-map  (build-request request)
+        (let [request-map  (build-request-map request)
               response-map (handler request-map)]
-          (update-response response response-map)
+          (update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
 (defn- ^AbstractHandler async-proxy-handler
-  [handler {:keys [build-request update-response]} timeout]
+  [handler timeout {:keys [build-request-map update-servlet-response]}]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
         (.setTimeout context timeout)
         (handler
-         (build-request request)
+         (build-request-map request)
          (fn [response-map]
-           (update-response response context response-map))
+           (update-servlet-response response context response-map))
          (fn [^Throwable exception]
            (.sendError response 500 (.getMessage exception))
            (.complete context)))
@@ -176,11 +167,11 @@
   :send-server-version? - add Server header to HTTP response (default true)"
   [handler options]
   (let [server    (create-server (dissoc options :configurator))
-        proxy-fns (proxy-functions options)
+        proxy-fns (servlet/request-response-functions (:ring options))
         timeout   (:async-timeout options 0)]
     (.setHandler server
                  (if (:async? options)
-                   (async-proxy-handler handler proxy-fns timeout)
+                   (async-proxy-handler handler timeout proxy-fns)
                    (proxy-handler handler proxy-fns)))
     (when-let [configurator (:configurator options)]
       (configurator server))

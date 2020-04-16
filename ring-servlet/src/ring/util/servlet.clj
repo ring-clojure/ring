@@ -244,7 +244,32 @@
      (update-servlet-response-2 response context response-map)
      (update-servlet-response-1 response context response-map))))
 
-(defn- make-blocking-service-method [handler]
+(defn request-response-functions
+  "Given a Ring version (1 or 2), return a map of three functions,
+  `:build-request-map`, `:update-servlet-response` and `merge-servlet-keys`
+  that will build the request map, update the servlet response and add optional
+  servlet keys.
+
+  See: [[build-request-map]], [[update-servlet-response]] and
+  [[merge-servlet-keys]]."
+  ([]
+   (request-response-functions nil))
+  ([ring-version]
+   (case ring-version
+     1   {:build-request-map       build-request-map-1
+          :update-servlet-response update-servlet-response-1
+          :merge-servlet-keys      merge-servlet-keys-1}
+     2   {:build-request-map       build-request-map-2
+          :update-servlet-response update-servlet-response-2
+          :merge-servlet-keys      merge-servlet-keys-2}
+     nil {:build-request-map       build-request-map
+          :update-servlet-response update-servlet-response
+          :merge-servlet-keys      merge-servlet-keys})))
+
+(defn- make-blocking-service-method
+  [handler {:keys [build-request-map
+                   update-servlet-response
+                   merge-servlet-keys]}]
   (fn [servlet request response]
     (-> request
         (build-request-map)
@@ -252,7 +277,10 @@
         (handler)
         (->> (update-servlet-response response)))))
 
-(defn- make-async-service-method [handler]
+(defn- make-async-service-method
+  [handler {:keys [build-request-map
+                   update-servlet-response
+                   merge-servlet-keys]}]
   (fn [servlet ^HttpServletRequest request ^HttpServletResponse response]
     (let [^AsyncContext context (.startAsync request)]
       (handler
@@ -265,40 +293,16 @@
          (.sendError response 500 (.getMessage exception))
          (.complete context))))))
 
-(defn- make-blocking-service-method-2 [handler]
-  (fn [servlet request response]
-    (-> request
-        (build-request-map-2)
-        (merge-servlet-keys-2 servlet request response)
-        (handler)
-        (->> (update-servlet-response-2 response)))))
-
-(defn- make-async-service-method-2 [handler]
-  (fn [servlet ^HttpServletRequest request ^HttpServletResponse response]
-    (let [^AsyncContext context (.startAsync request)]
-      (handler
-       (-> request
-           (build-request-map-2)
-           (merge-servlet-keys-2 servlet request response))
-       (fn [response-map]
-         (update-servlet-response-2 response context response-map))
-       (fn [^Throwable exception]
-         (.sendError response 500 (.getMessage exception))
-         (.complete context))))))
-
 (defn make-service-method
   "Turns a handler into a function that takes the same arguments and has the
   same return value as the service method in the HttpServlet class."
   ([handler]
    (make-service-method handler {}))
   ([handler options]
-   (if (= 2 (:ring options))
+   (let [req-resp-fns (request-response-functions (:ring options))]
      (if (:async? options)
-       (make-async-service-method-2 handler)
-       (make-blocking-service-method-2 handler))
-     (if (:async? options)
-       (make-async-service-method handler)
-       (make-blocking-service-method handler)))))
+       (make-async-service-method handler req-resp-fns)
+       (make-blocking-service-method handler req-resp-fns)))))
 
 (defn servlet
   "Create a servlet from a Ring handler."
