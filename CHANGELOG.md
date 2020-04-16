@@ -1,3 +1,10 @@
+## 2.0.0-alpha1 (2020-04-16)
+
+* Updated Jetty adapter to follow Ring 2.0 spec
+* Updated servlet utility functions to follow Ring 2.0 spec
+* Added `ring.request` namespace
+* Added `ring.response` namespace
+
 ## 1.8.0 (2019-11-13)
 
 * Fixed confusing exception on bad queue configuration (#354)
