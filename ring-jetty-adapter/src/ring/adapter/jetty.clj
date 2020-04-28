@@ -22,7 +22,7 @@
 (defn- ^AbstractHandler proxy-handler
   [handler {:keys [build-request-map update-servlet-response]}]
   (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request request response]
+    (handle [_ ^Request base-request ^HttpServletRequest request response]
       (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
         (let [request-map  (build-request-map request)
               response-map (handler request-map)]

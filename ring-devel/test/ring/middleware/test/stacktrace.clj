@@ -25,7 +25,7 @@
           (is (or (.startsWith body "java.lang.Exception")
                   (.startsWith body "java.lang.AssertionError")))))
       (testing "requests without Accept header"
-        (let [{:keys [status headers body]} (app js-req)]
+        (let [{:keys [status headers body]} (app plain-req)]
           (is (= 500 status))
           (is (= {"Content-Type" "text/plain"} headers))
           (is (or (.startsWith body "java.lang.Exception")
