@@ -32,7 +32,9 @@
 
 (def bench-env
   {:benchmarks
-   [{:name :build-test, :fn `servlet/build-request-map, :args [:state/request]}]
+   [{:name :build-test,   :fn `servlet/build-request-map,   :args [:state/request]}
+    {:name :build-test-1, :fn `servlet/build-request-map-1, :args [:state/request]}
+    {:name :build-test-2, :fn `servlet/build-request-map-2, :args [:state/request]}]
    :states
    {:request {:fn `http-servlet-request, :args []}}})
 
