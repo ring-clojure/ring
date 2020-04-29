@@ -22,7 +22,7 @@
   java.io.InputStream
   (-body-stream [stream _] stream)
   String
-  (-body-stream [s request]
+  (-body-stream [^String s request]
     (java.io.ByteArrayInputStream.
      (if-let [charset (get-charset request)]
        (.getBytes s charset)
