@@ -13,17 +13,16 @@
                                HttpServletResponse]))
 
 (defn- build-header-map [^HttpServletRequest request]
-  (persistent!
-   (reduce
-    (fn [headers ^String name]
-      (let [key (.toLowerCase name Locale/ENGLISH)]
-        (assoc! headers
-                key
-                (->> (.getHeaders request name)
-                     (enumeration-seq)
-                     (string/join (if (= key "cookie") ";" ","))))))
-    (transient {})
-    (enumeration-seq (.getHeaderNames request)))))
+  (reduce
+   (fn [headers ^String name]
+     (let [key (.toLowerCase name Locale/ENGLISH)]
+       (assoc headers
+              key
+              (->> (.getHeaders request name)
+                   (enumeration-seq)
+                   (string/join (if (= key "cookie") ";" ","))))))
+   {}
+   (enumeration-seq (.getHeaderNames request))))
 
 (defn- get-content-length [^HttpServletRequest request]
   (let [length (.getContentLength request)]
@@ -50,34 +49,33 @@
         headers     (build-header-map request)
         cert        (get-client-cert request)
         body        (.getInputStream request)]
-    (-> (transient {:server-port        server-port
-                    ::req/server-port   server-port
-                    :server-name        server-name
-                    ::req/server-name   server-name
-                    :remote-addr        remote-addr
-                    ::req/remote-addr   remote-addr
-                    :uri                path
-                    ::req/path          path
-                    :scheme             scheme
-                    ::req/scheme        scheme
-                    :request-method     method
-                    ::req/method        method
-                    :protocol           protocol
-                    ::req/protocol      protocol
-                    :headers            headers
-                    ::req/headers       headers
-                    :body               body
-                    ::req/body          body
-                    :query-string       query
-                    :ssl-client-cert    cert
-                    :content-type       (.getContentType request)
-                    :content-length     (get-content-length request)
-                    :character-encoding (.getCharacterEncoding request)})
+    (-> {:server-port        server-port
+         ::req/server-port   server-port
+         :server-name        server-name
+         ::req/server-name   server-name
+         :remote-addr        remote-addr
+         ::req/remote-addr   remote-addr
+         :uri                path
+         ::req/path          path
+         :scheme             scheme
+         ::req/scheme        scheme
+         :request-method     method
+         ::req/method        method
+         :protocol           protocol
+         ::req/protocol      protocol
+         :headers            headers
+         ::req/headers       headers
+         :body               body
+         ::req/body          body
+         :query-string       query
+         :ssl-client-cert    cert
+         :content-type       (.getContentType request)
+         :content-length     (get-content-length request)
+         :character-encoding (.getCharacterEncoding request)}
         (cond-> (not (string/blank? query))
-          (assoc! ::req/query query))
+          (assoc ::req/query query))
         (cond-> (some? cert)
-          (assoc! ::req/ssl-client-cert cert))
-        persistent!)))
+          (assoc ::req/ssl-client-cert cert)))))
 
 (defn build-request-map-1
   "Create a Ring request map from a HttpServletRequest object. Includes keys
@@ -104,69 +102,49 @@
   [^HttpServletRequest request]
   (let [query (.getQueryString request)
         cert  (get-client-cert request)]
-    (-> (transient #::req{:server-port (.getServerPort request)
-                          :server-name (.getServerName request)
-                          :remote-addr (.getRemoteAddr request)
-                          :path        (.getRequestURI request)
-                          :scheme      (keyword (.getScheme request))
-                          :method      (get-request-method request)
-                          :protocol    (.getProtocol request)
-                          :headers     (build-header-map request)
-                          :body        (.getInputStream request)})
+    (-> #::req{:server-port (.getServerPort request)
+               :server-name (.getServerName request)
+               :remote-addr (.getRemoteAddr request)
+               :path        (.getRequestURI request)
+               :scheme      (keyword (.getScheme request))
+               :method      (get-request-method request)
+               :protocol    (.getProtocol request)
+               :headers     (build-header-map request)
+               :body        (.getInputStream request)}
         (cond-> (not (string/blank? query))
-          (assoc! ::req/query query))
+          (assoc ::req/query query))
         (cond-> (some? cert)
-          (assoc! ::req/ssl-client-cert cert))
-        persistent!)))
+          (assoc ::req/ssl-client-cert cert)))))
 
-(defn- assoc-servlet-keys-1!
-  [request-map
-   ^HttpServlet servlet
-   ^HttpServletRequest request
-   ^HttpServletResponse response]
-  (-> request-map
-      (assoc! :servlet              servlet)
-      (assoc! :servlet-request      request)
-      (assoc! :servlet-response     response)
-      (assoc! :servlet-context      (.getServletContext servlet))
-      (assoc! :servlet-context-path (.getContextPath request))))
+(defn merge-servlet-keys-1
+  "Associate servlet-specific keys with a request map for use with legacy
+  systems. Includes keys for *only* Ring 1."
+  [request-map ^HttpServlet servlet ^HttpServletRequest request response]
+  (merge request-map
+         {:servlet              servlet
+          :servlet-request      request
+          :servlet-response     response
+          :servlet-context      (.getServletContext servlet)
+          :servlet-context-path (.getContextPath request)}))
 
-(defn- assoc-servlet-keys-2!
-  [request-map
-   ^HttpServlet servlet
-   ^HttpServletRequest request
-   ^HttpServletResponse response]
-  (-> request-map
-      (assoc! :ring.servlet/servlet     servlet)
-      (assoc! :ring.servlet/request     request)
-      (assoc! :ring.servlet/response    response)
-      (assoc! :ring.servlet/context     (.getServletContext servlet))
-      (assoc! :ring.servlet/context-path (.getContextPath request))))
+(defn merge-servlet-keys-2
+  "Associate servlet-specific keys with a request map for use with legacy
+  systems. Includes keys for *only* Ring 2."
+  [request-map ^HttpServlet servlet ^HttpServletRequest request response]
+  (merge request-map
+         #:ring.servlet{:servlet      servlet
+                        :request      request
+                        :response     response
+                        :context      (.getServletContext servlet)
+                        :context-path (.getContextPath request)}))
 
 (defn merge-servlet-keys
   "Associate servlet-specific keys with a request map for use with legacy
   systems. Includes keys for both Ring 1 and Ring 2."
   [request-map servlet request response]
-  (-> (transient request-map)
-      (assoc-servlet-keys-1! servlet request response)
-      (assoc-servlet-keys-2! servlet request response)
-      persistent!))
-
-(defn merge-servlet-keys-1
-  "Associate servlet-specific keys with a request map for use with legacy
-  systems. Includes keys for *only* Ring 1."
-  [request-map servlet request response]
-  (-> (transient request-map)
-      (assoc-servlet-keys-1! servlet request response)
-      persistent!))
-
-(defn merge-servlet-keys-2
-  "Associate servlet-specific keys with a request map for use with legacy
-  systems. Includes keys for *only* Ring 2."
-  [request-map servlet request response]
-  (-> (transient request-map)
-      (assoc-servlet-keys-2! servlet request response)
-      persistent!))
+  (-> request-map
+      (merge-servlet-keys-1 servlet request response)
+      (merge-servlet-keys-2 servlet request response)))
 
 (defn- validate-response [response response-map]
   (when (nil? response)
