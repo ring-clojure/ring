@@ -7,7 +7,7 @@
                  [ring/ring-devel "2.0.0-alpha1"]
                  [ring/ring-jetty-adapter "2.0.0-alpha1"]
                  [ring/ring-servlet "2.0.0-alpha1"]]
-  :plugins [[lein-sub "0.2.4"]
+  :plugins [[lein-sub "0.3.0"]
             [lein-codox "0.10.3"]]
   :sub ["ring-core"
         "ring-devel"
@@ -18,4 +18,7 @@
           :source-paths ["ring-core/src"
                          "ring-devel/src"
                          "ring-jetty-adapter/src"
-                         "ring-servlet/src"]})
+                         "ring-servlet/src"]}
+  :aliases {"test"     ["sub" "test"]
+            "test-all" ["sub" "test-all"]
+            "bench"    ["sub" "-s" "ring-bench" "run"]})
