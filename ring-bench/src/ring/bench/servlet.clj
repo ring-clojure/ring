@@ -50,10 +50,16 @@
    :headers {"Content-Type" "application/json"}
    :body    "{\"hello\" \"world\"}"})
 
+(let [response ring-response
+      handler  (fn [_] response)]
+  (defn servlet-handler [request response]
+    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
+
 (def bench-env
   {:benchmarks
-   [{:name :build,  :fn `servlet/build-request-map,       :args [:state/request]}
-    {:name :update, :fn `servlet/update-servlet-response, :args [:state/response :param/response]}]
+   [{:name :build,   :fn `servlet/build-request-map,       :args [:state/request]}
+    {:name :update,  :fn `servlet/update-servlet-response, :args [:state/response :param/response]}
+    {:name :handler, :fn `servlet-handler,                 :args [:state/request :state/response]}]
    :states
    {:request  {:fn `http-servlet-request, :args []}
     :response {:fn `http-servlet-response, :args []}}
