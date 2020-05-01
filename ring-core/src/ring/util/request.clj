@@ -1,6 +1,6 @@
 (ns ring.util.request
   "Functions for augmenting and pulling information from request maps."
-  (:require [ring.util.parsing :refer [re-charset]]))
+  (:require [ring.util.parsing :as parsing]))
 
 (defn request-url
   "Return the full URL of the request."
@@ -32,8 +32,8 @@
   "Return the character encoding for the request, or nil if it is not set."
   {:added "1.3"}
   [request]
-  (if-let [type (get-in request [:headers "content-type"])]
-    (second (re-find re-charset type))))
+  (some-> (get-in request [:headers "content-type"])
+          parsing/find-content-type-charset))
 
 (defn urlencoded-form?
   "True if a request contains a urlencoded form in the body."

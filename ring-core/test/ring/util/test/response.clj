@@ -79,7 +79,10 @@
   (testing "missing charset"
     (is (nil? (get-charset {:headers {"Content-Type" "text/plain"}}))))
   (testing "missing content-type"
-    (is (nil? (get-charset {:headers {}})))))
+    (is (nil? (get-charset {:headers {}}))))
+  (testing "content-type with quoted charset"
+    (is (= (get-charset {:headers {"content-type" "text/plain; charset=\"UTF-8\""}})
+           "UTF-8"))))
 
 (deftest test-header
   (is (= {:status 200 :headers {"X-Foo" "Bar"}}
