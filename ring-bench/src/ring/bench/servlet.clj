@@ -79,4 +79,7 @@
   (println "Benchmarking...")
   (doseq [result (jmh/run bench-env bench-opts)]
     (let [[score unit] (:score result)]
-      (println (format "  %s - %.2f %s" (:fn result) score unit)))))
+      (println (format "  %s - %.2f ops/s (σ=%.2f)"
+                       (:name result)
+                       (-> result :statistics :mean)
+                       (-> result :statistics :stdev))))))
