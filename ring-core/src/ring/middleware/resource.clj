@@ -33,13 +33,15 @@
     ([request]
      (let [response (handler request)]
        (if (= 404 (:status response))
-         (resource-request request root-path options)
+         (or (resource-request request root-path options)
+             response)
          response)))
     ([request respond raise]
      (handler request
               (fn [response]
                 (if (= 404 (:status response))
-                  (respond (resource-request request root-path options))
+                  (respond (or (resource-request request root-path options)
+                               response))
                   (respond response)))
               raise))))
 
