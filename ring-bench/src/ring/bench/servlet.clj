@@ -55,15 +55,39 @@
                   :headers {"content-type" "application/json"}
                   :body    "{\"hello\" \"world\"}"})
 
+(let [response ring-1-response
+      handler  (fn [_] response)]
+  (defn servlet-handler-1 [request response]
+    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
+
+(let [response ring-2-response
+      handler  (fn [_] response)]
+  (defn servlet-handler-2 [request response]
+    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
+
+(let [response ring-1-response
+      handler  (fn [_] response)]
+  (defn servlet-handler-11 [request response]
+    (->> request servlet/build-request-map-1 handler (servlet/update-servlet-response-1 response))))
+
+(let [response ring-2-response
+      handler  (fn [_] response)]
+  (defn servlet-handler-22 [request response]
+    (->> request servlet/build-request-map-2 handler (servlet/update-servlet-response-2 response))))
+
 (def bench-env
   {:benchmarks
-   [{:name :build-test,   :fn `servlet/build-request-map,   :args [:state/request]}
-    {:name :build-test-1, :fn `servlet/build-request-map-1, :args [:state/request]}
-    {:name :build-test-2, :fn `servlet/build-request-map-2, :args [:state/request]}
-    {:name :update-test-1,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-1]}
-    {:name :update-test-2,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-2]}
-    {:name :update-test-11, :fn `servlet/update-servlet-response-1, :args [:state/response :param/response-1]}
-    {:name :update-test-22, :fn `servlet/update-servlet-response-2, :args [:state/response :param/response-2]}]
+   [{:name :build,   :fn `servlet/build-request-map,   :args [:state/request]}
+    {:name :build-1, :fn `servlet/build-request-map-1, :args [:state/request]}
+    {:name :build-2, :fn `servlet/build-request-map-2, :args [:state/request]}
+    {:name :update-1,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-1]}
+    {:name :update-2,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-2]}
+    {:name :update-11, :fn `servlet/update-servlet-response-1, :args [:state/response :param/response-1]}
+    {:name :update-22, :fn `servlet/update-servlet-response-2, :args [:state/response :param/response-2]}
+    {:name :handler-1,  :fn `servlet-handler-1  :args [:state/request :state/response]}
+    {:name :handler-2,  :fn `servlet-handler-2  :args [:state/request :state/response]}
+    {:name :handler-11, :fn `servlet-handler-11 :args [:state/request :state/response]}
+    {:name :handler-22, :fn `servlet-handler-22 :args [:state/request :state/response]}]
    :states
    {:request  {:fn `http-servlet-request, :args []}
     :response {:fn `http-servlet-response, :args []}}
