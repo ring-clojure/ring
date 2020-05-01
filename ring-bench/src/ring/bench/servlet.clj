@@ -30,13 +30,46 @@
       (getCharacterEncoding [_] nil)
       (getInputStream       [_] (proxy [javax.servlet.ServletInputStream] [])))))
 
+(defn http-servlet-response []
+  (reify javax.servlet.http.HttpServletResponse
+    (setStatus [_ _])
+    (setHeader [_ _ _])
+    (addHeader [_ _ _])
+    (setContentType [_ _])
+    (getOutputStream [_]
+      (let [os (java.io.ByteArrayOutputStream.)]
+        (proxy [javax.servlet.ServletOutputStream] []
+          (close [] (.close os))
+          (flush [] (.flush os))
+          (write
+            ([b] (.write os b))
+            ([b off len] (.write os b off len))))))))
+
+(def ring-1-response
+  {:status  200
+   :headers {"Content-Type" "application/json"}
+   :body    "{\"hello\" \"world\"}"})
+
+(def ring-2-response
+  #:ring.response{:status  200
+                  :headers {"content-type" "application/json"}
+                  :body    "{\"hello\" \"world\"}"})
+
 (def bench-env
   {:benchmarks
    [{:name :build-test,   :fn `servlet/build-request-map,   :args [:state/request]}
     {:name :build-test-1, :fn `servlet/build-request-map-1, :args [:state/request]}
-    {:name :build-test-2, :fn `servlet/build-request-map-2, :args [:state/request]}]
+    {:name :build-test-2, :fn `servlet/build-request-map-2, :args [:state/request]}
+    {:name :update-test-1,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-1]}
+    {:name :update-test-2,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-2]}
+    {:name :update-test-11, :fn `servlet/update-servlet-response-1, :args [:state/response :param/response-1]}
+    {:name :update-test-22, :fn `servlet/update-servlet-response-2, :args [:state/response :param/response-2]}]
    :states
-   {:request {:fn `http-servlet-request, :args []}}})
+   {:request  {:fn `http-servlet-request, :args []}
+    :response {:fn `http-servlet-response, :args []}}
+   :params
+   {:response-1 ring-1-response
+    :response-2 ring-2-response}})
 
 (def bench-opts
   {:type :quick
