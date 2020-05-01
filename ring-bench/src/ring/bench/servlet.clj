@@ -30,11 +30,35 @@
       (getCharacterEncoding [_] nil)
       (getInputStream       [_] (proxy [javax.servlet.ServletInputStream] [])))))
 
+(defn http-servlet-response []
+  (reify javax.servlet.http.HttpServletResponse
+    (setStatus [_ _])
+    (setHeader [_ _ _])
+    (addHeader [_ _ _])
+    (setContentType [_ _])
+    (getOutputStream [_]
+      (let [os (java.io.ByteArrayOutputStream.)]
+        (proxy [javax.servlet.ServletOutputStream] []
+          (close [] (.close os))
+          (flush [] (.flush os))
+          (write
+            ([b] (.write os b))
+            ([b off len] (.write os b off len))))))))
+
+(def ring-response
+  {:status  200
+   :headers {"Content-Type" "application/json"}
+   :body    "{\"hello\" \"world\"}"})
+
 (def bench-env
   {:benchmarks
-   [{:name :build-test, :fn `servlet/build-request-map, :args [:state/request]}]
+   [{:name :build,  :fn `servlet/build-request-map,       :args [:state/request]}
+    {:name :update, :fn `servlet/update-servlet-response, :args [:state/response :param/response]}]
    :states
-   {:request {:fn `http-servlet-request, :args []}}})
+   {:request  {:fn `http-servlet-request, :args []}
+    :response {:fn `http-servlet-response, :args []}}
+   :params
+   {:response ring-response}})
 
 (def bench-opts
   {:type :quick
