@@ -1,3 +1,12 @@
+## 1.8.1 (2020-05-02)
+
+* Deprecated string secret keys for cookie session stores
+* Fixed `nil` bug in `wrap-resource` (#385)
+* Fixed charset parsing not reading quoted values (#402)
+* Fixed missing type hint in Jetty adapter (#401)
+* Updated Jetty to 9.4.28.v2020040
+* Added ring-bench benchmarking subproject
+
 ## 1.8.0 (2019-11-13)
 
 * Fixed confusing exception on bad queue configuration (#354)
