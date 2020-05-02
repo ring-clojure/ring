@@ -9,7 +9,7 @@
     ring.middleware.multipart-params.temp-file/temp-file-store"
   (:require [ring.util.codec :refer [assoc-conj]]
             [ring.util.request :as req]
-            [ring.util.parsing :refer [re-charset]])
+            [ring.util.parsing :as parsing])
   (:import [org.apache.commons.fileupload UploadContext
                                           FileItemIterator
                                           FileItemStream
@@ -57,9 +57,7 @@
       (.getItemIterator ^FileUpload upload context))))
 
 (defn- parse-content-type-charset [^FileItemStream item]
-  (some->> (.getContentType item)
-           (re-find re-charset)
-           second))
+  (some->> (.getContentType item) parsing/find-content-type-charset))
 
 (defn- parse-html5-charset [params]
   (when-let [charset (->> params (filter #(= (first %) "_charset_")) first second :bytes)]

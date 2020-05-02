@@ -124,4 +124,17 @@
         (handler {:request-method :get, :uri "/foo.html"} response error)
         (is (= 200 (:status @response)))
         (is (= "override" (:body @response)))
+        (is (not (realized? error)))))
+
+    (testing "404 returned if handler nor resource matches (synchronously)"
+      (let [response (handler {:request-method :get, :uri "/unknown.html"})]
+        (is (= 404 (:status response)))
+        (is (= "not found" (:body response)))))
+
+    (testing "404 returned if handler nor resource matches (asynchronously)"
+      (let [response (promise)
+            error    (promise)]
+        (handler {:request-method :get, :uri "/unknown.html"} response error)
+        (is (= 404 (:status @response)))
+        (is (= "not found" (:body @response)))
         (is (not (realized? error)))))))

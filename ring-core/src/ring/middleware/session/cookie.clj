@@ -55,13 +55,19 @@
     (.init cipher Cipher/DECRYPT_MODE secret-key iv-spec)
     (String. (.doFinal cipher (byte-array data)))))
 
+(defn- print-string-secret-key-deprecation []
+  (binding [*out* *err*]
+    (println "WARNING: The secret key for the session cookie store should be a"
+             "byte array.\nString secret keys have been deprecated.")))
+
 (defn- get-secret-key
   "Get a valid secret key from a map of options, or create a random one from
   scratch."
   [options]
   (if-let [secret-key (:key options)]
     (if (string? secret-key)
-      (.getBytes ^String secret-key)
+      (do (print-string-secret-key-deprecation)
+          (.getBytes ^String secret-key))
       secret-key)
     (random/bytes 16)))
 
@@ -104,10 +110,10 @@
 (defn cookie-store
   "Creates an encrypted cookie storage engine. Accepts the following options:
 
-  :key - The secret key to encrypt the session cookie. Must be exactly 16 bytes
-         If no key is provided then a random key will be generated. Note that in
-         that case a server restart will invalidate all existing session
-         cookies.
+  :key - The secret key to encrypt the session cookie. Must be a byte array of
+         exactly 16 bytes. If no key is provided then a random key will be
+         generated. Note that in that case a server restart will invalidate all
+         existing session cookies.
 
   :readers - A map of data readers used to read the serialized edn from the
              cookie. For writing, ensure that each data type has a key in the
