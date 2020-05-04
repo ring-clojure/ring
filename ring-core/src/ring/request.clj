@@ -12,8 +12,10 @@
   [request]
   (-body-stream (::body request) request))
 
-(defn- get-charset [request]
-  (when-let [content-type (-> request ::headers (get "content-type"))]
+(defn charset
+  "Given a request map, return the charset of the content-type header."
+  [request]
+  (when-let [content-type (get-header request "content-type")]
     (second (re-find parsing/re-charset content-type))))
 
 (extend-protocol StreamableRequestBody
@@ -24,8 +26,8 @@
   String
   (-body-stream [^String s request]
     (java.io.ByteArrayInputStream.
-     (if-let [charset (get-charset request)]
-       (.getBytes s charset)
+     (if-let [encoding (charset request)]
+       (.getBytes s encoding)
        (.getBytes s))))
   nil
   (-body-stream [_ _] nil))

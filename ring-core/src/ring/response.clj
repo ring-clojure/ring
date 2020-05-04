@@ -14,13 +14,15 @@
   [response output-stream]
   (-write-body-to-stream (::body response) response output-stream))
 
-(defn- get-charset [request]
-  (when-let [content-type (-> request ::headers (get "content-type"))]
+(defn charset
+  "Given a response map, return the charset of the content-type header."
+  [response]
+  (when-let [content-type (-> response headers (get "content-type"))]
     (second (re-find parsing/re-charset content-type))))
 
 (defn- ^java.io.Writer response-writer [response output-stream]
-  (if-let [charset (get-charset response)]
-    (io/writer output-stream :encoding charset)
+  (if-let [encoding (charset response)]
+    (io/writer output-stream :encoding encoding)
     (io/writer output-stream)))
 
 (extend-protocol StreamableResponseBody
