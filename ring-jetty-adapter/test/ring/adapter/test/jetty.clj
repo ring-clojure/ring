@@ -284,13 +284,28 @@
                                 :send-server-version? false}
         (let [response (http/get test-url)]
           (is (not (contains? (:headers response) "Server")))))))
-
   (testing "excluding cipher suites"
     (let [cipher  "SSL_RSA_WITH_NULL_MD5"
           options (assoc test-ssl-options :exclude-ciphers [cipher])
           server  (run-jetty echo-handler options)]
       (try
         (is (contains? (exclude-ciphers server) cipher))
+        ;; The operation is additive; it doesn't replace ciphers that Jetty
+        ;; excludes by default
+        (is (> (count (exclude-ciphers server)) 1))
+        (finally
+          (.stop server)))))
+
+  (testing "replacing excluded cipher suites"
+    (let [cipher   "SSL_RSA_WITH_NULL_MD5"
+          options  (assoc test-ssl-options
+                          :exclude-ciphers [cipher]
+                          :replace-exclude-ciphers? true)
+          server   (run-jetty echo-handler options)
+          excludes (exclude-ciphers server)]
+      (try
+        (is (= (first excludes) cipher))
+        (is (= (seq (rest excludes)) nil))
         (finally
           (.stop server)))))
 
@@ -300,6 +315,22 @@
           server   (run-jetty echo-handler options)]
       (try
         (is (contains? (exclude-protocols server) protocol))
+        ;; The operation is additive; it doesn't replace protocols that Jetty
+        ;; excludes by default
+        (is (> (count (exclude-protocols server)) 1))
+        (finally
+          (.stop server)))))
+
+  (testing "replacing excluded cipher protocols"
+    (let [protocol "SSLv2Hello"
+          options  (assoc test-ssl-options
+                          :exclude-protocols [protocol]
+                          :replace-exclude-protocols? true)
+          server   (run-jetty echo-handler options)
+          excludes (exclude-protocols server)]
+      (try
+        (is (= (first excludes) protocol))
+        (is (= (seq (rest excludes)) nil))
         (finally
           (.stop server)))))
 
