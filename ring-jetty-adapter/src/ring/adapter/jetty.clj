@@ -79,10 +79,16 @@
       :need (.setNeedClientAuth context-server true)
       :want (.setWantClientAuth context-server true)
       nil)
-    (if-let [exclude-ciphers (options :exclude-ciphers)]
-      (.addExcludeCipherSuites context-server (into-array String exclude-ciphers)))
-    (if-let [exclude-protocols (options :exclude-protocols)]
-      (.addExcludeProtocols context-server (into-array String exclude-protocols)))
+    (when-let [exclude-ciphers (options :exclude-ciphers)]
+      (let [ciphers (into-array String exclude-ciphers)]
+        (if (options :replace-exclude-ciphers?)
+          (.setExcludeCipherSuites context-server ciphers)
+          (.addExcludeCipherSuites context-server ciphers))))
+    (when-let [exclude-protocols (options :exclude-protocols)]
+      (let [protocols (into-array String exclude-protocols)]
+        (if (options :replace-exclude-protocols?)
+          (.setExcludeProtocols context-server protocols)
+          (.addExcludeProtocols context-server protocols))))
     context-server))
 
 (defn- ^ServerConnector ssl-connector [server options]
@@ -140,8 +146,16 @@
   :ssl?                 - allow connections over HTTPS
   :ssl-port             - the SSL port to listen on (defaults to 443, implies
                           :ssl? is true)
-  :exclude-ciphers      - When :ssl? is true, exclude these cipher suites
-  :exclude-protocols    - When :ssl? is true, exclude these protocols
+  :exclude-ciphers      - when :ssl? is true, additionally exclude these
+                          cipher suites
+  :exclude-protocols    - when :ssl? is true, additionally exclude these
+                          protocols
+  :replace-exclude-ciphers?   - when true, :exclude-ciphers will replace rather
+                                than add to the cipher exclusion list (defaults
+                                to false)
+  :replace-exclude-protocols? - when true, :exclude-protocols will replace
+                                rather than add to the protocols exclusion list
+                                (defaults to false)
   :keystore             - the keystore to use for SSL connections
   :keystore-type        - the keystore type (default jks)
   :key-password         - the password to the keystore
