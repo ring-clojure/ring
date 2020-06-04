@@ -3,7 +3,11 @@
   body."
   (:require [ring.request :as request]
             [ring.util.codec :as codec]
-            [ring.util.request :as req]))
+            [ring.util.compat :as compat]))
+
+(defn- urlencoded-form? [request]
+  (if-let [^String type (request/get-header request "content-type")]
+    (.startsWith type "application/x-www-form-urlencoded")))
 
 (defn- parse-params [params encoding]
   (let [params (codec/form-decode params encoding)]
@@ -16,19 +20,19 @@
   (if-let [query (request/query request)]
     (let [params (parse-params query encoding)]
       (-> request
-          (update :query-params merge params)
-          (update :params merge params)))
+          (compat/modify-req update ::query-params merge params)
+          (compat/modify-req update ::params merge params)))
     request))
 
 (defn assoc-form-params
   "Parse and assoc parameters from the request body with the request."
   {:added "1.2"}
   [request encoding]
-  (if-let [body (and (req/urlencoded-form? request) (request/body request))]
+  (if-let [body (and (urlencoded-form? request) (request/body request))]
     (let [params (parse-params (slurp body :encoding encoding) encoding)]
       (-> request
-          (update :form-params merge params)
-          (update :params merge params)))
+          (compat/modify-req update ::form-params merge params)
+          (compat/modify-req update ::params merge params)))
     request))
 
 (defn params-request
@@ -40,9 +44,9 @@
   ([request options]
    (let [encoding (or (:encoding options) (request/charset request) "UTF-8")]
      (-> request
-         (cond-> (nil? (:form-params request))
+         (cond-> (and (nil? (compat/get-req request ::form-params)))
            (assoc-form-params encoding))
-         (cond-> (nil? (:query-params request))
+         (cond-> (and (nil? (compat/get-req request ::query-params)))
            (assoc-query-params encoding))))))
 
 (defn wrap-params
@@ -50,9 +54,12 @@
   body (if the request is a url-encoded form). Adds the following keys to
   the request map:
 
-  :query-params - a map of parameters from the query string
-  :form-params  - a map of parameters from the body
-  :params       - a merged map of all types of parameter
+  ::query-params - a map of parameters from the query string
+  ::form-params  - a map of parameters from the body
+  ::params       - a merged map of all types of parameter
+
+  For Ring 1 request maps, these keys will not have namespaces. For Ring 2,
+  they will be fully qualified.
 
   Accepts the following options:      
 

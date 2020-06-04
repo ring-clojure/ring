@@ -6,14 +6,15 @@
 (def wrapped-echo (wrap-params identity))
 
 (deftest wrap-params-query-params-only
-  (let [req  {:query-string "foo=bar&biz=bat%25"}
+  (let [req  {:request-method :get, :query-string "foo=bar&biz=bat%25"}
         resp (wrapped-echo req)]
     (is (= {"foo" "bar" "biz" "bat%"} (:query-params resp)))
     (is (empty? (:form-params resp)))
     (is (= {"foo" "bar" "biz" "bat%"} (:params resp)))))
 
 (deftest wrap-params-query-and-form-params
-  (let [req  {:query-string "foo=bar"
+  (let [req  {:request-method :post
+              :query-string "foo=bar"
               :headers      {"content-type" "application/x-www-form-urlencoded"}
               :body         (string-input-stream "biz=bat%25")}
         resp (wrapped-echo req)]
@@ -22,14 +23,16 @@
     (is (= {"foo" "bar" "biz" "bat%"} (:params resp)))))
 
 (deftest wrap-params-not-form-encoded
-  (let [req  {:headers {"content-type" "application/json"}
-              :body    (string-input-stream "{foo: \"bar\"}")}
+  (let [req  {:request-method :post
+              :headers        {"content-type" "application/json"}
+              :body           (string-input-stream "{foo: \"bar\"}")}
         resp (wrapped-echo req)]
     (is (empty? (:form-params resp)))
     (is (empty? (:params resp)))))
 
 (deftest wrap-params-always-assocs-maps
-  (let [req  {:query-string ""
+  (let [req  {:request-method :post
+              :query-string ""
               :headers      {"content-type" "application/x-www-form-urlencoded"}
               :body         (string-input-stream "")}
         resp (wrapped-echo req)]
@@ -38,17 +41,24 @@
     (is (= {} (:params resp)))))
 
 (deftest wrap-params-encoding
-  (let [req  {:headers {"content-type" "application/x-www-form-urlencoded;charset=UTF-16"}
-              :body (string-input-stream "hello=world" "UTF-16")}
+  (let [req  {:request-method :post
+              :headers
+              {"content-type"
+               "application/x-www-form-urlencoded;charset=UTF-16"}
+              :body
+              (string-input-stream "hello=world" "UTF-16")}
         resp (wrapped-echo req)]
     (is (= (:params resp) {"hello" "world"}))
     (is (= (:form-params resp) {"hello" "world"}))))
 
 (deftest wrap-params-cps-test
   (let [handler   (wrap-params (fn [req respond _] (respond req)))
-        request   {:query-string "foo=bar"
-                   :headers      {"content-type" "application/x-www-form-urlencoded"}
-                   :body         (string-input-stream "biz=bat%25")}
+        request   {:request-method :get
+                   :query-string   "foo=bar"
+                   :headers
+                   {"content-type" "application/x-www-form-urlencoded"}
+                   :body
+                   (string-input-stream "biz=bat%25")}
         response  (promise)
         exception (promise)]
     (handler request response exception)
