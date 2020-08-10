@@ -75,6 +75,8 @@
       (.setTrustStore context-server ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
       (.setTrustStorePassword context-server (options :trust-password)))
+    (when (options :ssl-context)
+      (.setSslContext context-server (options :ssl-context)))
     (case (options :client-auth)
       :need (.setNeedClientAuth context-server true)
       :want (.setWantClientAuth context-server true)
@@ -146,6 +148,7 @@
   :ssl?                 - allow connections over HTTPS
   :ssl-port             - the SSL port to listen on (defaults to 443, implies
                           :ssl? is true)
+  :ssl-context          - an optional SSLContext to use for SSL connections
   :exclude-ciphers      - when :ssl? is true, additionally exclude these
                           cipher suites
   :exclude-protocols    - when :ssl? is true, additionally exclude these

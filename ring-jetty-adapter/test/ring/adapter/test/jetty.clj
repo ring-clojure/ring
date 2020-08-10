@@ -3,6 +3,7 @@
             [ring.adapter.jetty :refer :all]
             [clj-http.client :as http]
             [clojure.java.io :as io]
+            [less.awful.ssl :as less-ssl]
             [ring.core.protocols :as p])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
@@ -34,6 +35,11 @@
 
 (defn- all-threads []
   (.keySet (Thread/getAllStackTraces)))
+
+(defn ssl-context []
+  (less-ssl/ssl-context "test/server.key"
+                        "test/server.crt"
+                        "test/server.crt"))
 
 (defmacro with-server [app options & body]
   `(let [server# (run-jetty ~app ~(assoc options :join? false))]
@@ -142,6 +148,49 @@
     (with-server client-cert-handler {:client-auth :want
                                       :keystore "test/keystore.jks"
                                       :key-password "password"
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :throw-exceptions false})]
+        (is (= 403 (:status response))
+            "missing client certs will result in 403 from handler"))
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
+
+  (testing "HTTPS server using :ssl-context"
+    (with-server hello-world {:port test-port
+                              :ssl-port test-ssl-port
+                              :ssl-context (ssl-context)}
+      (let [response (http/get test-ssl-url {:insecure? true})]
+        (is (= (:status response) 200))
+        (is (= (:body response) "Hello World")))))
+
+  (testing "HTTPS server using :ssl-context that needs client certs"
+    (with-server client-cert-handler {:client-auth :need
+                                      :ssl-context (ssl-context)
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (is (thrown? java.io.IOException
+                   (http/get test-ssl-url {:insecure? true}))
+          "missing client certs will cause an exception")
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
+
+  (testing "HTTPS server using :ssl-context that wants client certs"
+    (with-server client-cert-handler {:client-auth :want
+                                      :ssl-context (ssl-context)
                                       :port test-port
                                       :ssl? true
                                       :ssl-port test-ssl-port}
