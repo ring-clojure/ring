@@ -447,6 +447,12 @@
     (error-cps request respond raise)
     (hello-world-cps request respond raise)))
 
+(defn- hello-world-slow-cps [request respond raise]
+  (future (Thread/sleep 1000)
+          (respond {:status  200
+                    :headers {"Content-Type" "text/plain"}
+                    :body    "Hello World"})))
+
 (deftest run-jetty-cps-test
   (testing "async response in future"
     (reset! thread-exceptions [])
@@ -496,7 +502,46 @@
     (with-server hello-world-streaming-long {:port test-port, :async? true}
       (let [response (http/get test-url)]
         (is (= (:body response)
-               (apply str (for [i (range 10)] (str "data: " i "\n\n")))))))))
+               (apply str (for [i (range 10)] (str "data: " i "\n\n"))))))))
+
+  (testing "async timeout handler"
+    (testing "when no timeout handler is passed, behaviour is unchanged"
+      (with-server hello-world-slow-cps {:port test-port
+                                         :async? true
+                                         :async-timeout 250}
+        (let [response (http/get test-url {:throw-exceptions false})]
+          (is (= (:status response)
+                 500)))))
+
+    (testing "with timeout handlers, ring-style responses are generated"
+      (with-server hello-world-slow-cps
+        {:port test-port
+         :async? true
+         :async-timeout 200
+         :async-timeout-handler (fn [request respond raise]
+                                  (respond
+                                   {:status 503
+                                    :headers {"Content-Type" "text/plain"}
+                                    :body "Request timed out"}))}
+        (let [response (http/get test-url {:throw-exceptions false})]
+          (is (= (:body response)
+                 "Request timed out"))
+          (is (= (:status response)
+                 503))))
+
+      (with-server hello-world-slow-cps
+        {:port test-port
+         :async? true
+         :async-timeout 200
+         :async-timeout-handler (fn [request respond raise]
+                                  (raise
+                                   (ex-info "An exception was thrown" {})))}
+        (let [response (http/get (str test-url "/test-path/testing")
+                                 {:throw-exceptions false})]
+          (is (.contains ^String (:body response)
+                         "An exception was thrown"))
+          (is (= (:status response)
+                 500)))))))
 
 (def call-count (atom 0))
 
