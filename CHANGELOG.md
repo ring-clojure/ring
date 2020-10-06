@@ -1,3 +1,7 @@
+## 1.8.2 (2020-10-06)
+
+* Updated Jetty to 9.4.31.v20200723 (#411)
+
 ## 1.8.1 (2020-05-02)
 
 * Deprecated string secret keys for cookie session stores
