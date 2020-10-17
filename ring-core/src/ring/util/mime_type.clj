@@ -89,6 +89,7 @@
    "webm"     "video/webm"
    "wmv"      "video/x-ms-wmv"
    "woff"     "font/woff"
+   "woff2"    "font/woff2"
    "xbm"      "image/x-xbitmap"
    "xls"      "application/vnd.ms-excel"
    "xml"      "text/xml"
