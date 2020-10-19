@@ -15,7 +15,7 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
-           [org.eclipse.jetty.util.ssl SslContextFactory$Server]
+           [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
            [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
@@ -120,9 +120,11 @@
                         (.setSecureScheme "https")
                         (.setSecurePort ssl-port)
                         (.addCustomizer (SecureRequestCustomizer.))))
-        ssl-factory  (SslConnectionFactory.
-                      (ssl-context-factory options)
-                      "http/1.1")]
+        ssl-context  (ssl-context-factory options)
+        ssl-factory  (SslConnectionFactory. ssl-context "http/1.1")]
+    (when-let [scan-interval (options :keystore-scan-interval)]
+      (.addBean server (doto (KeyStoreScanner. ssl-context)
+                         (.setScanInterval scan-interval))))
     (doto (server-connector server ssl-factory http-factory)
       (.setPort ssl-port)
       (.setHost (options :host))
@@ -183,6 +185,8 @@
   :keystore             - the keystore to use for SSL connections
   :keystore-type        - the keystore type (default jks)
   :key-password         - the password to the keystore
+  :keystore-scan-interval - if not nil, the interval in seconds to scan for an
+                            updated keystore
   :truststore           - a truststore to use for SSL connections
   :trust-password       - the password to the truststore
   :max-threads          - the maximum number of threads to use (default 50)
