@@ -10,7 +10,10 @@
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [java.net ServerSocket ConnectException]
-           [java.security KeyStore]))
+           [java.security KeyStore]
+           [java.io SequenceInputStream ByteArrayInputStream InputStream
+                    IOException]
+           [org.apache.http MalformedChunkCodingException]))
 
 (defn- hello-world [request]
   {:status  200
@@ -394,6 +397,46 @@
               (Thread/sleep 250)
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
+
+(defn- chunked-stream-with-error
+  ([request]
+   {:status  200
+    :headers {"Transfer-Encoding" "chunked"}
+    :body    (SequenceInputStream.
+               (ByteArrayInputStream. (.getBytes (str (range 100000)) "UTF-8"))
+               (proxy [InputStream] []
+                 (read
+                   ([] (throw (IOException. "test error")))
+                   ([^bytes _] (throw (IOException. "test error")))
+                   ([^bytes _ _ _] (throw (IOException. "test error"))))))})
+  ([request response raise]
+   (response (chunked-stream-with-error request))))
+
+(defn- chunked-lazy-seq-with-error
+  ([request]
+   {:status  200
+    :headers {"Transfer-Encoding" "chunked"}
+    :body    (lazy-cat (range 100000)
+                       (throw (IOException. "test error")))})
+  ([request response raise]
+   (response (chunked-lazy-seq-with-error request))))
+
+(deftest streaming-with-error
+  (testing "chunked stream without sending termination chunk on error"
+    (with-server chunked-stream-with-error {:port test-port}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "chunked sequence without sending termination chunk on error"
+    (with-server chunked-lazy-seq-with-error {:port test-port}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "async chunked stream without sending termination chunk on error"
+    (with-server chunked-stream-with-error {:port test-port :async? true}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "async chunked sequence without sending termination chunk on error"
+    (with-server chunked-lazy-seq-with-error {:port test-port :async? true}
+      (is (thrown? MalformedChunkCodingException (http/get test-url))))))
 
 (def thread-exceptions (atom []))
 
