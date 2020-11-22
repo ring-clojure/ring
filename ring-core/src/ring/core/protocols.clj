@@ -42,5 +42,5 @@
     (io/copy body output-stream)
     (.close output-stream))
   nil
-  (write-body-to-stream [_ _ ^java.io.OutputStream output-stream]
+  (write-body-to-stream [_ _ ^OutputStream output-stream]
     (.close output-stream)))

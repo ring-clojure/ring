@@ -2,9 +2,101 @@
   "Middleware that handles HTTP range requests"
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.spec.alpha :as s]
+            [ring.core.protocols :refer :all]
             [ring.middleware.content-type :refer [content-type-response]]
             [ring.util.response :refer [status get-header header]])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream File IOException InputStream RandomAccessFile]))
+
+(def has-at-least-one-digit (s/+ #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9}))
+(def optional-whitespace (s/* #{\space \tab}))
+
+(def range-unit "bytes")
+(s/def ::bytes-unit (s/cat :b #{\b}
+                           :y #{\y}
+                           :t #{\t}
+                           :e #{\e}
+                           :s #{\s}))
+(s/def ::acceptable-ranges #{(seq range-unit) (seq "none")})
+(s/def ::first-byte-pos has-at-least-one-digit)
+(s/def ::last-byte-pos has-at-least-one-digit)
+(s/def ::complete-length has-at-least-one-digit)
+(s/def ::byte-content-range (s/cat :bytes-unit ::bytes-unit
+                                   :space #{\space}
+                                   :range (s/or :byte-range-resp ::byte-range-resp
+                                                :unsatisfied-range ::unsatisfied-range)))
+(s/def ::byte-range (s/cat :first-byte-pos ::first-byte-pos
+                           :dash #{\-}
+                           :last-byte-pos ::last-byte-pos))
+(s/def ::byte-range-resp (s/cat :byte-range ::byte-range
+                                :slash #{\/}
+                                :length (s/or :complete-length ::complete-length
+                                              :star #{\*})))
+(s/def ::byte-range-set (s/cat :pre-ranges (s/* (s/cat :comma #{\,}
+                                                       :optional-whitespace optional-whitespace))
+                               :first-byte-range (s/or :byte-range-spec ::byte-range-spec
+                                                       :suffix-byte-range-spec ::suffix-byte-range-spec)
+                               :rest-of-byte-ranges (s/* (s/cat :optional-whitespace optional-whitespace
+                                                                :comma #{\,}
+                                                                :ranges (s/cat :optional-whitespace optional-whitespace
+                                                                               :spec (s/or :byte-range-spec ::byte-range-spec
+                                                                                           :suffix-byte-range-spec ::suffix-byte-range-spec))))))
+(comment
+  (s/conform ::byte-range-set (seq ",  "))
+  (s/conform (s/cat :a (s/or :a #{\a})))
+  (s/conform (s/cat :top (s/+ #{0 1 2 3 4}))
+             [0 1 2 3])
+  (s/conform (s/cat :foo (s/or :test (s/+ #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
+                          :test2 (s/+ #{\a \b \c \d})))
+             (seq "0123"))
+  (s/conform (s/cat :first-range
+                    (s/or
+                      :test (s/+ #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9}))
+                    #_(s/or :bytes (s/+ #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9})
+                                       :suffix #{\b}))
+             [\2 \3])
+  (s/conform ::byte-range-set (seq "34-45,67-89"))
+  (s/conform (s/or :suffix ::suffix-byte-range-spec
+                   :byte-range ::byte-range-spec)
+             (seq "34-56"))
+  (s/conform (s/cat :lol (s/or :a (s/+ #{\1 \2 \3})
+                               :b #{\b}))
+             [\1]
+             )
+  (s/conform (s/cat :a (s/+ (s/cat :b #{\a \b \c})))
+             [\a \b])
+  (s/conform (s/cat :a (s/+ (s/cat :b (s/or :abc #{\a \b \c}
+                                            :num #{\1 \2 \3}))))
+             [\a \b])
+  (s/conform (s/cat :a (s/cat :b (s/+ #{\a \b \c})))
+             [\a \b]
+             #_[[\a] [\b]])
+  (s/conform (s/cat :first-byte-range (s/or
+                                        :byte-range ::byte-range-spec
+                                        :suffix ::suffix-byte-range-spec))
+             (seq "56-"))
+  (s/conform (s/or ::byte-range-spec ::suffix-byte-range-spec) (seq "-56"))
+  (s/conform ::suffix-byte-range-spec (seq "-56"))
+  (s/conform ::byte-range-set (seq "-56"))
+  (s/conform ::byte-range-set (seq "34-56,-5")))
+(s/def ::byte-range-spec (s/cat :first-byte-pos ::first-byte-pos
+                                :dash #{\-}
+                                :last-byte-pos (s/? ::last-byte-pos)))
+(s/def ::byte-ranges-specifier (s/cat :bytes-unit ::bytes-unit
+                                      :equals #{\=}
+                                      :byte-range-set ::byte-range-set))
+(s/def ::suffix-length has-at-least-one-digit)
+(s/def ::suffix-byte-range-spec (s/cat :dash #{\-}
+                                       :digits has-at-least-one-digit))
+(s/def ::unsatisfied-range (s/cat :star #{\*}
+                                  :slash #{\/}
+                                  :length ::complete-length))
+
+(comment
+  (header-value->ranges "bytes=34-56")
+  (header-value->ranges "bytes=34-56, -5")
+  )
+
 
 (defn- char-range
   [start end]
@@ -17,11 +109,12 @@
                                            (take 30)
                                            (map #(nth boundary-chars %))
                                            (apply str))))
-(def range-unit "bytes")
 
 (defn header-value->ranges
   [^String header-value]
-  (when (.startsWith header-value (str range-unit "="))
+  (let [result (s/conform ::byte-ranges-specifier (seq header-value))]
+    result)
+  #_(when (.startsWith header-value (str range-unit "="))
     (let [rest (-> header-value
                    (subs (count range-unit))
                    ;; get rid of equal sign
@@ -141,7 +234,7 @@
     (if (and (= 200 (:status response))
              (= :get (:request-method request))
              (some? range-header))
-      (let [body (convert-body-to-bytearray-or-file! (:body response))
+      (let [ body (convert-body-to-bytearray-or-file! (:body response))
             body-length (cond
                           (is-bytes? body)
                           (alength body)
