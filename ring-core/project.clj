@@ -9,8 +9,7 @@
                  [commons-io "2.6"]
                  [commons-fileupload "1.4"]
                  [crypto-random "1.2.0"]
-                 [crypto-equality "1.0.0"]
-                 [instaparse "1.4.10" :exclusions [org.clojure/clojure]]]
+                 [crypto-equality "1.0.0"]]
             :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}

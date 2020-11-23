@@ -2,59 +2,10 @@
   "Middleware that handles HTTP range requests"
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [instaparse.core :as insta]
             [ring.core.protocols :refer :all]
             [ring.middleware.content-type :refer [content-type-response]]
             [ring.util.response :refer [status get-header header]])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream File IOException InputStream RandomAccessFile]))
-
-(def header-value-parser
-  (insta/parser
-    "S=byte-ranges-specifier
-     Accept-Ranges = acceptable-ranges
-     Content-Range = byte-content-range
-     OWS = #\"[ \t]*\"
-     Range = byte-ranges-specifier
-     acceptable-ranges = ( (\",\" OWS)* range-unit (OWS \",\" (OWS range-unit)?)* ) | \"none\"
-     byte-content-range = bytes-unit \" \" ( byte-range-resp | unsatisfied-range )
-     byte-range = first-byte-pos \"-\" last-byte-pos
-     byte-range-resp = byte-range \"/\" (complete-length | \"*\")
-     byte-range-set = (\",\" OWS)* (byte-range-spec | suffix-byte-range-spec) ( OWS \",\" (OWS (byte-range-spec | suffix-byte-range-spec))? )*
-     byte-range-spec = first-byte-pos \"-\" last-byte-pos?
-     byte-ranges-specifier = bytes-unit \"=\" byte-range-set
-     bytes-unit = \"bytes\"
-     complete-length = #\"\\d+\"
-     first-byte-pos = #\"\\d+\"
-     last-byte-pos = #\"\\d+\"
-     range-unit = bytes-unit
-     suffix-byte-range-spec = \"-\" suffix-length
-     suffix-length = #\"\\d+\"
-     unsatisfied-range = \"*/\" complete-length"
-    :output-format :hiccup))
-
-(defn- get-hiccup-children-by-tags
-  [tags hiccup]
-  {:pre [(set? tags)]}
-  (when (vector? hiccup)
-    (let [children (subvec hiccup 1)]
-      (filter #(contains? tags (first %)) children))))
-
-(defn header-value->ranges
-  [^String header-value]
-  (let [output (header-value-parser header-value)]
-    (when-not (insta/failure? output)
-      (->> output
-           (get-hiccup-children-by-tags #{:byte-ranges-specifier})
-           (mapcat #(get-hiccup-children-by-tags #{:byte-range-set} %))
-           (mapcat #(get-hiccup-children-by-tags #{:byte-range-spec :suffix-byte-range-spec} %))
-           (map (fn [range-spec]
-                  (let [tags (case (first range-spec)
-                               :byte-range-spec #{:first-byte-pos :last-byte-pos}
-                               :suffix-byte-range-spec #{:suffix-length})]
-                    (->> (get-hiccup-children-by-tags tags range-spec)
-                         (map (fn [[position-type num]] [position-type (Long/parseLong num)]))
-                         (into {})))))
-           (sort-by (juxt :suffix-length :first-byte-pos :last-byte-pos))))))
+  (:import [java.io ByteArrayOutputStream File IOException InputStream OutputStream RandomAccessFile]))
 
 (defn- char-range
   [start end]
@@ -68,88 +19,214 @@
                                            (map #(nth boundary-chars %))
                                            (apply str))))
 
-(defn parse-ranges
-  "If all byte ranges are valid and not overlapping, returns absolute byte offsets in order from smallest start/end
-  offset to largest. Returns nil otherwise.
-  Valid means the byte offsets in the ranges are within the body length."
-  [header-value body-length]
-  (let [ranges (header-value->ranges header-value)]
-    (when (some? ranges)
-      (let [last-byte-index (- body-length 1)
-            transformed-ranges (map (fn [{:keys [start end]}]
-                                      (cond
-                                        (and (some? start) (some? end))
-                                        [(and (<= 0 start last-byte-index)
-                                              (<= 0 end last-byte-index))
-                                         {:start start
-                                          :end (inc end)}]
+(def optional-whitespace "[ \\t]*")
+(def at-least-one-digit "\\d+")
 
-                                        (and (some? start) (not (some? end)))
-                                        (let [actual-start (cond-> start
-                                                                   (neg? start) (+ body-length))]
-                                          [(and (<= 0 actual-start last-byte-index))
-                                           {:start actual-start
-                                            :end (inc last-byte-index)}])
+(def first-byte-pos (str "(" at-least-one-digit ")"))
+(def last-byte-pos (str "(" at-least-one-digit ")"))
+(def byte-range-spec (str "(?:" first-byte-pos "\\-" (format "(?:%s)?" last-byte-pos) ")"))
 
-                                        :else
-                                        [false
-                                         nil]))
-                                    ranges)
-            ranges-valid? (every? #(-> % (first) (true?)) transformed-ranges)]
-        (when ranges-valid?
-          (let [sorted-ranges (->> transformed-ranges
-                                   (map second)
-                                   (sort-by (juxt :start :end)))
-                no-overlapping-ranges? (every? (fn [idx]
-                                                 (let [prev-range (nth sorted-ranges idx)
-                                                       next-range (nth sorted-ranges (inc idx))]
-                                                   (<= (:end prev-range) (:start next-range))))
-                                               (-> sorted-ranges (count) (- 1) (range)))]
-            (when no-overlapping-ranges?
-              sorted-ranges)))))))
+(def suffix-length (str "(" at-least-one-digit ")"))
+(def suffix-byte-range-spec (str "(?:\\-" suffix-length ")"))
+(def byte-or-suffix-byte-range-spec (format "(?:%s|%s)" byte-range-spec suffix-byte-range-spec))
+(def byte-range-set (str (format "(?:,%s)*" optional-whitespace)
+                         byte-or-suffix-byte-range-spec
+                         (format "(?:%s,(?:%s%s)?)*"
+                                 optional-whitespace
+                                 optional-whitespace
+                                 byte-or-suffix-byte-range-spec)))
+(def bytes-unit "bytes")
+(def byte-ranges-specifier (str bytes-unit "=" byte-range-set))
 
-(defn- is-bytes?
-  "bytes? was added in Clojure 1.9 so adding an implementation here for backwards compatibility"
+(def byte-or-suffix-byte-range-spec-regex (re-pattern byte-or-suffix-byte-range-spec))
+(def byte-ranges-specifier-regex (re-pattern byte-ranges-specifier))
+
+(defn- maybe-parse-long
   [x]
-  (if (nil? x)
-    false
-    (= (.getClass x) (Class/forName "[B"))))
+  (some-> x (Long/parseLong)))
 
-(defn body-byte-range->string
-  "Given a byte array or File body, gets the bytes specified between `start-offset` (inclusive)
-  and `end-offset` (exclusive)."
-  [body start-offset end-offset]
-  {:post [(string? %)]}
-  (cond
-    (is-bytes? body)
-    (->> (range start-offset end-offset)
-         (map #(aget body %))
-         (byte-array)
-         (String.))
+(defn header-value->ranges
+  [^String header-value]
+  (when (and (some? header-value)
+             (some? (re-matches byte-ranges-specifier-regex header-value)))
+    (->> (re-seq byte-or-suffix-byte-range-spec-regex header-value)
+         (map (fn [[_ first-byte-pos last-byte-pos suffix-byte-length]]
+                {:first-byte-pos (maybe-parse-long first-byte-pos)
+                 :last-byte-pos (maybe-parse-long last-byte-pos)
+                 :suffix-byte-length (maybe-parse-long suffix-byte-length)})))))
 
-    (instance? File body)
-    (with-open [random-access-file (RandomAccessFile. ^File body "r")]
-      (let [byte-arr (byte-array (- end-offset start-offset))
-            length (- end-offset start-offset)]
-        (.seek random-access-file start-offset)
-        (.read random-access-file byte-arr 0 length)
-        (String. byte-arr)))
+(defn sort-byte-ranges
+  [ranges]
+  (sort-by (juxt :suffix-byte-length :first-byte-pos :last-byte-pos) ranges))
 
-    :else
-    (throw (IOException. (str "cannot get bytes from body type: " (type body))))))
+(defn suffix-byte-range?
+  [{:keys [suffix-byte-length] :as range}]
+  (int? suffix-byte-length))
 
-(defn convert-body-to-bytearray-or-file!
-  [body]
-  {:post [(or (is-bytes? %) (instance? File %))]}
-  (cond
-    (string? body) (.getBytes body)
-    (seq? body) (->> body (apply str) (.getBytes))
-    (instance? File body) body
-    (instance? InputStream body) (with-open [output-stream (ByteArrayOutputStream.)]
-                                   (io/copy body output-stream)
-                                   (.toByteArray output-stream))
+(defn open-ended-byte-range?
+  [{:keys [first-byte-pos last-byte-pos] :as range}]
+  (and (int? first-byte-pos)
+       (nil? last-byte-pos)))
 
-    :else (throw (IOException. "unknown body type: " (type body)))))
+(defn range->start-byte
+  [{:keys [first-byte-pos last-byte-pos suffix-byte-length] :as range} total-body-length]
+  (if (suffix-byte-range? range)
+    (- total-body-length suffix-byte-length)
+    first-byte-pos))
+
+(defn range->end-byte
+  [{:keys [first-byte-pos last-byte-pos suffix-byte-length]} total-body-length]
+  (if (int? last-byte-pos)
+    last-byte-pos
+    (dec total-body-length)))
+
+(defn has-nonoverlapping-ranges-except-for-last-suffix-range?
+  "Checks that ranges are not overlapping, EXCEPT for the case where a suffix range is given.
+  Because the body is parsed a stream, the total length is unknown and so it is known if the suffix bytes
+  will overlap with the other given ranges.
+
+  Checks that the other ranges are not overlapping. That also means at most one of a suffix byte range or
+  open-ended byte range can exist."
+  [ranges]
+  (let [sorted-ranges (sort-byte-ranges ranges)]
+    (and (not (empty? ranges))
+         (every? (fn [{:keys [first-byte-pos last-byte-pos suffix-byte-length]}]
+                   (or (and (int? first-byte-pos)
+                            (int? last-byte-pos)
+                            (<= first-byte-pos last-byte-pos))
+                       (int? first-byte-pos)
+                       (int? suffix-byte-length)))
+                 sorted-ranges)
+         (every? (fn [idx]
+                   (let [prev-range (nth ranges idx)
+                         next-range (nth ranges (inc idx))]
+                     (not (and (or (open-ended-byte-range? prev-range)
+                                   (suffix-byte-range? prev-range))
+                               (or (open-ended-byte-range? next-range)
+                                   (suffix-byte-range? next-range))))))
+                 (->> ranges (count) (dec) (range))))))
+
+(defn parse-ranges
+  [header-value]
+  (when-let [ranges (header-value->ranges header-value)]
+    (when (has-nonoverlapping-ranges-except-for-last-suffix-range? ranges)
+      ranges)))
+
+(defn response+ranges->bytes
+  [{:keys [body] :as response} ranges]
+  (let [byte-position-read (atom -1)
+        min-open-ended-range-start (->> ranges
+                                        (filter open-ended-byte-range?)
+                                        (map :first-byte-pos)
+                                        (sort)
+                                        (first))
+        open-ended-byte-range-stream (ByteArrayOutputStream.)
+
+        max-suffix-byte-range-length (->> ranges
+                                          (filter suffix-byte-range?)
+                                          (map :suffix-byte-length)
+                                          (sort)
+                                          (last))
+        suffix-byte-range-buffer (atom (vector))
+
+        other-ranges->bytes (->> ranges
+                                 (filter #(not (or (open-ended-byte-range? %)
+                                                   (suffix-byte-range? %))))
+                                 (map (fn [range]
+                                        [range (atom (vector))]))
+                                 (into {}))
+        handle-write (fn [^bytes byte-arr]
+                       (let [length (alength byte-arr)
+                             byte-arr-start-position (inc @byte-position-read)
+                             byte-arr-end-position (+ @byte-position-read length)]
+                         (when min-open-ended-range-start
+                           (cond
+                             ; bytes:    |-----
+                             ; range: |-------
+                             (>= byte-arr-start-position min-open-ended-range-start)
+                             (.write open-ended-byte-range-stream byte-arr)
+
+                             ; bytes: |---|
+                             ; range:   |-------
+                             (>= byte-arr-end-position min-open-ended-range-start byte-arr-start-position)
+                             (.write open-ended-byte-range-stream ^bytes (-> byte-arr
+                                                                             (vec)
+                                                                             (subvec (+ (dec length)
+                                                                                        min-open-ended-range-start
+                                                                                        (- byte-arr-end-position)))
+                                                                             (byte-array)))))
+                         (when max-suffix-byte-range-length
+                           (if (>= length max-suffix-byte-range-length)
+                             (reset! suffix-byte-range-buffer (-> byte-arr
+                                                                  (vec)
+                                                                  (subvec (- length max-suffix-byte-range-length))))
+                             (let [combined-length (+ (count @suffix-byte-range-buffer) length)]
+                               (if (> combined-length max-suffix-byte-range-length)
+                                 (do
+                                   (swap! suffix-byte-range-buffer subvec (- combined-length max-suffix-byte-range-length))
+                                   (swap! suffix-byte-range-buffer concat byte-arr))
+                                 (swap! suffix-byte-range-buffer concat byte-arr)))))
+                         (doseq [[{:keys [first-byte-pos last-byte-pos]} range-bytes-atom] other-ranges->bytes]
+                           (cond
+                             ; bytes: |---------|
+                             ; range:   |-----|
+                             (and (<= byte-arr-start-position first-byte-pos)
+                                  (<= last-byte-pos byte-arr-end-position))
+                             (reset! range-bytes-atom (-> byte-arr
+                                                          (vec)
+                                                          (subvec (- first-byte-pos byte-arr-start-position)
+                                                                  (inc (- last-byte-pos byte-arr-start-position)))))
+
+                             ; bytes: |-----|
+                             ; range:   |-----|
+                             (and (<= byte-arr-start-position first-byte-pos byte-arr-end-position)
+                                  (<= first-byte-pos byte-arr-end-position last-byte-pos))
+                             (swap! range-bytes-atom concat (-> byte-arr
+                                                                (vec)
+                                                                (subvec (- first-byte-pos byte-arr-start-position))))
+                             ; bytes:    |-----|
+                             ; range:  |-----|
+                             ; OR
+                             ; bytes:    |--|
+                             ; range:  |------|
+                             (and (<= first-byte-pos byte-arr-start-position last-byte-pos)
+                                  (<= byte-arr-start-position last-byte-pos byte-arr-end-position))
+                             (swap! range-bytes-atom concat (-> byte-arr
+                                                                (vec)
+                                                                (subvec 0
+                                                                        (min length
+                                                                             (inc (- last-byte-pos @byte-position-read))))))))
+                         (reset! byte-position-read byte-arr-end-position)))
+        output-stream (proxy [OutputStream] []
+                        (write
+                          ([byte-arr]
+                           (handle-write byte-arr))
+                          ([byte-arr offset length]
+                           (handle-write (-> byte-arr
+                                             (vec)
+                                             (subvec offset (+ offset length))
+                                             (byte-array))))))]
+    (write-body-to-stream body response output-stream)
+    (when (every? (fn [{:keys [first-byte-pos last-byte-pos suffix-byte-length] :as range}]
+                    (cond
+                      (suffix-byte-range? range) (<= suffix-byte-length (inc @byte-position-read))
+                      (open-ended-byte-range? range) (<= first-byte-pos @byte-position-read)
+                      :else (<= last-byte-pos @byte-position-read)))
+                  ranges)
+      (let [open-ended-bytes (vec (.toByteArray open-ended-byte-range-stream))]
+        {:total-bytes-read (inc @byte-position-read)
+         :range-bytes (->> ranges
+                           (map (fn [{:keys [first-byte-pos last-byte-pos suffix-byte-length] :as range}]
+                                  [range (byte-array (cond
+                                                       (open-ended-byte-range? range)
+                                                       (subvec open-ended-bytes (- first-byte-pos min-open-ended-range-start))
+
+                                                       (suffix-byte-range? range)
+                                                       (subvec @suffix-byte-range-buffer (- max-suffix-byte-range-length suffix-byte-length))
+
+                                                       :else
+                                                       (byte-array @(get other-ranges->bytes range))))]))
+                           (into {}))}))))
 
 (defn range-header-response
   "Returns the original response if no Range header present or if the header is invalid or
@@ -163,46 +240,44 @@
     (if (and (= 200 (:status response))
              (= :get (:request-method request))
              (some? range-header))
-      (let [ body (convert-body-to-bytearray-or-file! (:body response))
-            body-length (cond
-                          (is-bytes? body)
-                          (alength body)
+      (let [ranges (header-value->ranges range-header)]
+        (if (has-nonoverlapping-ranges-except-for-last-suffix-range? ranges)
+          (if-let [{:keys [total-bytes-read range-bytes]} (response+ranges->bytes response ranges)]
+            (cond
+              (= 1 (count range-bytes))
+              (let [[range ^bytes bytes] (first range-bytes)]
+                (-> response
+                    (status 206)
+                    (header "Content-Length" (alength bytes))
+                    (header "Content-Range" (format "bytes %d-%d/%d"
+                                                    (range->start-byte range total-bytes-read)
+                                                    (range->end-byte range total-bytes-read)
+                                                    total-bytes-read))
+                    (assoc :body (String. bytes))))
 
-                          (instance? File body)
-                          (.length body)
-
-                          :else
-                          (throw (IOException. "cannot get length for body type: " (type body))))
-            ranges (parse-ranges range-header body-length)]
-        (cond
-          (= 1 (count ranges))
-          (let [{:keys [start end]} (first ranges)]
-            (-> response
-                (status 206)
-                (header "Content-Length" (- end start))
-                (header "Content-Range" (format "bytes %d-%d/%d" start (dec end) body-length))
-                (assoc :body (body-byte-range->string body start end))))
-
-          (< 1 (count ranges))
-          (let [response-with-content-type (content-type-response response request)
-                content-type (get-header response-with-content-type "Content-Type")
-                multipart-boundary-str (*boundary-generator*)
-                body (->> ranges
-                          (map (fn [{:keys [start end]}]
-                                 (str/join "\r\n" [(format "Content-Type: %s" content-type)
-                                                   (format "Content-Range: %d-%d/%d" start (dec end) body-length)
-                                                   ""
-                                                   (body-byte-range->string body start end)])))
-                          (str/join (format "\r\n--%s\r\n" multipart-boundary-str)))
-                body (str/join "\r\n" [(str "--" multipart-boundary-str)
-                                       body
-                                       (str "--" multipart-boundary-str "--")])]
-            (-> response-with-content-type
-                (status 206)
-                (header "Content-Length" (-> body (.getBytes) (alength)))
-                (header "Content-Type" (format "multipart/byteranges; boundary=%s" multipart-boundary-str))
-                (assoc :body body)))
-          :else
+              (< 1 (count range-bytes))
+              (let [response-with-content-type (content-type-response response request)
+                    content-type (get-header response-with-content-type "Content-Type")
+                    multipart-boundary-str (*boundary-generator*)
+                    body (->> range-bytes
+                              (map (fn [[range ^bytes bytes]]
+                                     (str/join "\r\n" [(format "Content-Type: %s" content-type)
+                                                       (format "Content-Range: %d-%d/%d"
+                                                               (range->start-byte range total-bytes-read)
+                                                               (range->end-byte range total-bytes-read)
+                                                               total-bytes-read)
+                                                       ""
+                                                       (String. bytes)])))
+                              (str/join (format "\r\n--%s\r\n" multipart-boundary-str)))
+                    body (str/join "\r\n" [(str "--" multipart-boundary-str)
+                                           body
+                                           (str "--" multipart-boundary-str "--")])]
+                (-> response-with-content-type
+                    (status 206)
+                    (header "Content-Length" (-> body (.getBytes) (alength)))
+                    (header "Content-Type" (format "multipart/byteranges; boundary=%s" multipart-boundary-str))
+                    (assoc :body body))))
+            response)
           response))
       response)))
 

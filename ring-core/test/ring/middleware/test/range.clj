@@ -17,65 +17,6 @@
   (testing "is random"
     (is (not= (*boundary-generator*) (*boundary-generator*)))))
 
-(deftest test-parse-ranges
-  (testing "single range"
-    (is (= [{:start 0 :end 500}]
-           (parse-ranges "bytes=0-499" 500)))
-    (is (nil? (parse-ranges "bytes=0-499" 499)))
-    (is (= [{:start 17 :end 35}]
-           (parse-ranges "bytes=17-34" 35)))
-    (is (nil? (parse-ranges "bytes=17-34" 16))))
-  (testing "first-byte-pos"
-    (is (= [{:start 1206 :end 1500}]
-           (parse-ranges "bytes=1206-" 1500)))
-    (is (nil? (parse-ranges "bytes=2934-" 2934)))
-    (is (= [{:start 2934 :end 2935}]
-           (parse-ranges "bytes=2934-" 2935))))
-  (testing "suffix-byte-range-spec"
-    (is (= [{:start 8988 :end 9000}]
-           (parse-ranges "bytes=-12" 9000)))
-    (is (= [{:start 4000 :end 9000}]
-           (parse-ranges "bytes=-5000" 9000)))
-    (is (= [{:start 0 :end 300}]
-           (parse-ranges "bytes=-300" 300)))
-    (is (nil? (parse-ranges "bytes=-300" 299))))
-  (testing "multiple ranges"
-    (is (= [{:start 0 :end 1}
-            {:start 4 :end 5}]
-           (parse-ranges "bytes=0-0,-1" 5)))
-    (is (= [{:start 0 :end 1}
-            {:start 2 :end 4}
-            {:start 4 :end 5}]
-           (parse-ranges "bytes=0-0,2-3,-1" 5)))
-    (is (nil? (parse-ranges "bytes=0-0,2-3,-1" 4)))
-
-    (is (= [{:start 5 :end 8}
-            {:start 34 :end 301}
-            {:start 400 :end 501}]
-           (parse-ranges "bytes=5-7,34-300,400-500" 600)))
-    (is (nil? (parse-ranges "bytes=5-7,34-300,400-500" 499)))
-
-    (testing "overlapping ranges"
-      (is (nil? (parse-ranges "bytes=100-,-400" 600)))
-      (is (= [{:start 100 :end 200}
-              {:start 200 :end 600}]
-             (parse-ranges "bytes=100-199,-400" 600)))
-      (is (nil? (parse-ranges "bytes=100-199,-401" 600))))
-
-    (testing "space between ranges"
-      (is (= [{:start 0 :end 1}
-              {:start 4 :end 5}]
-             (parse-ranges "bytes=0-0, -1" 5)))
-      (is (= [{:start 0 :end 14}
-              {:start 600 :end 3211}
-              {:start 8988 :end 9000}]
-             (parse-ranges "bytes=0-13,  600-3210,-12" 9000)))))
-  (testing "garbage input"
-    (is (nil? (parse-ranges "foo" 100)))
-    (is (nil? (parse-ranges "bar=1-10" 100)))
-    (is (nil? (parse-ranges "bytes1-10" 100)))
-    (is (nil? (parse-ranges "bytes=3" 100)))))
-
 (deftest wrap-range-header-single-range-test
   (let [response {:status 200
                   :body "a very long response with a lot of bytes"}
