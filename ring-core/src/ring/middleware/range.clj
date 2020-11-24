@@ -7,18 +7,6 @@
             [ring.util.response :refer [status get-header header]])
   (:import [java.io ByteArrayOutputStream OutputStream]))
 
-(defn- char-range
-  [start end]
-  (map char (range (int start) (inc (int end)))))
-
-(def boundary-chars (vec (concat (char-range \A \Z) (char-range \a \z) (char-range \0 \9))))
-
-(def ^:dynamic *boundary-generator* (fn []
-                                      (->> (repeatedly #(rand-int (count boundary-chars)))
-                                           (take 30)
-                                           (map #(nth boundary-chars %))
-                                           (apply str))))
-
 (def optional-whitespace "[ \\t]*")
 (def at-least-one-digit "\\d+")
 
@@ -273,7 +261,7 @@
                                    (into {}))}]))))
 
 (defn response+range-bytes->complete-response
-  [response {:keys [total-bytes-read range-to-bytes-map]}]
+  [boundary-generator-fn response {:keys [total-bytes-read range-to-bytes-map]}]
   (cond
     (= 1 (count range-to-bytes-map))
     (let [[range ^bytes bytes] (first range-to-bytes-map)]
@@ -284,7 +272,7 @@
           (assoc :body (String. bytes))))
 
     (< 1 (count range-to-bytes-map))
-    (let [multipart-boundary-str (*boundary-generator*)
+    (let [multipart-boundary-str (boundary-generator-fn)
           body (->> range-to-bytes-map
                     (map (fn [[range ^bytes bytes]]
                            (str/join "\r\n" [(format "Content-Type: %s" (get-header response "Content-Type"))
@@ -308,7 +296,7 @@
   "Returns the original response if no Range header present or if the header is invalid.
   If one range is given, returns 206 with requested bytes in the body.
   If multiple ranges are requested, returns a 206 with a multipart/byteranges body."
-  [response request]
+  [response request {:keys [boundary-generator-fn]}]
   (let [response (header response "Accept-Ranges" "bytes")
         range-header (get-header request "Range")]
     (or (when (and (= 200 (:status response))
@@ -318,8 +306,20 @@
                    (validate-has-nonoverlapping-ranges)
                    (ensure-response-has-content-type-if-multirange response request)
                    (apply response+ranges->response+range-bytes)
-                   (apply response+range-bytes->complete-response)))
+                   (apply response+range-bytes->complete-response boundary-generator-fn)))
         response)))
+
+(defn- char-range
+  [start end]
+  (map char (range (int start) (inc (int end)))))
+
+(def boundary-chars (vec (concat (char-range \A \Z) (char-range \a \z) (char-range \0 \9))))
+
+(def boundary-generator (fn []
+                          (->> (repeatedly #(rand-int (count boundary-chars)))
+                               (take 30)
+                               (map #(nth boundary-chars %))
+                               (apply str))))
 
 (defn wrap-range-header
   "Middleware that attempts to fulfill the Range header in the request, if any.
@@ -328,12 +328,19 @@
   Otherwise, returns the original response.
 
   A single range is returned directly as bytes in the body. Multiple ranges are returned as a multipart/byteranges
-  response as per RFC7233."
-  [handler]
-  (fn
-    ([request]
-     (range-header-response (handler request) request))
-    ([request respond raise]
-     (handler request
-              (fn [response] (respond (range-header-response response request)))
-              raise))))
+  response as per RFC7233.
+
+  Accepts the following options:
+
+  :boundary-generator-fn - a function that returns a boundary string for multipart responses.
+                           Defaults to a randomly generated alphanumeric string"
+  ([handler] (wrap-range-header handler {:boundary-generator-fn boundary-generator}))
+  ([handler opts]
+   (let [filtered-opts (select-keys opts [:boundary-generator-fn])]
+     (fn
+       ([request]
+        (range-header-response (handler request) request filtered-opts))
+       ([request respond raise]
+        (handler request
+                 (fn [response] (respond (range-header-response response request filtered-opts)))
+                 raise))))))
