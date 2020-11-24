@@ -237,3 +237,12 @@
          (is false)
          (catch Exception _
            (is true)))))
+
+(deftest wrap-range-header-suffix-range-overlaps-another-closed-range
+  (let [response {:status 200
+                  :body "12345"
+                  :headers {"Content-Type" "font/woff"}}
+        handler (wrap-range-header (constantly response))]
+    (is (= (handler {:request-method :get
+                     :headers {"Range" "bytes=2-3, -4"}})
+           (assoc-in response [:headers "Accept-Ranges"] "bytes")))))

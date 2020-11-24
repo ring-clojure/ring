@@ -60,6 +60,11 @@
   [ranges]
   (sort-by (juxt :suffix-byte-length :first-byte-pos :last-byte-pos) ranges))
 
+(defn closed-byte-range?
+  [{:keys [first-byte-pos last-byte-pos] :as range}]
+  (and (int? first-byte-pos)
+       (int? last-byte-pos)) )
+
 (defn suffix-byte-range?
   [{:keys [suffix-byte-length] :as range}]
   (int? suffix-byte-length))
@@ -94,6 +99,31 @@
           (range->end-byte range total-byte-length)
           total-byte-length))
 
+(defn suffix-byte-range->closed-byte-range
+  [{:keys [suffix-byte-length] :as range} total-length]
+  {:pre [(suffix-byte-range? range)]}
+  {:first-byte-pos (- total-length suffix-byte-length)
+   :last-byte-pos (dec total-length)})
+
+(defn open-ended-byte-range->closed-byte-range
+  [{:keys [first-byte-pos] :as range} total-length]
+  {:pre [(open-ended-byte-range? range)]}
+  {:first-byte-pos first-byte-pos
+   :last-byte-pos (dec total-length)})
+
+(defn convert-ranges-to-closed-byte
+  [ranges total-length]
+  (->> ranges
+       (map #(cond
+               (open-ended-byte-range? %)
+               (open-ended-byte-range->closed-byte-range % total-length)
+
+               (suffix-byte-range? %)
+               (suffix-byte-range->closed-byte-range % total-length)
+
+               :else
+               %))))
+
 (defn validate-has-nonoverlapping-ranges
   "Checks that ranges are not overlapping, EXCEPT for the case where a suffix range is given.
   Because the body is parsed a stream, the total length is unknown and so it is known if the suffix bytes
@@ -107,11 +137,12 @@
                (every? range-valid? sorted-ranges)
                (every? (fn [idx]
                          (let [prev-range (nth ranges idx)
-                               next-range (nth ranges (inc idx))]
-                           (not (and (or (open-ended-byte-range? prev-range)
-                                         (suffix-byte-range? prev-range))
-                                     (or (open-ended-byte-range? next-range)
-                                         (suffix-byte-range? next-range))))))
+                               next-range (nth ranges (inc idx))
+                               prev-range-is-closed (closed-byte-range? prev-range)
+                               next-range-is-closed (closed-byte-range? next-range)]
+                           (if (and prev-range-is-closed next-range-is-closed)
+                             (< (:last-byte-pos prev-range) (:first-byte-pos next-range))
+                             (or prev-range-is-closed next-range-is-closed))))
                        (->> ranges (count) (dec) (range))))
       ranges)))
 
@@ -220,7 +251,8 @@
                                              (subvec offset (+ offset length))
                                              (byte-array))))))]
     (write-body-to-stream body response output-stream)
-    (when (every? satisfied? all-byte-containers)
+    (when (and (every? satisfied? all-byte-containers)
+               (validate-has-nonoverlapping-ranges (convert-ranges-to-closed-byte ranges (inc @byte-position-read))))
       (let [open-ended-bytes (some-> open-ended-byte-container (get-bytes))
             suffix-bytes (some-> suffix-byte-container (get-bytes))]
         [response
