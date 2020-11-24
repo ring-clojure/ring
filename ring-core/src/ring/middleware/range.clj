@@ -33,7 +33,7 @@
   [x]
   (some-> x (Long/parseLong)))
 
-(defn header-value->byte-ranges
+(defn- header-value->byte-ranges
   "If the header is valid, turns the header into a seq of ranges."
   [^String header-value]
   (when (and (some? header-value)
@@ -48,58 +48,58 @@
   [ranges]
   (sort-by (juxt :suffix-byte-length :first-byte-pos :last-byte-pos) ranges))
 
-(defn closed-byte-range?
+(defn- closed-byte-range?
   [{:keys [first-byte-pos last-byte-pos] :as range}]
   (and (int? first-byte-pos)
        (int? last-byte-pos)) )
 
-(defn suffix-byte-range?
+(defn- suffix-byte-range?
   [{:keys [suffix-byte-length] :as range}]
   (int? suffix-byte-length))
 
-(defn open-ended-byte-range?
+(defn- open-ended-byte-range?
   [{:keys [first-byte-pos last-byte-pos] :as range}]
   (and (int? first-byte-pos)
        (nil? last-byte-pos)))
 
-(defn range-valid?
+(defn- range-valid?
   [{:keys [first-byte-pos last-byte-pos suffix-byte-length] :as range}]
   (if (and (int? first-byte-pos) (int? last-byte-pos))
     (<= first-byte-pos last-byte-pos)
     true))
 
-(defn range->start-byte
+(defn- range->start-byte
   [{:keys [first-byte-pos last-byte-pos suffix-byte-length] :as range} total-body-length]
   (if (suffix-byte-range? range)
     (- total-body-length suffix-byte-length)
     first-byte-pos))
 
-(defn range->end-byte
+(defn- range->end-byte
   [{:keys [first-byte-pos last-byte-pos suffix-byte-length]} total-body-length]
   (if (int? last-byte-pos)
     last-byte-pos
     (dec total-body-length)))
 
-(defn range->content-range-header
+(defn- range->content-range-header
   [range total-byte-length]
   (format "bytes %d-%d/%d"
           (range->start-byte range total-byte-length)
           (range->end-byte range total-byte-length)
           total-byte-length))
 
-(defn suffix-byte-range->closed-byte-range
+(defn- suffix-byte-range->closed-byte-range
   [{:keys [suffix-byte-length] :as range} total-length]
   {:pre [(suffix-byte-range? range)]}
   {:first-byte-pos (- total-length suffix-byte-length)
    :last-byte-pos (dec total-length)})
 
-(defn open-ended-byte-range->closed-byte-range
+(defn- open-ended-byte-range->closed-byte-range
   [{:keys [first-byte-pos] :as range} total-length]
   {:pre [(open-ended-byte-range? range)]}
   {:first-byte-pos first-byte-pos
    :last-byte-pos (dec total-length)})
 
-(defn convert-ranges-to-closed-byte
+(defn- convert-ranges-to-closed-byte
   [ranges total-length]
   (->> ranges
        (map #(cond
@@ -112,7 +112,7 @@
                :else
                %))))
 
-(defn validate-has-nonoverlapping-ranges
+(defn- validate-has-nonoverlapping-ranges
   "Checks that ranges are not overlapping, EXCEPT for the case where a suffix range is given.
   Because the body is parsed a stream, the total length is unknown and so it is known if the suffix bytes
   will overlap with the other given ranges.
@@ -134,7 +134,7 @@
                        (->> ranges (count) (dec) (range))))
       ranges)))
 
-(defn ensure-response-has-content-type-if-multirange
+(defn- ensure-response-has-content-type-if-multirange
   [response request ranges]
   [(if (> (count ranges) 1)
      (content-type-response response request)
@@ -199,7 +199,7 @@
              (into @byte-store)
              (reset! byte-store))))))
 
-(defn response+ranges->response+range-bytes
+(defn- response+ranges->response+range-bytes
   [{:keys [body] :as response} ranges]
   (let [byte-position-read (atom -1)
         open-ended-byte-container (when-let [min-first-byte-pos (->> ranges
@@ -260,7 +260,7 @@
                                                                     (get-bytes))))]))
                                    (into {}))}]))))
 
-(defn response+range-bytes->complete-response
+(defn- response+range-bytes->complete-response
   [boundary-generator-fn response {:keys [total-bytes-read range-to-bytes-map]}]
   (cond
     (= 1 (count range-to-bytes-map))
@@ -293,9 +293,7 @@
     response))
 
 (defn range-header-response
-  "Returns the original response if no Range header present or if the header is invalid.
-  If one range is given, returns 206 with requested bytes in the body.
-  If multiple ranges are requested, returns a 206 with a multipart/byteranges body."
+  "Fulfills the Range header request. See: wrap-range-header."
   [response request {:keys [boundary-generator-fn]}]
   (let [response (header response "Accept-Ranges" "bytes")
         range-header (get-header request "Range")]
@@ -315,11 +313,12 @@
 
 (def boundary-chars (vec (concat (char-range \A \Z) (char-range \a \z) (char-range \0 \9))))
 
-(def boundary-generator (fn []
-                          (->> (repeatedly #(rand-int (count boundary-chars)))
-                               (take 30)
-                               (map #(nth boundary-chars %))
-                               (apply str))))
+(defn boundary-generator
+  []
+  (->> (repeatedly #(rand-int (count boundary-chars)))
+       (take 30)
+       (map #(nth boundary-chars %))
+       (apply str)))
 
 (defn wrap-range-header
   "Middleware that attempts to fulfill the Range header in the request, if any.
