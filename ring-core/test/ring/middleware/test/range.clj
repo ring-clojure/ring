@@ -102,17 +102,17 @@
                                :headers {"Range" "bytes=3-5,7-10"}})
                {:body (str/join "\r\n" ["--aboundary"
                                         "Content-Type: text/plain"
-                                        "Content-Range: 3-5/33"
+                                        "Content-Range: bytes 3-5/33"
                                         ""
                                         "ody"
                                         "--aboundary"
                                         "Content-Type: text/plain"
-                                        "Content-Range: 7-10/33"
+                                        "Content-Range: bytes 7-10/33"
                                         ""
                                         "with"
                                         "--aboundary--"])
                 :headers {"Accept-Ranges" "bytes"
-                          "Content-Length" "153"
+                          "Content-Length" "165"
                           "Content-Type" "multipart/byteranges; boundary=aboundary"}
                 :status 206})))))
 
@@ -126,22 +126,22 @@
                                 :headers {"Range" "bytes=7-20,  59-102,-13"}})
                {:body (str/join "\r\n" ["--Mp4Boundary34"
                                         "Content-Type: video/mp4"
-                                        "Content-Range: 7-20/256"
+                                        "Content-Range: bytes 7-20/256"
                                         ""
                                         (->> (range 7 21) (byte-array) (String.))
                                         "--Mp4Boundary34"
                                         "Content-Type: video/mp4"
-                                        "Content-Range: 59-102/256"
+                                        "Content-Range: bytes 59-102/256"
                                         ""
                                         (->> (range 59 103) (byte-array) (String.))
                                         "--Mp4Boundary34"
                                         "Content-Type: video/mp4"
-                                        "Content-Range: 243-255/256"
+                                        "Content-Range: bytes 243-255/256"
                                         ""
                                         (->> (range 243 256) (byte-array) (String.))
                                         "--Mp4Boundary34--"])
                 :headers {"Accept-Ranges" "bytes"
-                          "Content-Length" "332"
+                          "Content-Length" "350"
                           "Content-Type" "multipart/byteranges; boundary=Mp4Boundary34"}
                 :status 206})))))
 
@@ -155,17 +155,17 @@
                          :headers {"Range" "bytes=4-5,-6"}})
                {:body (str/join "\r\n" ["--baaz"
                                         "Content-Type: video/mpeg"
-                                        "Content-Range: 4-5/22"
+                                        "Content-Range: bytes 4-5/22"
                                         ""
                                         "he"
                                         "--baaz"
                                         "Content-Type: video/mpeg"
-                                        "Content-Range: 16-21/22"
+                                        "Content-Range: bytes 16-21/22"
                                         ""
                                         "xample"
                                         "--baaz--"])
                 :headers {"Accept-Ranges" "bytes"
-                          "Content-Length" "140"
+                          "Content-Length" "152"
                           "Content-Type" "multipart/byteranges; boundary=baaz"}
                 :status 206})))))
 
@@ -179,27 +179,27 @@
                          :headers {"Range" "bytes=0-0, 3-3, 6-7, -7"}})
                {:body (str/join "\r\n" ["--somerandomstring"
                                         "Content-Type: image/png"
-                                        "Content-Range: 0-0/22"
+                                        "Content-Range: bytes 0-0/22"
                                         ""
                                         "p"
                                         "--somerandomstring"
                                         "Content-Type: image/png"
-                                        "Content-Range: 3-3/22"
+                                        "Content-Range: bytes 3-3/22"
                                         ""
                                         "t"
                                         "--somerandomstring"
                                         "Content-Type: image/png"
-                                        "Content-Range: 6-7/22"
+                                        "Content-Range: bytes 6-7/22"
                                         ""
                                         "\r\n"
                                         "--somerandomstring"
                                         "Content-Type: image/png"
-                                        "Content-Range: 15-21/22"
+                                        "Content-Range: bytes 15-21/22"
                                         ""
                                         "2abc789"
                                         "--somerandomstring--"])
                 :headers {"Accept-Ranges" "bytes"
-                          "Content-Length" "321"
+                          "Content-Length" "345"
                           "Content-Type" "multipart/byteranges; boundary=somerandomstring"}
                 :status 206}))))))
 
@@ -214,17 +214,17 @@
                        :headers {"Range" "bytes=3-5, 12-"}})
              {:body (str/join "\r\n" ["--SomeBoundary"
                                       "Content-Type: image/jpeg"
-                                      "Content-Range: 3-5/256"
+                                      "Content-Range: bytes 3-5/256"
                                       ""
                                       (->> (range 3 6) (byte-array) (String.))
                                       "--SomeBoundary"
                                       "Content-Type: image/jpeg"
-                                      "Content-Range: 12-255/256"
+                                      "Content-Range: bytes 12-255/256"
                                       ""
                                       (->> (range 12 256) (byte-array) (String.))
                                       "--SomeBoundary--"])
               :headers {"Accept-Ranges" "bytes"
-                        "Content-Length" "662"
+                        "Content-Length" "674"
                         "Content-Type" "multipart/byteranges; boundary=SomeBoundary"}
               :status 206})))))
 
