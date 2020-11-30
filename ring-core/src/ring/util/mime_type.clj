@@ -84,7 +84,7 @@
    "tif"      "image/tiff"
    "tiff"     "image/tiff"
    "ts"       "video/mp2t"
-   "ttf"      "application/x-font-ttf"
+   "ttf"      "font/ttf"
    "txt"      "text/plain"
    "webm"     "video/webm"
    "wmv"      "video/x-ms-wmv"
