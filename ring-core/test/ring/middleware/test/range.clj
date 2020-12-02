@@ -4,7 +4,7 @@
             [ring.core.protocols :refer :all]
             [ring.middleware.range :refer :all]
             [ring.util.io :refer [string-input-stream]])
-  (:import [java.io ByteArrayOutputStream File]))
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream File]))
 
 (def public-dir "test/ring/assets/")
 (def binary-file-with-all-possible-bytes (File. ^String public-dir "binary-file-with-all-possible-bytes.bin"))
@@ -12,11 +12,14 @@
 (defn run-range-middleware-and-convert-body-to-str
   ([response request] (run-range-middleware-and-convert-body-to-str response request {}))
   ([response request opts]
+   (run-range-middleware-and-convert-body-to-str response request opts (ByteArrayOutputStream.)))
+  ([response request opts byte-stream]
    (let [handler (wrap-range-header (constantly response) opts)
-         byte-stream (ByteArrayOutputStream.)
          result (handler request)]
-     (write-body-to-stream (:body result) response byte-stream)
-     (assoc result :body (.toString byte-stream)))))
+     (if-let [body (:body result)]
+       (do (write-body-to-stream body response byte-stream)
+           (assoc result :body (.toString byte-stream)))
+       result))))
 
 (deftest test-boundary-generator
   (let [boundary (boundary-generator)]
@@ -66,28 +69,34 @@
       (is (= (run-range-middleware-and-convert-body-to-str
                response
                (assoc-in good-request [:headers "Range"] "bytes=a"))
-             (assoc-in response [:headers "Accept-Ranges"] "bytes")))
+             {:body nil
+              :headers {"Accept-Ranges" "bytes"
+                        "Content-Range" "bytes */40"}
+              :status 416}))
       (is (= (run-range-middleware-and-convert-body-to-str
                response
                (assoc-in good-request [:headers "Range"] "bytes=0x1337"))
-             (assoc-in response [:headers "Accept-Ranges"] "bytes"))))
+             {:body nil
+              :headers {"Accept-Ranges" "bytes"
+                        "Content-Range" "bytes */40"}
+              :status 416})))
 
     (testing "header parses but out of range"
       (is (= (run-range-middleware-and-convert-body-to-str
                response
                (assoc-in good-request [:headers "Range"] "bytes=500-9001"))
-             {:body ""
+             {:body nil
               :headers {"Accept-Ranges" "bytes"
-                        "Content-Range" "*/40"}
+                        "Content-Range" "bytes */40"}
               :status 416})))
 
     (testing "header has overlapping ranges with content length known"
       (is (= (run-range-middleware-and-convert-body-to-str
                response
                (assoc-in good-request [:headers "Range"] "bytes=1-39, -35"))
-             {:body ""
+             {:body nil
               :headers {"Accept-Ranges" "bytes"
-                        "Content-Range" "*/40"}
+                        "Content-Range" "bytes */40"}
               :status 416})))
 
     (testing "response status must be 200"
@@ -113,15 +122,21 @@
           handler (wrap-range-header (constantly response))]
       (is (= (handler {:request-method :get
                        :headers {"Range" "bytes=ab39"}})
-             (assoc-in response [:headers "Accept-Ranges"] "bytes")))
+             {:body nil
+              :headers {"Accept-Ranges" "bytes"
+                        "Content-Range" "bytes */33"}
+              :status 416}))
       (is (= (handler {:request-method :get
                        :headers {"Range" "bytes=47"}})
-             (assoc-in response [:headers "Accept-Ranges"] "bytes")))
+             {:body nil
+              :headers {"Accept-Ranges" "bytes"
+                        "Content-Range" "bytes */33"}
+              :status 416}))
       (is (= (handler {:request-method :get
                        :headers {"Range" "bytes=350-"}})
              {:body nil
               :headers {"Accept-Ranges" "bytes"
-                        "Content-Range" "*/33"}
+                        "Content-Range" "bytes */33"}
               :status 416}))))
 
   (testing "response must be 200"
@@ -301,5 +316,55 @@
                      :headers {"Range" "bytes=2-3, -4"}})
            {:body nil
             :headers {"Accept-Ranges" "bytes"
-                      "Content-Range" "*/5"}
+                      "Content-Range" "bytes */5"}
             :status 416}))))
+
+(deftest wrap-range-header-has-max-number-of-ranges
+  (let [response {:status 200
+                  :body (apply str (repeat 20 "a"))
+                  :headers {"Content-Type" "application/xml"}}]
+    (is (= (:status
+             (run-range-middleware-and-convert-body-to-str
+               response
+               {:request-method :get
+                :headers {"Range" "bytes=0-0,1-1,2-2,3-3,4-4,5-5,6-6,7-7,8-8,9-9"}}))
+           206))
+    (is (= (:status
+             (run-range-middleware-and-convert-body-to-str
+               response
+               {:request-method :get
+                :headers {"Range" "bytes=0-0,1-1,2-2,3-3,4-4,5-5,6-6,7-7,8-8,9-9,10-10"}}))
+           416))))
+
+(deftest wrap-range-header-has-max-buffer-size-for-content-length-unknown-bodies
+  (let [stream-size (* 2 max-buffer-size-per-range-bytes)]
+    (let [beyond-max-size-result (run-range-middleware-and-convert-body-to-str
+                                   {:status 200
+                                    :body (ByteArrayInputStream. (byte-array stream-size (byte \a)))}
+                                   {:request-method :get
+                                    :headers {"Range" (format "bytes=-%d" (inc max-buffer-size-per-range-bytes))}}
+                                   {})]
+      (is (= beyond-max-size-result
+             {:body nil
+              :headers {"Accept-Ranges" "bytes"
+                        "Content-Range" (format "bytes */%d" stream-size)}
+              :status 416})))
+
+    (let [within-max-size-result (run-range-middleware-and-convert-body-to-str
+                                   {:status 200
+                                    :body (ByteArrayInputStream. (byte-array stream-size (byte \a)))}
+                                   {:request-method :get
+                                    :headers {"Range" (format "bytes=-%d" max-buffer-size-per-range-bytes)}}
+                                   {}
+                                   (ByteArrayOutputStream. max-buffer-size-per-range-bytes))]
+      ;; separate out body because that comparing that inside a map takes a long time
+      (is (= (dissoc within-max-size-result :body)
+             {:headers {"Accept-Ranges" "bytes"
+                        "Content-Length" (str max-buffer-size-per-range-bytes)
+                        "Content-Range" (format "bytes %d-%d/%d"
+                                                (- stream-size max-buffer-size-per-range-bytes)
+                                                (dec stream-size)
+                                                stream-size)}
+              :status 206}))
+      (is (= (-> within-max-size-result :body)
+             (apply str (repeat max-buffer-size-per-range-bytes \a)))))))
