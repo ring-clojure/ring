@@ -342,8 +342,7 @@
                                    {:status 200
                                     :body (ByteArrayInputStream. (byte-array stream-size (byte \a)))}
                                    {:request-method :get
-                                    :headers {"Range" (format "bytes=-%d" (inc max-buffer-size-per-range-bytes))}}
-                                   {})]
+                                    :headers {"Range" (format "bytes=-%d" (inc max-buffer-size-per-range-bytes))}})]
       (is (= beyond-max-size-result
              {:body nil
               :headers {"Accept-Ranges" "bytes"
@@ -368,3 +367,25 @@
               :status 206}))
       (is (= (-> within-max-size-result :body)
              (apply str (repeat max-buffer-size-per-range-bytes \a)))))))
+
+(deftest wrap-range-header-has-unlimited-buffer-size-for-content-length-known-bodies
+  (let [stream-size (* 2 max-buffer-size-per-range-bytes)
+        requested-buffer-size (inc max-buffer-size-per-range-bytes)
+        result (run-range-middleware-and-convert-body-to-str
+                 {:status 200
+                  :body (ByteArrayInputStream. (byte-array stream-size (byte \a)))
+                  :headers {"Content-Length" (str stream-size)
+                            "Content-Type" "text/plain"}}
+                 {:request-method :get
+                  :headers {"Range" (format "bytes=-%d" requested-buffer-size)}})]
+    (is (= (dissoc result :body)
+           {:headers {"Accept-Ranges" "bytes"
+                      "Content-Range" (format "bytes %d-%d/%d"
+                                              (- stream-size requested-buffer-size)
+                                              (dec stream-size)
+                                              stream-size)
+                      "Content-Length" (str requested-buffer-size)
+                      "Content-Type" "text/plain"}
+            :status 206}))
+    (is (= (-> result :body)
+           (apply str (repeat requested-buffer-size \a))))))
