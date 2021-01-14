@@ -1,8 +1,8 @@
 (ns ring.bench.servlet
-  (:require [clojure.pprint :as pp]
-            [jmh.core :as jmh]
+  (:require [jmh.core :as jmh]
             [ring.util.servlet :as servlet])
-  (:import [java.util HashMap ArrayList]))
+  (:import [java.util HashMap ArrayList]
+           [javax.servlet AsyncContext]))
 
 (defn http-servlet-request []
   (let [headers (HashMap.
@@ -18,7 +18,7 @@
       (getServerName        [_] "localhost")
       (getRemoteAddr        [_] "localhost")
       (getRequestURI        [_] "/example")
-      (getQueryString       [_] "q=test") 
+      (getQueryString       [_] "q=test")
       (getScheme            [_] "http")
       (getMethod            [_] "GET")
       (getProtocol          [_] "HTTP/1.1")
@@ -42,29 +42,38 @@
           (close [] (.close os))
           (flush [] (.flush os))
           (write
-            ([b] (.write os b))
+            ([b] (.write os ^int b))
             ([b off len] (.write os b off len))))))))
 
-(def ring-response
+(defn async-context []
+  (reify AsyncContext
+    (complete [_])))
+
+(defn ring-response [body-size]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    "{\"hello\" \"world\"}"})
+   :body    (apply str (repeat body-size "x"))})
 
-(let [response ring-response
-      handler  (fn [_] response)]
-  (defn servlet-handler [request response]
-    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
+(defn servlet-handler [servlet-request servlet-response response]
+  (let [handler (fn [_] response)]
+    (->> servlet-request
+         servlet/build-request-map
+         handler
+         (servlet/update-servlet-response servlet-response))))
 
 (def bench-env
   {:benchmarks
-   [{:name :build,   :fn `servlet/build-request-map,       :args [:state/request]}
-    {:name :update,  :fn `servlet/update-servlet-response, :args [:state/response :param/response]}
-    {:name :handler, :fn `servlet-handler,                 :args [:state/request :state/response]}]
+   [{:name :build,        :fn `servlet/build-request-map,       :args [:state/servlet-request]}
+    {:name :update,       :fn `servlet/update-servlet-response, :args [:state/servlet-response :state/response]}
+    {:name :update-async, :fn `servlet/update-servlet-response, :args [:state/servlet-response :state/async-context :state/response]}
+    {:name :handler,      :fn `servlet-handler,                 :args [:state/servlet-request :state/servlet-response :state/response]}]
    :states
-   {:request  {:fn `http-servlet-request, :args []}
-    :response {:fn `http-servlet-response, :args []}}
+   {:servlet-request  {:fn `http-servlet-request, :args []}
+    :servlet-response {:fn `http-servlet-response, :args []}
+    :response         {:fn `ring-response, :args [:param/response-body-size]}
+    :async-context    {:fn `async-context, :args []}}
    :params
-   {:response ring-response}})
+   {:response-body-size [128 1024 8192 65536]}})
 
 (def bench-opts
   {:type :quick
@@ -73,8 +82,8 @@
 (defn -main []
   (println "Benchmarking...")
   (doseq [result (jmh/run bench-env bench-opts)]
-    (let [[score unit] (:score result)]
-      (println (format "  %s - %.2f ops/s (σ=%.2f)"
-                       (:name result)
-                       (-> result :statistics :mean)
-                       (-> result :statistics :stdev))))))
+    (println (format "  %-13s - %5s - %.2f ops/s (σ=%.2f)"
+                     (:name result)
+                     (-> result :params :response_body_size (or "n/a"))
+                     (-> result :statistics :mean)
+                     (-> result :statistics :stdev)))))
