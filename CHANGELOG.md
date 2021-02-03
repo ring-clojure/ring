@@ -1,3 +1,16 @@
+## 1.9.0 (2021-02-03)
+
+* Fixed automatic closing of response stream on exception (#420)
+* Changed woff media type to `font/woff` & added woff2 media type (#421)
+* Changed TTF media type to `font/ttf` (#426)
+* Improved formatting in `ring.middleware.stacktrace` (#391)
+* Improved performance of async responses (#428)
+* Added `:exclude-ciphers` option to Jetty adapter (#405)
+* Added `:exclude-protocols` option to Jetty adapter (#405)
+* Added `:ssl-context` option to Jetty adapter (#412)
+* Added `:async-timeout-handler` option to Jetty adapter (#410)
+* Added `:keystore-scan-interval` option to Jetty adapter (#417)
+
 ## 1.8.2 (2020-10-06)
 
 * Updated Jetty to 9.4.31.v20200723 (#411)
