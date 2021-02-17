@@ -5,7 +5,7 @@
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [ring/ring-codec "1.1.2"]
+                 [ring/ring-codec "1.1.3"]
                  [commons-io "2.6"]
                  [commons-fileupload "1.4"]
                  [crypto-random "1.2.0"]
