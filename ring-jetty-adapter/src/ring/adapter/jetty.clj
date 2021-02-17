@@ -113,7 +113,7 @@
           (.addExcludeProtocols context-server protocols))))
     context-server))
 
-(defn- ^ServerConnector ssl-connector [server options]
+(defn- ^ServerConnector ssl-connector [^Server server options]
   (let [ssl-port     (options :ssl-port 443)
         http-factory (HttpConnectionFactory.
                       (doto (http-config options)
