@@ -12,4 +12,4 @@
    :dev  {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}
    :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
    :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}
-   :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}})
+   :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]]}})
