@@ -1,3 +1,8 @@
+## 1.9.1 (2021-02-17)
+
+* Updated Ring-Codec dependency to 1.1.3
+* Updated Jetty to 9.4.36.v20210114
+
 ## 1.9.0 (2021-02-03)
 
 * Fixed automatic closing of response stream on exception (#420)
