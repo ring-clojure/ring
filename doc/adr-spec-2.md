@@ -634,25 +634,8 @@ like the above examples.
 
 ## Push Promises
 
-HTTP/2 introduced push promises, a predictive optimisation that allows
-HTTP responses to be sent to the client before they are requested.
-Support for push promises was introduced in Java Servlets 4.0.
+Due to Chrome's [deprecation of push promises][pushdep], it's likely
+that this feature of HTTP/2 will not enjoy wide adoption and will be
+therefore be dropped from the Ring 2.0 specification.
 
-The implementation for Ring 2 reuses the `respond` function passed to
-asynchronous handlers. Behind the scenes a push request and its
-corresponding response are passed to the client, but for the handler
-we need only specify the request, since the response can be found by
-calling the handler again.
-
-To differentiate the push request from a normal request, the
-`ring.push` namespace is used.
-
-The servlet implementation uses a [PushBuilder][] object. Fortunately
-this fits in well with Ring's design, allowing for easy integration
-with existing servlets.
-
-It's worth noting that [nginx][], a common proxy for Ring applications,
-does not support push promises.
-
-[pushbuilder]: https://javaee.github.io/javaee-spec/javadocs/javax/servlet/http/PushBuilder.html
-[nginx]: https://nginx.org/
+[pushdep]: https://groups.google.com/a/chromium.org/g/blink-dev/c/K3rYLvmQUBY/m/vOWBKZGoAQAJ?pli=1
