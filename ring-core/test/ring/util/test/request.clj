@@ -17,7 +17,13 @@
   (is (= (request-url {:scheme :https
                        :uri "/index.html"
                        :headers {"host" "www.example.com"}})
-         "https://www.example.com/index.html")))
+         "https://www.example.com/index.html"))
+  (is (= (request-url {:scheme :http
+                       :uri "/index.html"
+                       :headers {"host" "www.example.com"
+                                 "x-forwarded-proto" "https"}})
+         "https://www.example.com/index.html")
+      "Respect x-forwarded-proto when present"))
 
 (deftest test-content-type
   (testing "no content-type"

@@ -6,7 +6,8 @@
   "Return the full URL of the request."
   {:added "1.2"}
   [request]
-  (str (-> request :scheme name)
+  (str (or (get-in request [:headers "x-forwarded-proto"])
+           (-> request :scheme name))
        "://"
        (get-in request [:headers "host"])
        (:uri request)
