@@ -1,3 +1,8 @@
+## 1.9.2 (2021-03-20)
+
+* Updated Jetty to 9.4.38.v20210224 (#433)
+* Fixed reflection warning (#432)
+
 ## 1.9.1 (2021-02-17)
 
 * Updated Ring-Codec dependency to 1.1.3
