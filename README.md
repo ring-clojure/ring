@@ -48,7 +48,7 @@ To include all of them:
 ## Documentation
 
 * [Wiki](https://github.com/ring-clojure/ring/wiki)
-* [API docs](http://ring-clojure.github.com/ring)
+* [API docs](https://ring-clojure.github.io/ring/)
 
 ## Community
 
