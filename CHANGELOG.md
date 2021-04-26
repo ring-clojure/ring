@@ -1,3 +1,8 @@
+## 1.9.3 (2021-04-26)
+
+* Fixed missing arity on async `OutputStream` (#436)
+* Updated Jetty to 9.4.40.v20210413
+
 ## 1.9.2 (2021-03-20)
 
 * Updated Jetty to 9.4.38.v20210224 (#433)
