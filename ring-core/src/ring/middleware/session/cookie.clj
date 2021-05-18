@@ -56,9 +56,11 @@
     (String. (.doFinal cipher (byte-array data)))))
 
 (defn- print-string-secret-key-deprecation []
+  ":ver - Get the current ring version."
   (binding [*out* *err*]
-    (println "WARNING: The secret key for the session cookie store should be a"
-             "byte array.\nString secret keys have been deprecated.")))
+    (let [ver (System/getProperty "ring.version")]
+      (println "WARNING (library 'ring' " ver "): The secret key for the session cookie store should be a"
+               "byte array.\nString secret keys have been deprecated."))))
 
 (defn- get-secret-key
   "Get a valid secret key from a map of options, or create a random one from
