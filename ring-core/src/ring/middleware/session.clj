@@ -37,13 +37,13 @@
    (session-request request {}))
   ([request options]
    (-> request
-       cookies/cookies-request
-       (bare-session-request options))))
+       (#(cookies/cookies-request % (or (:cookie-opts (:cookie-attrs options)) {})))
+       (bare-session-request (update-in options [:cookie-attrs] dissoc :cookie-opts)))))
 
 (defn- bare-session-response
   [response {session-key :session/key} {:keys [store cookie-name cookie-attrs]}]
   (let [new-session-key (if (contains? response :session)
-                         (if-let [session (response :session)]
+                          (if-let [session (response :session)]
                             (if (:recreate (meta session))
                               (do
                                 (store/delete-session store session-key)
@@ -71,8 +71,8 @@
   ([response request options]
    (if response
      (-> response
-         (bare-session-response request options)
-         cookies/cookies-response))))
+         (bare-session-response request (update-in options [:cookie-attrs] dissoc :cookie-opts))
+         (#(cookies/cookies-response % (or (:cookie-opts (:cookie-attrs options)) {})))))))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -97,19 +97,21 @@
   :cookie-attrs - A map of attributes to associate with the session cookie.
                   Defaults to {:http-only true}. This may be overridden on a
                   per-response basis by adding :session-cookie-attrs to the
-                  response."
+                  response.
+                  
+  :cookie-opts  - A map of options as defined by ring.middleware.cookes/wrap-cookies"
   ([handler]
-     (wrap-session handler {}))
+   (wrap-session handler {}))
   ([handler options]
-     (let [options (session-options options)]
-       (fn
-         ([request]
-          (let [request (session-request request options)]
-            (-> (handler request)
-                (session-response request options))))
-         ([request respond raise]
-          (let [request (session-request request options)]
-            (handler request
-                     (fn [response]
-                       (respond (session-response response request options)))
-                     raise)))))))
+   (let [options (session-options options)]
+     (fn
+       ([request]
+        (let [request (session-request request options)]
+          (-> (handler request)
+              (session-response request options))))
+       ([request respond raise]
+        (let [request (session-request request options)]
+          (handler request
+                   (fn [response]
+                     (respond (session-response response request options)))
+                   raise)))))))
