@@ -1,3 +1,9 @@
+## 1.9.4 (2021-07-17)
+
+* Updated Jetty to 9.4.42.v20210604 (#442)
+* Updated Commons-IO to 2.10.0
+* Updated Crypto-Random to 1.2.1
+
 ## 1.9.3 (2021-04-26)
 
 * Fixed missing arity on async `OutputStream` (#436)
