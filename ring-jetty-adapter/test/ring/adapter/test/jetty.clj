@@ -290,6 +290,14 @@
       (is (= 1000 (. thread-pool getIdleTimeout)))
       (.stop server)))
 
+  (testing "providing custom thread-pool"
+    (let [pool   (QueuedThreadPool.)
+          server (run-jetty hello-world {:port test-port
+                                         :join? false
+                                         :thread-pool pool})]
+      (is (identical? pool (.getThreadPool server)))
+      (.stop server)))
+
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port test-port}
       (let [response (http/get test-url)]
