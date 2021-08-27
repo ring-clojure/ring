@@ -148,7 +148,8 @@
     pool))
 
 (defn- ^Server create-server [options]
-  (let [server (Server. (create-threadpool options))]
+  (let [pool   (or (:thread-pool options) (create-threadpool options))
+        server (Server. pool)]
     (when (:http? options true)
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
@@ -189,6 +190,7 @@
   :key-password           - the password to the keystore
   :keystore-scan-interval - if not nil, the interval in seconds to scan for an
                             updated keystore
+  :thread-pool            - custom thread pool instance for Jetty to use
   :truststore             - a truststore to use for SSL connections
   :trust-password         - the password to the truststore
   :max-threads            - the maximum number of threads to use (default 50)
