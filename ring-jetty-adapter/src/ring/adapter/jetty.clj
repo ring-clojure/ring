@@ -226,3 +226,7 @@
       (catch Exception ex
         (.stop server)
         (throw ex)))))
+
+(defn stop [^Server server]
+  "Stop given `server`"
+  (.stop server))
