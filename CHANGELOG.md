@@ -1,3 +1,8 @@
+## 1.9.5 (2022-01-15)
+
+* Updated Jetty to 9.4.44.v20210927 (#453)
+* Improved performance of params middleware (#446)
+
 ## 1.9.4 (2021-07-17)
 
 * Updated Jetty to 9.4.42.v20210604 (#442)
