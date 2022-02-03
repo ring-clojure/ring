@@ -1,6 +1,6 @@
 # Ring
 
-[![Build Status](https://travis-ci.org/ring-clojure/ring.svg?branch=master)](https://travis-ci.org/ring-clojure/ring)
+[![Build Status](https://app.travis-ci.com/ring-clojure/ring.svg?branch=master)](https://app.travis-ci.com/github/ring-clojure/ring)
 
 Ring is a Clojure web applications library inspired by Python's WSGI
 and Ruby's Rack. By abstracting the details of HTTP into a simple,
@@ -39,16 +39,16 @@ To resolve this, include the following dependency in your dev profile:
 To include one of the above libraries, for example `ring-core`, add
 the following to your `:dependencies`:
 
-    [ring/ring-core "1.8.1"]
+    [ring/ring-core "1.9.5"]
 
 To include all of them:
 
-    [ring "1.8.1"]
+    [ring "1.9.5"]
 
 ## Documentation
 
 * [Wiki](https://github.com/ring-clojure/ring/wiki)
-* [API docs](http://ring-clojure.github.com/ring)
+* [API docs](https://ring-clojure.github.io/ring/)
 
 ## Community
 
@@ -67,6 +67,6 @@ thanks to those communities for their work.
 
 ## License
 
-Copyright © 2009-2020 Mark McGranaghan, James Reeves & contributors.
+Copyright © 2009-2021 Mark McGranaghan, James Reeves & contributors.
 
 Released under the MIT license.

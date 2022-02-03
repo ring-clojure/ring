@@ -11,4 +11,4 @@
                  [ns-tracker "0.4.0"]]
   :aliases {"test-all" ["with-profile" "default:+1.10" "test"]}
   :profiles
-  {:1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}})
+  {:1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}})

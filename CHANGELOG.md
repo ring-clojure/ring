@@ -1,3 +1,46 @@
+## 1.9.5 (2022-01-15)
+
+* Updated Jetty to 9.4.44.v20210927 (#453)
+* Improved performance of params middleware (#446)
+
+## 1.9.4 (2021-07-17)
+
+* Updated Jetty to 9.4.42.v20210604 (#442)
+* Updated Commons-IO to 2.10.0
+* Updated Crypto-Random to 1.2.1
+
+## 1.9.3 (2021-04-26)
+
+* Fixed missing arity on async `OutputStream` (#436)
+* Updated Jetty to 9.4.40.v20210413
+
+## 1.9.2 (2021-03-20)
+
+* Updated Jetty to 9.4.38.v20210224 (#433)
+* Fixed reflection warning (#432)
+
+## 1.9.1 (2021-02-17)
+
+* Updated Ring-Codec dependency to 1.1.3
+* Updated Jetty to 9.4.36.v20210114
+
+## 1.9.0 (2021-02-03)
+
+* Fixed automatic closing of response stream on exception (#420)
+* Changed woff media type to `font/woff` & added woff2 media type (#421)
+* Changed TTF media type to `font/ttf` (#426)
+* Improved formatting in `ring.middleware.stacktrace` (#391)
+* Improved performance of async responses (#428)
+* Added `:exclude-ciphers` option to Jetty adapter (#405)
+* Added `:exclude-protocols` option to Jetty adapter (#405)
+* Added `:ssl-context` option to Jetty adapter (#412)
+* Added `:async-timeout-handler` option to Jetty adapter (#410)
+* Added `:keystore-scan-interval` option to Jetty adapter (#417)
+
+## 1.8.2 (2020-10-06)
+
+* Updated Jetty to 9.4.31.v20200723 (#411)
+
 ## 1.8.1 (2020-05-02)
 
 * Deprecated string secret keys for cookie session stores

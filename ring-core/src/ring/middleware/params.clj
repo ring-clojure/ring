@@ -13,6 +13,11 @@
   (let [params (codec/form-decode params encoding)]
     (if (map? params) params {})))
 
+(defn- assoc-param-map [req k v]
+  (some-> req (assoc k (if-let [v' (req k)]
+                         (reduce-kv assoc v' v)
+                         v))))
+
 (defn assoc-query-params
   "Parse and assoc parameters from the query string with the request."
   {:added "1.3"}
@@ -20,8 +25,8 @@
   (if-let [query (request/query request)]
     (let [params (parse-params query encoding)]
       (-> request
-          (compat/modify-req update ::query-params merge params)
-          (compat/modify-req update ::params merge params)))
+          (compat/modify-req assoc-param-map ::query-params params)
+          (compat/modify-req assoc-param-map ::params params)))
     request))
 
 (defn assoc-form-params
@@ -31,8 +36,8 @@
   (if-let [body (and (urlencoded-form? request) (request/body request))]
     (let [params (parse-params (slurp body :encoding encoding) encoding)]
       (-> request
-          (compat/modify-req update ::form-params merge params)
-          (compat/modify-req update ::params merge params)))
+          (compat/modify-req assoc-param-map ::form-params params)
+          (compat/modify-req assoc-param-map ::params params)))
     request))
 
 (defn params-request

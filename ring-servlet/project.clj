@@ -10,4 +10,4 @@
   :profiles
   {:provided {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}
    :dev  {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}
-   :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]]}})
+   :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}})

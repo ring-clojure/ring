@@ -6,15 +6,15 @@
 (def assert-app    (wrap-stacktrace (fn [_] (assert (= 1 2)))))
 
 
-(def html-req {:headers {"accept" "text/html"}})
-(def js-req   {:headers {"accept" "application/javascript"}})
+(def html-req  {:headers {"accept" "text/html"}})
+(def js-req    {:headers {"accept" "application/javascript"}})
 (def plain-req {})
 
 (deftest wrap-stacktrace-smoke
   (binding [*err* (java.io.StringWriter.)]
     (doseq [app [exception-app assert-app]]
       (testing "requests with Accept: text/html"
-        (let [{:keys [status headers body] :as response} (app html-req)]
+        (let [{:keys [status headers body]} (app html-req)]
           (is (= 500 status))
           (is (= {"Content-Type" "text/html"} headers))
           (is (.startsWith body "<!DOCTYPE html>"))))

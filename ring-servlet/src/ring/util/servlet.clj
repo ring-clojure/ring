@@ -181,6 +181,9 @@
     (if (nil? context)
       os
       (proxy [java.io.FilterOutputStream] [os]
+        (write
+          ([b]         (.write os b))
+          ([b off len] (.write os b off len)))
         (close []
           (.close os)
           (.complete context))))))

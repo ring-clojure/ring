@@ -1,6 +1,7 @@
 (ns ring.util.test.servlet
   (:require [clojure.test :refer :all]
-            [ring.util.servlet :refer :all])
+            [ring.util.servlet :refer :all]
+            [ring.core.protocols :as proto])
   (:import [java.util Locale]))
 
 (defmacro ^:private with-locale [locale & body]
@@ -204,3 +205,16 @@
 (deftest defservice-test
   (defservice-test* foo-service)
   (defservice-test* -service))
+
+(deftest make-output-stream-test
+  (let [response (atom {})]
+    (update-servlet-response
+     (servlet-response response)
+     (async-context (atom false))
+     {:status  200
+      :headers {}
+      :body    (reify proto/StreamableResponseBody
+                 (write-body-to-stream [_ _ os]
+                   (.write os (int \h))
+                   (.write os (.getBytes "ello"))))})
+    (is (= "hello" (.toString (:body @response))))))

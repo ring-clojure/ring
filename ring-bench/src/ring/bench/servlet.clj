@@ -1,8 +1,8 @@
 (ns ring.bench.servlet
-  (:require [clojure.pprint :as pp]
-            [jmh.core :as jmh]
+  (:require [jmh.core :as jmh]
             [ring.util.servlet :as servlet])
-  (:import [java.util HashMap ArrayList]))
+  (:import [java.util HashMap ArrayList]
+           [javax.servlet AsyncContext]))
 
 (defn http-servlet-request []
   (let [headers (HashMap.
@@ -18,7 +18,7 @@
       (getServerName        [_] "localhost")
       (getRemoteAddr        [_] "localhost")
       (getRequestURI        [_] "/example")
-      (getQueryString       [_] "q=test") 
+      (getQueryString       [_] "q=test")
       (getScheme            [_] "http")
       (getMethod            [_] "GET")
       (getProtocol          [_] "HTTP/1.1")
@@ -42,58 +42,68 @@
           (close [] (.close os))
           (flush [] (.flush os))
           (write
-            ([b] (.write os b))
+            ([b] (.write os ^int b))
             ([b off len] (.write os b off len))))))))
 
-(def ring-1-response
+(defn async-context []
+  (reify AsyncContext
+    (complete [_])))
+
+(defn ring-1-response [body-size]
   {:status  200
    :headers {"Content-Type" "application/json"}
-   :body    "{\"hello\" \"world\"}"})
+   :body    (apply str (repeat body-size "x"))})
 
-(def ring-2-response
+(defn ring-2-response [body-size]
   #:ring.response{:status  200
                   :headers {"content-type" "application/json"}
-                  :body    "{\"hello\" \"world\"}"})
+                  :body    (apply str (repeat body-size "x"))})
 
-(let [response ring-1-response
-      handler  (fn [_] response)]
-  (defn servlet-handler-1 [request response]
-    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
+(defn servlet-handler [servlet-request servlet-response response]
+  (let [handler (fn [_] response)]
+    (->> servlet-request
+         servlet/build-request-map
+         handler
+         (servlet/update-servlet-response servlet-response))))
 
-(let [response ring-2-response
-      handler  (fn [_] response)]
-  (defn servlet-handler-2 [request response]
-    (->> request servlet/build-request-map handler (servlet/update-servlet-response response))))
 
-(let [response ring-1-response
-      handler  (fn [_] response)]
-  (defn servlet-handler-11 [request response]
-    (->> request servlet/build-request-map-1 handler (servlet/update-servlet-response-1 response))))
+(defn servlet-handler-1 [servlet-request servlet-response response]
+  (let [handler (fn [_] response)]
+    (->> servlet-request
+         servlet/build-request-map-1
+         handler
+         (servlet/update-servlet-response-1 servlet-response))))
 
-(let [response ring-2-response
-      handler  (fn [_] response)]
-  (defn servlet-handler-22 [request response]
-    (->> request servlet/build-request-map-2 handler (servlet/update-servlet-response-2 response))))
+
+(defn servlet-handler-2 [servlet-request servlet-response response]
+  (let [handler (fn [_] response)]
+    (->> servlet-request
+         servlet/build-request-map-2
+         handler
+         (servlet/update-servlet-response-2 servlet-response))))
 
 (def bench-env
   {:benchmarks
-   [{:name :build,   :fn `servlet/build-request-map,   :args [:state/request]}
-    {:name :build-1, :fn `servlet/build-request-map-1, :args [:state/request]}
-    {:name :build-2, :fn `servlet/build-request-map-2, :args [:state/request]}
-    {:name :update-1,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-1]}
-    {:name :update-2,  :fn `servlet/update-servlet-response,   :args [:state/response :param/response-2]}
-    {:name :update-11, :fn `servlet/update-servlet-response-1, :args [:state/response :param/response-1]}
-    {:name :update-22, :fn `servlet/update-servlet-response-2, :args [:state/response :param/response-2]}
-    {:name :handler-1,  :fn `servlet-handler-1  :args [:state/request :state/response]}
-    {:name :handler-2,  :fn `servlet-handler-2  :args [:state/request :state/response]}
-    {:name :handler-11, :fn `servlet-handler-11 :args [:state/request :state/response]}
-    {:name :handler-22, :fn `servlet-handler-22 :args [:state/request :state/response]}]
+   [{:name :build,        :fn `servlet/build-request-map,         :args [:state/servlet-request]}
+    {:name :build-1,      :fn `servlet/build-request-map-1,       :args [:state/servlet-request]}
+    {:name :build-2       :fn `servlet/build-request-map-2,       :args [:state/servlet-request]}
+    {:name :update-1,     :fn `servlet/update-servlet-response,   :args [:state/servlet-response :state/response-1]}
+    {:name :update-2,     :fn `servlet/update-servlet-response,   :args [:state/servlet-response :state/response-2]}
+    {:name :update-11,    :fn `servlet/update-servlet-response-1, :args [:state/servlet-response :state/response-1]}
+    {:name :update-22,    :fn `servlet/update-servlet-response-2, :args [:state/servlet-response :state/response-2]}
+    {:name :update-async, :fn `servlet/update-servlet-response,   :args [:state/servlet-response :state/async-context :state/response-1]}
+    {:name :handler-1,    :fn `servlet-handler,                   :args [:state/servlet-request :state/servlet-response :state/response-1]}
+    {:name :handler-2,    :fn `servlet-handler,                   :args [:state/servlet-request :state/servlet-response :state/response-2]}
+    {:name :handler-11,   :fn `servlet-handler-1,                 :args [:state/servlet-request :state/servlet-response :state/response-1]}
+    {:name :handler-22,   :fn `servlet-handler-2,                 :args [:state/servlet-request :state/servlet-response :state/response-2]}]
    :states
-   {:request  {:fn `http-servlet-request, :args []}
-    :response {:fn `http-servlet-response, :args []}}
+   {:servlet-request  {:fn `http-servlet-request, :args []}
+    :servlet-response {:fn `http-servlet-response, :args []}
+    :response-1       {:fn `ring-1-response, :args [:param/response-body-size]}
+    :response-2       {:fn `ring-2-response, :args [:param/response-body-size]}
+    :async-context    {:fn `async-context, :args []}}
    :params
-   {:response-1 ring-1-response
-    :response-2 ring-2-response}})
+   {:response-body-size [128 1024 8192 65536]}})
 
 (def bench-opts
   {:type :quick
@@ -102,8 +112,8 @@
 (defn -main []
   (println "Benchmarking...")
   (doseq [result (jmh/run bench-env bench-opts)]
-    (let [[score unit] (:score result)]
-      (println (format "  %s - %.2f ops/s (σ=%.2f)"
-                       (:name result)
-                       (-> result :statistics :mean)
-                       (-> result :statistics :stdev))))))
+    (println (format "  %-13s - %5s - %.2f ops/s (σ=%.2f)"
+                     (:name result)
+                     (-> result :params :response_body_size (or "n/a"))
+                     (-> result :statistics :mean)
+                     (-> result :statistics :stdev)))))

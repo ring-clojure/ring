@@ -3,13 +3,17 @@
             [ring.adapter.jetty :refer :all]
             [clj-http.client :as http]
             [clojure.java.io :as io]
+            [less.awful.ssl :as less-ssl]
             [ring.core.protocols :as p])
   (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [java.net ServerSocket ConnectException]
-           [java.security KeyStore]))
+           [java.security KeyStore]
+           [java.io SequenceInputStream ByteArrayInputStream InputStream
+                    IOException]
+           [org.apache.http MalformedChunkCodingException]))
 
 (defn- hello-world [request]
   {:status  200
@@ -34,6 +38,11 @@
 
 (defn- all-threads []
   (.keySet (Thread/getAllStackTraces)))
+
+(defn ssl-context []
+  (less-ssl/ssl-context "test/server.key"
+                        "test/server.crt"
+                        "test/server.crt"))
 
 (defmacro with-server [app options & body]
   `(let [server# (run-jetty ~app ~(assoc options :join? false))]
@@ -157,6 +166,49 @@
         (is (= 200 (:status response))
             "sending client certs will receive 200 from handler"))))
 
+  (testing "HTTPS server using :ssl-context"
+    (with-server hello-world {:port test-port
+                              :ssl-port test-ssl-port
+                              :ssl-context (ssl-context)}
+      (let [response (http/get test-ssl-url {:insecure? true})]
+        (is (= (:status response) 200))
+        (is (= (:body response) "Hello World")))))
+
+  (testing "HTTPS server using :ssl-context that needs client certs"
+    (with-server client-cert-handler {:client-auth :need
+                                      :ssl-context (ssl-context)
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (is (thrown? java.io.IOException
+                   (http/get test-ssl-url {:insecure? true}))
+          "missing client certs will cause an exception")
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
+
+  (testing "HTTPS server using :ssl-context that wants client certs"
+    (with-server client-cert-handler {:client-auth :want
+                                      :ssl-context (ssl-context)
+                                      :port test-port
+                                      :ssl? true
+                                      :ssl-port test-ssl-port}
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :throw-exceptions false})]
+        (is (= 403 (:status response))
+            "missing client certs will result in 403 from handler"))
+      (let [response (http/get test-ssl-url {:insecure? true
+                                             :keystore "test/keystore.jks"
+                                             :keystore-pass "password"
+                                             :trust-store "test/keystore.jks"
+                                             :trust-store-pass "password"})]
+        (is (= 200 (:status response))
+            "sending client certs will receive 200 from handler"))))
+
   (testing "configurator set to run last"
     (let [max-threads 20
           new-handler  (proxy [AbstractHandler] []
@@ -238,6 +290,14 @@
       (is (= 1000 (. thread-pool getIdleTimeout)))
       (.stop server)))
 
+  (testing "providing custom thread-pool"
+    (let [pool   (QueuedThreadPool.)
+          server (run-jetty hello-world {:port test-port
+                                         :join? false
+                                         :thread-pool pool})]
+      (is (identical? pool (.getThreadPool server)))
+      (.stop server)))
+
   (testing "default character encoding"
     (with-server (content-type-handler "text/plain") {:port test-port}
       (let [response (http/get test-url)]
@@ -284,13 +344,28 @@
                                 :send-server-version? false}
         (let [response (http/get test-url)]
           (is (not (contains? (:headers response) "Server")))))))
-
   (testing "excluding cipher suites"
     (let [cipher  "SSL_RSA_WITH_NULL_MD5"
           options (assoc test-ssl-options :exclude-ciphers [cipher])
           server  (run-jetty echo-handler options)]
       (try
         (is (contains? (exclude-ciphers server) cipher))
+        ;; The operation is additive; it doesn't replace ciphers that Jetty
+        ;; excludes by default
+        (is (> (count (exclude-ciphers server)) 1))
+        (finally
+          (.stop server)))))
+
+  (testing "replacing excluded cipher suites"
+    (let [cipher   "SSL_RSA_WITH_NULL_MD5"
+          options  (assoc test-ssl-options
+                          :exclude-ciphers [cipher]
+                          :replace-exclude-ciphers? true)
+          server   (run-jetty echo-handler options)
+          excludes (exclude-ciphers server)]
+      (try
+        (is (= (first excludes) cipher))
+        (is (= (seq (rest excludes)) nil))
         (finally
           (.stop server)))))
 
@@ -300,6 +375,22 @@
           server   (run-jetty echo-handler options)]
       (try
         (is (contains? (exclude-protocols server) protocol))
+        ;; The operation is additive; it doesn't replace protocols that Jetty
+        ;; excludes by default
+        (is (> (count (exclude-protocols server)) 1))
+        (finally
+          (.stop server)))))
+
+  (testing "replacing excluded cipher protocols"
+    (let [protocol "SSLv2Hello"
+          options  (assoc test-ssl-options
+                          :exclude-protocols [protocol]
+                          :replace-exclude-protocols? true)
+          server   (run-jetty echo-handler options)
+          excludes (exclude-protocols server)]
+      (try
+        (is (= (first excludes) protocol))
+        (is (= (seq (rest excludes)) nil))
         (finally
           (.stop server)))))
 
@@ -314,6 +405,46 @@
               (Thread/sleep 250)
               (recur (inc i))))
           (is (= thread-count (count (all-threads)))))))))
+
+(defn- chunked-stream-with-error
+  ([request]
+   {:status  200
+    :headers {"Transfer-Encoding" "chunked"}
+    :body    (SequenceInputStream.
+               (ByteArrayInputStream. (.getBytes (str (range 100000)) "UTF-8"))
+               (proxy [InputStream] []
+                 (read
+                   ([] (throw (IOException. "test error")))
+                   ([^bytes _] (throw (IOException. "test error")))
+                   ([^bytes _ _ _] (throw (IOException. "test error"))))))})
+  ([request response raise]
+   (response (chunked-stream-with-error request))))
+
+(defn- chunked-lazy-seq-with-error
+  ([request]
+   {:status  200
+    :headers {"Transfer-Encoding" "chunked"}
+    :body    (lazy-cat (range 100000)
+                       (throw (IOException. "test error")))})
+  ([request response raise]
+   (response (chunked-lazy-seq-with-error request))))
+
+(deftest streaming-with-error
+  (testing "chunked stream without sending termination chunk on error"
+    (with-server chunked-stream-with-error {:port test-port}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "chunked sequence without sending termination chunk on error"
+    (with-server chunked-lazy-seq-with-error {:port test-port}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "async chunked stream without sending termination chunk on error"
+    (with-server chunked-stream-with-error {:port test-port :async? true}
+      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+
+  (testing "async chunked sequence without sending termination chunk on error"
+    (with-server chunked-lazy-seq-with-error {:port test-port :async? true}
+      (is (thrown? MalformedChunkCodingException (http/get test-url))))))
 
 (def thread-exceptions (atom []))
 
@@ -367,6 +498,12 @@
     (error-cps request respond raise)
     (hello-world-cps request respond raise)))
 
+(defn- hello-world-slow-cps [request respond raise]
+  (future (Thread/sleep 1000)
+          (respond {:status  200
+                    :headers {"Content-Type" "text/plain"}
+                    :body    "Hello World"})))
+
 (deftest run-jetty-cps-test
   (testing "async response in future"
     (reset! thread-exceptions [])
@@ -416,7 +553,46 @@
     (with-server hello-world-streaming-long {:port test-port, :async? true}
       (let [response (http/get test-url)]
         (is (= (:body response)
-               (apply str (for [i (range 10)] (str "data: " i "\n\n")))))))))
+               (apply str (for [i (range 10)] (str "data: " i "\n\n"))))))))
+
+  (testing "async timeout handler"
+    (testing "when no timeout handler is passed, behaviour is unchanged"
+      (with-server hello-world-slow-cps {:port test-port
+                                         :async? true
+                                         :async-timeout 250}
+        (let [response (http/get test-url {:throw-exceptions false})]
+          (is (= (:status response)
+                 500)))))
+
+    (testing "with timeout handlers, ring-style responses are generated"
+      (with-server hello-world-slow-cps
+        {:port test-port
+         :async? true
+         :async-timeout 200
+         :async-timeout-handler (fn [request respond raise]
+                                  (respond
+                                   {:status 503
+                                    :headers {"Content-Type" "text/plain"}
+                                    :body "Request timed out"}))}
+        (let [response (http/get test-url {:throw-exceptions false})]
+          (is (= (:body response)
+                 "Request timed out"))
+          (is (= (:status response)
+                 503))))
+
+      (with-server hello-world-slow-cps
+        {:port test-port
+         :async? true
+         :async-timeout 200
+         :async-timeout-handler (fn [request respond raise]
+                                  (raise
+                                   (ex-info "An exception was thrown" {})))}
+        (let [response (http/get (str test-url "/test-path/testing")
+                                 {:throw-exceptions false})]
+          (is (.contains ^String (:body response)
+                         "An exception was thrown"))
+          (is (= (:status response)
+                 500)))))))
 
 (def call-count (atom 0))
 

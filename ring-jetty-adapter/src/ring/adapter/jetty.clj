@@ -15,8 +15,8 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
-           [org.eclipse.jetty.util.ssl SslContextFactory$Server]
-           [javax.servlet AsyncContext DispatcherType]
+           [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
+           [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- ^AbstractHandler proxy-handler
@@ -29,19 +29,37 @@
           (update-servlet-response response response-map)
           (.setHandled base-request true))))))
 
+(defn- async-jetty-raise [^AsyncContext context ^HttpServletResponse response]
+  (fn [^Throwable exception]
+    (.sendError response 500 (.getMessage exception))
+    (.complete context)))
+
+(defn- async-timeout-listener
+  [request context response handler {:keys [build-request-map update-servlet-response]}]
+  (proxy [AsyncListener] []
+    (onTimeout [^AsyncEvent _]
+      (handler (build-request-map request)
+               #(update-servlet-response response context %)
+               (async-jetty-raise context response)))
+    (onComplete [^AsyncEvent _])
+    (onError [^AsyncEvent _])
+    (onStartAsync [^AsyncEvent _])))
+
 (defn- ^AbstractHandler async-proxy-handler
-  [handler timeout {:keys [build-request-map update-servlet-response]}]
+  [handler timeout timeout-handler
+   {:keys [build-request-map update-servlet-response] :as proxy-fns}]
   (proxy [AbstractHandler] []
     (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
       (let [^AsyncContext context (.startAsync request)]
         (.setTimeout context timeout)
+        (when timeout-handler
+          (.addListener
+           context
+           (async-timeout-listener request context response timeout-handler proxy-fns)))
         (handler
          (build-request-map request)
-         (fn [response-map]
-           (update-servlet-response response context response-map))
-         (fn [^Throwable exception]
-           (.sendError response 500 (.getMessage exception))
-           (.complete context)))
+         #(update-servlet-response response context %)
+         (async-jetty-raise context response))
         (.setHandled base-request true)))))
 
 (defn- ^ServerConnector server-connector [^Server server & factories]
@@ -79,26 +97,36 @@
       (.setTrustStore context-server ^java.security.KeyStore (options :truststore)))
     (when (options :trust-password)
       (.setTrustStorePassword context-server (options :trust-password)))
+    (when (options :ssl-context)
+      (.setSslContext context-server (options :ssl-context)))
     (case (options :client-auth)
       :need (.setNeedClientAuth context-server true)
       :want (.setWantClientAuth context-server true)
       nil)
-    (if-let [exclude-ciphers (options :exclude-ciphers)]
-      (.addExcludeCipherSuites context-server (into-array String exclude-ciphers)))
-    (if-let [exclude-protocols (options :exclude-protocols)]
-      (.addExcludeProtocols context-server (into-array String exclude-protocols)))
+    (when-let [exclude-ciphers (options :exclude-ciphers)]
+      (let [ciphers (into-array String exclude-ciphers)]
+        (if (options :replace-exclude-ciphers?)
+          (.setExcludeCipherSuites context-server ciphers)
+          (.addExcludeCipherSuites context-server ciphers))))
+    (when-let [exclude-protocols (options :exclude-protocols)]
+      (let [protocols (into-array String exclude-protocols)]
+        (if (options :replace-exclude-protocols?)
+          (.setExcludeProtocols context-server protocols)
+          (.addExcludeProtocols context-server protocols))))
     context-server))
 
-(defn- ^ServerConnector ssl-connector [server options]
+(defn- ^ServerConnector ssl-connector [^Server server options]
   (let [ssl-port     (options :ssl-port 443)
         http-factory (HttpConnectionFactory.
                       (doto (http-config options)
                         (.setSecureScheme "https")
                         (.setSecurePort ssl-port)
                         (.addCustomizer (SecureRequestCustomizer.))))
-        ssl-factory  (SslConnectionFactory.
-                      (ssl-context-factory options)
-                      "http/1.1")]
+        ssl-context  (ssl-context-factory options)
+        ssl-factory  (SslConnectionFactory. ssl-context "http/1.1")]
+    (when-let [scan-interval (options :keystore-scan-interval)]
+      (.addBean server (doto (KeyStoreScanner. ssl-context)
+                         (.setScanInterval scan-interval))))
     (doto (server-connector server ssl-factory http-factory)
       (.setPort ssl-port)
       (.setHost (options :host))
@@ -122,7 +150,8 @@
     pool))
 
 (defn- ^Server create-server [options]
-  (let [server (Server. (create-threadpool options))]
+  (let [pool   (or (:thread-pool options) (create-threadpool options))
+        server (Server. pool)]
     (when (:http? options true)
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
@@ -133,45 +162,62 @@
   "Start a Jetty webserver to serve the given handler according to the
   supplied options:
 
-  :configurator         - a function called with the Jetty Server instance
-  :async?               - if true, treat the handler as asynchronous
-  :async-timeout        - async context timeout in ms (defaults to 0, no timeout)
-  :port                 - the port to listen on (defaults to 80)
-  :host                 - the hostname to listen on
-  :join?                - blocks the thread until server ends (defaults to true)
-  :daemon?              - use daemon threads (defaults to false)
-  :http?                - listen on :port for HTTP traffic (defaults to true)
-  :ssl?                 - allow connections over HTTPS
-  :ssl-port             - the SSL port to listen on (defaults to 443, implies
-                          :ssl? is true)
-  :exclude-ciphers      - When :ssl? is true, exclude these cipher suites
-  :exclude-protocols    - When :ssl? is true, exclude these protocols
-  :keystore             - the keystore to use for SSL connections
-  :keystore-type        - the keystore type (default jks)
-  :key-password         - the password to the keystore
-  :truststore           - a truststore to use for SSL connections
-  :trust-password       - the password to the truststore
-  :max-threads          - the maximum number of threads to use (default 50)
-  :min-threads          - the minimum number of threads to use (default 8)
-  :max-queued-requests  - the maximum number of requests to be queued
-  :thread-idle-timeout  - Set the maximum thread idle time. Threads that are idle
-                          for longer than this period may be stopped (default 60000)
-  :max-idle-time        - the maximum idle time in milliseconds for a connection
-                          (default 200000)
-  :client-auth          - SSL client certificate authenticate, may be set to
-                          :need,:want or :none (defaults to :none)
-  :send-date-header?    - add a date header to the response (default true)
-  :output-buffer-size   - the response body buffer size (default 32768)
-  :request-header-size  - the maximum size of a request header (default 8192)
-  :response-header-size - the maximum size of a response header (default 8192)
-  :send-server-version? - add Server header to HTTP response (default true)"
+  :configurator           - a function called with the Jetty Server instance
+  :async?                 - if true, treat the handler as asynchronous
+  :async-timeout          - async context timeout in ms
+                            (defaults to 0, no timeout)
+  :async-timeout-handler  - an async handler to handle an async context timeout
+  :port                   - the port to listen on (defaults to 80)
+  :host                   - the hostname to listen on
+  :join?                  - blocks the thread until server ends
+                            (defaults to true)
+  :daemon?                - use daemon threads (defaults to false)
+  :http?                  - listen on :port for HTTP traffic (defaults to true)
+  :ssl?                   - allow connections over HTTPS
+  :ssl-port               - the SSL port to listen on (defaults to 443, implies
+                            :ssl? is true)
+  :ssl-context            - an optional SSLContext to use for SSL connections
+  :exclude-ciphers        - when :ssl? is true, additionally exclude these
+                            cipher suites
+  :exclude-protocols      - when :ssl? is true, additionally exclude these
+                            protocols
+  :replace-exclude-ciphers?   - when true, :exclude-ciphers will replace rather
+                                than add to the cipher exclusion list (defaults
+                                to false)
+  :replace-exclude-protocols? - when true, :exclude-protocols will replace
+                                rather than add to the protocols exclusion list
+                                (defaults to false)
+  :keystore               - the keystore to use for SSL connections
+  :keystore-type          - the keystore type (default jks)
+  :key-password           - the password to the keystore
+  :keystore-scan-interval - if not nil, the interval in seconds to scan for an
+                            updated keystore
+  :thread-pool            - custom thread pool instance for Jetty to use
+  :truststore             - a truststore to use for SSL connections
+  :trust-password         - the password to the truststore
+  :max-threads            - the maximum number of threads to use (default 50)
+  :min-threads            - the minimum number of threads to use (default 8)
+  :max-queued-requests    - the maximum number of requests to be queued
+  :thread-idle-timeout    - Set the maximum thread idle time. Threads that are
+                            idle for longer than this period may be stopped
+                            (default 60000)
+  :max-idle-time          - the maximum idle time in milliseconds for a
+                            connection (default 200000)
+  :client-auth            - SSL client certificate authenticate, may be set to
+                            :need,:want or :none (defaults to :none)
+  :send-date-header?      - add a date header to the response (default true)
+  :output-buffer-size     - the response body buffer size (default 32768)
+  :request-header-size    - the maximum size of a request header (default 8192)
+  :response-header-size   - the maximum size of a response header (default 8192)
+  :send-server-version?   - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server    (create-server (dissoc options :configurator))
-        proxy-fns (servlet/request-response-functions (:ring options))
-        timeout   (:async-timeout options 0)]
+  (let [server     (create-server (dissoc options :configurator))
+        proxy-fns  (servlet/request-response-functions (:ring options))
+        timeout    (:async-timeout options 0)
+        to-handler (:async-timeout-handler options)]
     (.setHandler server
                  (if (:async? options)
-                   (async-proxy-handler handler timeout proxy-fns)
+                   (async-proxy-handler handler timeout to-handler proxy-fns)
                    (proxy-handler handler proxy-fns)))
     (when-let [configurator (:configurator options)]
       (configurator server))

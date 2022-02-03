@@ -19,25 +19,28 @@
 (extend-protocol StreamableResponseBody
   (Class/forName "[B")
   (write-body-to-stream [body _ ^OutputStream output-stream]
-    (with-open [out output-stream]
-      (.write out ^bytes body)))
+    (.write output-stream ^bytes body)
+    (.close output-stream))
   String
   (write-body-to-stream [body response output-stream]
-    (with-open [writer (response-writer response output-stream)]
-      (.write writer body)))
+    (doto (response-writer response output-stream)
+      (.write body)
+      (.close)))
   clojure.lang.ISeq
   (write-body-to-stream [body response output-stream]
-    (with-open [writer (response-writer response output-stream)]
+    (let [writer (response-writer response output-stream)]
       (doseq [chunk body]
-        (.write writer (str chunk)))))
+        (.write writer (str chunk)))
+      (.close writer)))
   java.io.InputStream
   (write-body-to-stream [body _ ^OutputStream output-stream]
-    (with-open [out output-stream, body body]
-      (io/copy body out)))
+    (with-open [body body]
+      (io/copy body output-stream))
+    (.close output-stream))
   java.io.File
   (write-body-to-stream [body _ ^OutputStream output-stream]
-    (with-open [out output-stream]
-      (io/copy body out)))
+    (io/copy body output-stream)
+    (.close output-stream))
   nil
   (write-body-to-stream [_ _ ^java.io.OutputStream output-stream]
     (.close output-stream)))
