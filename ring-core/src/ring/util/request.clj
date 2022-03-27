@@ -26,7 +26,7 @@
   {:added "1.3"}
   [request]
   (if-let [^String length (get-in request [:headers "content-length"])]
-    (Long. length)))
+    (Long/valueOf length)))
 
 (defn character-encoding
   "Return the character encoding for the request, or nil if it is not set."
