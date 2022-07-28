@@ -15,7 +15,7 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
-           [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
+           [org.eclipse.jetty.util.ssl SslContextFactory$Server]
            [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
 
@@ -125,8 +125,7 @@
     (when-let [scan-interval (options :keystore-scan-interval)]
       (.addBean server (do (require '[ring.adapter.util :as u])
                            #_{:clj-kondo/ignore [:unresolved-namespace]}
-                           ((resolve 'u/create-key-store-scanner)
-                            ssl-context scan-interval))))
+                           ((resolve 'u/create-key-store-scanner) ssl-context scan-interval))))
     (doto (server-connector server ssl-factory http-factory)
       (.setPort ssl-port)
       (.setHost (options :host))
