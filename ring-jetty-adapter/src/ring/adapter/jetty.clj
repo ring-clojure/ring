@@ -123,8 +123,10 @@
         ssl-context  (ssl-context-factory options)
         ssl-factory  (SslConnectionFactory. ssl-context "http/1.1")]
     (when-let [scan-interval (options :keystore-scan-interval)]
-      (.addBean server (doto (KeyStoreScanner. ssl-context)
-                         (.setScanInterval scan-interval))))
+      (.addBean server (do (require '[ring.adapter.util :as u])
+                           #_{:clj-kondo/ignore [:unresolved-namespace]}
+                           ((resolve 'u/create-key-store-scanner)
+                            ssl-context scan-interval))))
     (doto (server-connector server ssl-factory http-factory)
       (.setPort ssl-port)
       (.setHost (options :host))
