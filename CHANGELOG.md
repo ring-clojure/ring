@@ -1,3 +1,10 @@
+## 1.9.6 (2022-09-09)
+
+* Updated Jetty to 9.4.48.v20220622 (#467)
+* Updated Ring-Codec to 1.2.0
+* Updated Commons-IO to 2.11.0
+* Updated Crypto-Equality to 1.0.1
+
 ## 1.9.5 (2022-01-15)
 
 * Updated Jetty to 9.4.44.v20210927 (#453)
