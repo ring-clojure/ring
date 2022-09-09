@@ -87,10 +87,11 @@
 (defn- unseal
   "Retrieve a sealed Clojure data structure from a string"
   [key ^String string options]
-  (let [[data mac] (.split string "--")
-        data (codec/base64-decode data)]
-    (if (crypto/eq? mac (hmac key data))
-      (deserialize (decrypt key data) options))))
+  (let [[data mac] (.split string "--")]
+    (if-let [data (try (codec/base64-decode data)
+                       (catch IllegalArgumentException _ nil))]
+      (if (crypto/eq? mac (hmac key data))
+        (deserialize (decrypt key data) options)))))
 
 (deftype CookieStore [secret-key options]
   SessionStore
