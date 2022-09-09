@@ -5,11 +5,11 @@
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [ring/ring-codec "1.1.3"]
-                 [commons-io "2.10.0"]
+                 [ring/ring-codec "1.2.0"]
+                 [commons-io "2.11.0"]
                  [commons-fileupload "1.4"]
                  [crypto-random "1.2.1"]
-                 [crypto-equality "1.0.0"]]
+                 [crypto-equality "1.0.1"]]
   :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
   :profiles
   {:provided {:dependencies [[javax.servlet/servlet-api "2.5"]]}
