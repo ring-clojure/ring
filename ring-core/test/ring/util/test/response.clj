@@ -39,6 +39,10 @@
     (is (= {:status 201 :headers {"Location" "foobar/location"} :body "foobar"}
            (created "foobar/location" "foobar")))))
 
+(deftest test-accepted-response
+  (is (= {:status 202 :headers {} :body "foobar"}
+         (accepted "foobar"))))
+
 (deftest test-response
   (is (= {:status 200 :headers {} :body "foobar"}
          (response "foobar"))))

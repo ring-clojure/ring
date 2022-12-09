@@ -44,6 +44,14 @@
       :headers {"Location" url}
       :body    body}))
 
+(defn accepted
+  "Returns a 202 'accepted' response."
+  {:added "1.9"}
+  [body]
+  {:status  202
+   :headers {}
+   :body    body})
+
 (defn bad-request
   "Returns a 400 'bad request' response."
   {:added "1.7"}
