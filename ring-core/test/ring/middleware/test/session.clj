@@ -77,6 +77,16 @@
         response (handler {:cookies {}})]
     (is (get-session-cookie response))))
 
+(deftest session-set-cookies
+  (testing ":set-cookies? is false"
+    (let [store (make-store (constantly {})
+                            (constantly "foo:bar")
+                            (constantly nil))
+          handler (constantly {:session {:foo "bar"}})
+          handler (wrap-session handler {:store store, :set-cookies? false})
+          response (handler {:cookies {}})]
+      (is (nil? (get-cookies response))))))
+
 (deftest session-delete-outputs-cookie
   (let [store (make-store (constantly {:foo "bar"})
                           (constantly nil)

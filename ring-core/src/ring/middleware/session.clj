@@ -14,6 +14,7 @@
 (defn- session-options
   [options]
   {:store        (options :store (mem/memory-store))
+   :set-cookies? (options :set-cookies? true)
    :cookie-name  (options :cookie-name "ring-session")
    :cookie-attrs (merge {:path "/"
                          :http-only true}
@@ -72,7 +73,7 @@
    (if response
      (-> response
          (bare-session-response request options)
-         cookies/cookies-response))))
+         (cond-> (:set-cookies? options true) cookies/cookies-response)))))
 
 (defn wrap-session
   "Reads in the current HTTP session map, and adds it to the :session key on
@@ -97,7 +98,10 @@
   :cookie-attrs - A map of attributes to associate with the session cookie.
                   Defaults to {:http-only true}. This may be overridden on a
                   per-response basis by adding :session-cookie-attrs to the
-                  response."
+                  response.
+
+  :set-cookies? - If true, automatically include cookie middleware. Defaults to
+                  true for backward compatibility."
   ([handler]
      (wrap-session handler {}))
   ([handler options]
