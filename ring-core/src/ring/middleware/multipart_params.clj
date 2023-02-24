@@ -46,15 +46,8 @@
     (if (.hasNext it)
       (cons (.next it) (file-item-iterator-seq it)))))
 
-(defn- file-item-seq
-  "Create a seq of FileItem instances from a request context."
-  [request progress-fn context]
-  (let [upload (if progress-fn
-                 (doto (FileUpload.)
-                   (.setProgressListener (progress-listener request progress-fn)))
-                 (FileUpload.))]
-    (file-item-iterator-seq
-      (.getItemIterator ^FileUpload upload context))))
+(defn- file-item-seq [^FileUpload upload context]
+  (file-item-iterator-seq (.getItemIterator upload context)))
 
 (defn- parse-content-type-charset [^FileItemStream item]
   (some->> (.getContentType item) parsing/find-content-type-charset))
@@ -86,14 +79,12 @@
              :stream       (.openStream item)}))
    (.isFormField item)])
 
-(defn- parse-multipart-params
-  "Parse a map of multipart parameters from the request."
-  [request fallback-encoding forced-encoding store progress-fn]
-  (->> (request-context request fallback-encoding)
-       (file-item-seq request progress-fn)
-       (map #(parse-file-item % store))
-       (decode-string-values fallback-encoding forced-encoding)
-       (reduce (fn [m [k v]] (assoc-conj m k v)) {})))
+(defn- make-file-upload [request {:keys [progress-fn max-file-size]}]
+  (let [upload (FileUpload.)]
+    (.setFileSizeMax upload (or max-file-size -1))
+    (when progress-fn
+      (.setProgressListener upload (progress-listener request progress-fn)))
+    upload))
 
 (defn- load-var
   "Returns the var named by the supplied symbol, or nil if not found. Attempts
@@ -108,6 +99,20 @@
          func  (load-var store)]
      (func))))
 
+(defn- parse-multipart-params
+  "Parse a map of multipart parameters from the request."
+  [request {:keys [encoding fallback-encoding store] :as options}]
+  (let [store             (or store @default-store)
+        fallback-encoding (or encoding
+                              fallback-encoding
+                              (req/character-encoding request)
+                              "UTF-8")]
+    (->> (request-context request fallback-encoding)
+         (file-item-seq (make-file-upload request options))
+         (map #(parse-file-item % store))
+         (decode-string-values fallback-encoding encoding)
+         (reduce (fn [m [k v]] (assoc-conj m k v)) {}))))
+
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request.
   See: wrap-multipart-params."
@@ -115,20 +120,9 @@
   ([request]
    (multipart-params-request request {}))
   ([request options]
-   (let [store           (or (:store options) @default-store)
-         forced-encoding (:encoding options)
-         req-encoding    (or forced-encoding
-                             (:fallback-encoding options)
-                             (req/character-encoding request)
-                             "UTF-8")
-         progress        (:progress-fn options)
-         params          (if (multipart-form? request)
-                           (parse-multipart-params request
-                                                   req-encoding
-                                                   forced-encoding
-                                                   store
-                                                   progress)
-                           {})]
+   (let [params (if (multipart-form? request)
+                  (parse-multipart-params request options)
+                  {})]
      (merge-with merge request
                  {:multipart-params params}
                  {:params params}))))
@@ -162,7 +156,10 @@
 
   :progress-fn       - a function that gets called during uploads. The
                        function should expect four parameters: request,
-                       bytes-read, content-length, and item-count."
+                       bytes-read, content-length, and item-count.
+
+  :max-file-size     - the maximum size allowed size of a file in bytes. If
+                       nil or omitted, there is no limit."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]

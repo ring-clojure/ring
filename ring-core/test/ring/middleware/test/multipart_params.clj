@@ -175,3 +175,16 @@
                  :body (string-input-stream form-body "ISO-8859-15")}
         request* (multipart-params-request request {:fallback-encoding "ISO-8859-15"})]
     (is (= (get-in request* [:multipart-params "foo"]) "äÄÖöÅå€"))))
+
+(deftest test-enforced-limits
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"upload\"; filename=\"test1.txt\"\r\n"
+                       "Content-Type: text/plain\r\n\r\n"
+                       "foobarbaz\r\n"
+                       "--XXXX--")
+        request {:headers {"content-type"
+                           (str "multipart/form-data; boundary=XXXX")}
+                 :body (string-input-stream form-body)}]
+    (is (thrown? org.apache.commons.fileupload.FileUploadBase$FileUploadIOException
+                 (multipart-params-request request {:max-file-size 6})))))
