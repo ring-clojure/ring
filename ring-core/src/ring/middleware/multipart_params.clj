@@ -10,40 +10,42 @@
   (:require [ring.util.codec :refer [assoc-conj]]
             [ring.util.request :as req]
             [ring.util.parsing :as parsing])
-  (:import [org.apache.commons.fileupload UploadContext
-                                          FileItemIterator
-                                          FileItemStream
-                                          FileUpload
-                                          ProgressListener]
+  (:import [org.apache.commons.fileupload
+            UploadContext
+            FileItemIterator
+            FileItemStream
+            FileUpload
+            ProgressListener]
            [org.apache.commons.io IOUtils]))
-(defn- progress-listener
-  "Create a progress listener that calls the supplied function."
-  [request progress-fn]
+
+(defn- progress-listener [request progress-fn]
   (reify ProgressListener
-    (update [this bytes-read content-length item-count]
+    (update [_ bytes-read content-length item-count]
       (progress-fn request bytes-read content-length item-count))))
 
-(defn- multipart-form?
-  "Does a request have a multipart form?"
-  [request]
+(defn- set-progress-listener [^FileUpload upload request progress-fn]
+  (when progress-fn
+    (.setProgressListener upload (progress-listener request progress-fn))))
+
+(defn- file-upload [request {:keys [progress-fn max-file-size]}]
+  (doto (FileUpload.)
+    (.setFileSizeMax (or max-file-size -1))
+    (set-progress-listener request progress-fn)))
+
+(defn- multipart-form? [request]
   (= (req/content-type request) "multipart/form-data"))
 
-(defn- request-context
-  "Create an UploadContext object from a request map."
-  {:tag UploadContext}
-  [request encoding]
+(defn- request-context ^UploadContext [request encoding]
   (reify UploadContext
-    (getContentType [this]       (get-in request [:headers "content-type"]))
-    (getContentLength [this]     (or (req/content-length request) -1))
-    (contentLength [this]        (or (req/content-length request) -1))
-    (getCharacterEncoding [this] encoding)
-    (getInputStream [this]       (:body request))))
+    (getContentType [_]       (get-in request [:headers "content-type"]))
+    (getContentLength [_]     (or (req/content-length request) -1))
+    (contentLength [_]        (or (req/content-length request) -1))
+    (getCharacterEncoding [_] encoding)
+    (getInputStream [_]       (:body request))))
 
-(defn- file-item-iterator-seq
-  "Create a lazy seq from a FileItemIterator instance."
-  [^FileItemIterator it]
+(defn- file-item-iterator-seq [^FileItemIterator it]
   (lazy-seq
-    (if (.hasNext it)
+    (when (.hasNext it)
       (cons (.next it) (file-item-iterator-seq it)))))
 
 (defn- file-item-seq [^FileUpload upload context]
@@ -66,10 +68,7 @@
                                                fallback-encoding)))
            v)])))
 
-(defn- parse-file-item
-  "Parse a FileItemStream into a key-value pair. If the request is a file the
-  supplied store function is used to save it."
-  [^FileItemStream item store]
+(defn- parse-file-item [^FileItemStream item store]
   [(.getFieldName item)
    (if (.isFormField item)
      {:bytes    (IOUtils/toByteArray (.openStream item))
@@ -79,17 +78,7 @@
              :stream       (.openStream item)}))
    (.isFormField item)])
 
-(defn- make-file-upload [request {:keys [progress-fn max-file-size]}]
-  (let [upload (FileUpload.)]
-    (.setFileSizeMax upload (or max-file-size -1))
-    (when progress-fn
-      (.setProgressListener upload (progress-listener request progress-fn)))
-    upload))
-
-(defn- load-var
-  "Returns the var named by the supplied symbol, or nil if not found. Attempts
-  to load the var namespace on the fly if not already loaded."
-  [sym]
+(defn- load-var [sym]
   (require (symbol (namespace sym)))
   (find-var sym))
 
@@ -100,7 +89,6 @@
      (func))))
 
 (defn- parse-multipart-params
-  "Parse a map of multipart parameters from the request."
   [request {:keys [encoding fallback-encoding store] :as options}]
   (let [store             (or store @default-store)
         fallback-encoding (or encoding
@@ -108,7 +96,7 @@
                               (req/character-encoding request)
                               "UTF-8")]
     (->> (request-context request fallback-encoding)
-         (file-item-seq (make-file-upload request options))
+         (file-item-seq (file-upload request options))
          (map #(parse-file-item % store))
          (decode-string-values fallback-encoding encoding)
          (reduce (fn [m [k v]] (assoc-conj m k v)) {}))))
