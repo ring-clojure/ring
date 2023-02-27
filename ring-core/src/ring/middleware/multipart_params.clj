@@ -7,7 +7,8 @@
 
     ring.middleware.multipart-params.byte-array/byte-array-store
     ring.middleware.multipart-params.temp-file/temp-file-store"
-  (:require [ring.util.codec :refer [assoc-conj]]
+  (:require [ring.middleware.multipart-params.temp-file :as tf]
+            [ring.util.codec :refer [assoc-conj]]
             [ring.util.request :as req]
             [ring.util.parsing :as parsing])
   (:import [org.apache.commons.fileupload
@@ -78,15 +79,7 @@
              :stream       (.openStream item)}))
    (.isFormField item)])
 
-(defn- load-var [sym]
-  (require (symbol (namespace sym)))
-  (find-var sym))
-
-(def ^:private default-store
-  (delay
-   (let [store 'ring.middleware.multipart-params.temp-file/temp-file-store
-         func  (load-var store)]
-     (func))))
+(def ^:private default-store (delay (tf/temp-file-store)))
 
 (defn- parse-multipart-params
   [request {:keys [encoding fallback-encoding store] :as options}]
