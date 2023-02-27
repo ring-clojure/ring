@@ -55,29 +55,33 @@
 (defn- parse-content-type-charset [^FileItemStream item]
   (some->> (.getContentType item) parsing/find-content-type-charset))
 
+(defn- parse-file-item [^FileItemStream item store]
+  {:field? (.isFormField item)
+   :name   (.getFieldName item)
+   :value  (if (.isFormField item)
+             {:bytes    (IOUtils/toByteArray (.openStream item))
+              :encoding (parse-content-type-charset item)}
+             (store {:filename     (.getName item)
+                     :content-type (.getContentType item)
+                     :stream       (.openStream item)}))})
+
+(defn- find-param [params name]
+  (first (filter #(= name (:name %)) params)))
+
 (defn- parse-html5-charset [params]
-  (when-let [charset (->> params (filter #(= (first %) "_charset_")) first second :bytes)]
+  (when-let [charset (some-> params (find-param "_charset_") :value :bytes)]
     (String. ^bytes charset "US-ASCII")))
 
-(defn- decode-string-values [fallback-encoding forced-encoding params]
-  (let [html5-encoding (parse-html5-charset params)]
-    (for [[k v field?] params]
-      [k (if field?
-           (String. ^bytes (:bytes v) (str (or forced-encoding
-                                               html5-encoding
-                                               (:encoding v)
-                                               fallback-encoding)))
-           v)])))
+(defn- decode-form-field
+  [{:keys [bytes encoding]} forced-encoding fallback-encoding]
+  (String. ^bytes bytes (str (or forced-encoding encoding fallback-encoding))))
 
-(defn- parse-file-item [^FileItemStream item store]
-  [(.getFieldName item)
-   (if (.isFormField item)
-     {:bytes    (IOUtils/toByteArray (.openStream item))
-      :encoding (parse-content-type-charset item)}
-     (store {:filename     (.getName item)
-             :content-type (.getContentType item)
-             :stream       (.openStream item)}))
-   (.isFormField item)])
+(defn- decode-string-values [fallback-encoding forced-encoding params]
+  (let [forced-encoding (or forced-encoding (parse-html5-charset params))]
+    (for [{:keys [name value field?]} params]
+      [name (if field?
+              (decode-form-field value forced-encoding fallback-encoding)
+              value)])))
 
 (def ^:private default-store (delay (tf/temp-file-store)))
 
