@@ -72,16 +72,18 @@
   (when-let [charset (some-> params (find-param "_charset_") :value :bytes)]
     (String. ^bytes charset "US-ASCII")))
 
-(defn- decode-form-field
+(defn- decode-field
   [{:keys [bytes encoding]} forced-encoding fallback-encoding]
   (String. ^bytes bytes (str (or forced-encoding encoding fallback-encoding))))
 
-(defn- decode-string-values [fallback-encoding forced-encoding params]
-  (let [forced-encoding (or forced-encoding (parse-html5-charset params))]
-    (for [{:keys [name value field?]} params]
-      [name (if field?
-              (decode-form-field value forced-encoding fallback-encoding)
-              value)])))
+(defn- build-param-map [encoding fallback-encoding params]
+  (let [enc (or encoding (parse-html5-charset params))]
+    (reduce (fn [m {:keys [name value field?]}]
+              (assoc-conj m name (if field?
+                                   (decode-field value enc fallback-encoding)
+                                   value)))
+            {}
+            params)))
 
 (def ^:private default-store (delay (tf/temp-file-store)))
 
@@ -95,8 +97,7 @@
     (->> (request-context request fallback-encoding)
          (file-item-seq (file-upload request options))
          (map #(parse-file-item % store))
-         (decode-string-values fallback-encoding encoding)
-         (reduce (fn [m [k v]] (assoc-conj m k v)) {}))))
+         (build-param-map encoding fallback-encoding))))
 
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request.
