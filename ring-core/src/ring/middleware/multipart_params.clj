@@ -44,13 +44,13 @@
     (getCharacterEncoding [_] encoding)
     (getInputStream [_]       (:body request))))
 
-(defn- file-item-iterator-seq [^FileItemIterator it]
-  (lazy-seq
-    (when (.hasNext it)
-      (cons (.next it) (file-item-iterator-seq it)))))
-
-(defn- file-item-seq [^FileUpload upload context]
-  (file-item-iterator-seq (.getItemIterator upload context)))
+(defn- file-item-iterable [^FileUpload upload context]
+  (reify Iterable
+    (iterator [_]
+      (let [it (.getItemIterator upload context)]
+        (reify java.util.Iterator
+          (hasNext [_] (.hasNext it))
+          (next [_] (.next it)))))))
 
 (defn- parse-content-type-charset [^FileItemStream item]
   (some->> (.getContentType item) parsing/find-content-type-charset))
@@ -96,12 +96,13 @@
                               (req/character-encoding request)
                               "UTF-8")]
     (->> (request-context request fallback-encoding)
-         (file-item-seq (file-upload request options))
-         (map-indexed (fn [i item]
-                        (if (and max-file-count (>= i max-file-count))
-                          (throw (ex-info "Max file count exceeded"
-                                          {:max-file-count max-file-count}))
-                          (parse-file-item item store))))
+         (file-item-iterable (file-upload request options))
+         (sequence
+          (map-indexed (fn [i item]
+                         (if (and max-file-count (>= i max-file-count))
+                           (throw (ex-info "Max file count exceeded"
+                                           {:max-file-count max-file-count}))
+                           (parse-file-item item store)))))
          (build-param-map encoding fallback-encoding))))
 
 (defn multipart-params-request
