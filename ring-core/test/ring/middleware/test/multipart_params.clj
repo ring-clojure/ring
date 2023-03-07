@@ -182,9 +182,18 @@
                        "name=\"upload\"; filename=\"test1.txt\"\r\n"
                        "Content-Type: text/plain\r\n\r\n"
                        "foobarbaz\r\n"
+                       "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"upload\"; filename=\"test2.txt\"\r\n"
+                       "Content-Type: text/plain\r\n\r\n"
+                       "foobar\r\n"
                        "--XXXX--")
-        request {:headers {"content-type"
-                           (str "multipart/form-data; boundary=XXXX")}
-                 :body (string-input-stream form-body)}]
+        headers {"content-type" (str "multipart/form-data; boundary=XXXX")}]
     (is (thrown? org.apache.commons.fileupload.FileUploadBase$FileUploadIOException
-                 (multipart-params-request request {:max-file-size 6})))))
+                 (multipart-params-request
+                  {:headers headers, :body (string-input-stream form-body)}
+                  {:max-file-size 6})))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (multipart-params-request
+                  {:headers headers, :body (string-input-stream form-body)}
+                  {:max-file-count 1})))))

@@ -88,7 +88,8 @@
 (def ^:private default-store (delay (tf/temp-file-store)))
 
 (defn- parse-multipart-params
-  [request {:keys [encoding fallback-encoding store] :as options}]
+  [request {:keys [encoding fallback-encoding store max-file-count]
+            :as options}]
   (let [store             (or store @default-store)
         fallback-encoding (or encoding
                               fallback-encoding
@@ -96,7 +97,11 @@
                               "UTF-8")]
     (->> (request-context request fallback-encoding)
          (file-item-seq (file-upload request options))
-         (map #(parse-file-item % store))
+         (map-indexed (fn [i item]
+                        (if (and max-file-count (>= i max-file-count))
+                          (throw (ex-info "Max file count exceeded"
+                                          {:max-file-count max-file-count}))
+                          (parse-file-item item store))))
          (build-param-map encoding fallback-encoding))))
 
 (defn multipart-params-request
@@ -145,7 +150,10 @@
                        bytes-read, content-length, and item-count.
 
   :max-file-size     - the maximum size allowed size of a file in bytes. If
-                       nil or omitted, there is no limit."
+                       nil or omitted, there is no limit.
+
+  :max-file-count    - the maximum number of files allowed in a single request.
+                       If nil or omitted, there is no limit."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]
