@@ -13,9 +13,9 @@
             [ring.util.parsing :as parsing])
   (:import [org.apache.commons.fileupload
             UploadContext
-            FileItemIterator
             FileItemStream
             FileUpload
+            FileUploadBase$FileUploadIOException
             ProgressListener]
            [org.apache.commons.io IOUtils]))
 
@@ -119,6 +119,25 @@
                  {:multipart-params params}
                  {:params params}))))
 
+(defn content-too-large-handler
+  "A handler function that responds with a minimal 413 Content Too Large
+  response."
+  ([_]
+   {:status  413
+    :headers {"Content-Type" "text/plain; charset=UTF-8"}
+    :body    "Uploaded content exceeded limits."})
+  ([request respond _]
+   (respond (content-too-large-handler request))))
+
+(defn- handle-request-and-errors [requestf handlef errorf]
+  ((try
+     (let [request (requestf)]
+       #(handlef request))
+     (catch FileUploadBase$FileUploadIOException _
+       errorf)
+     (catch clojure.lang.ExceptionInfo _
+       errorf))))
+
 (defn wrap-multipart-params
   "Middleware to parse multipart parameters from a request. Adds the
   following keys to the request map:
@@ -154,12 +173,23 @@
                        nil or omitted, there is no limit.
 
   :max-file-count    - the maximum number of files allowed in a single request.
-                       If nil or omitted, there is no limit."
+                       If nil or omitted, there is no limit.
+
+  :error-handler     - a handler that is invoked when the :max-file-size or
+                       :max-file-count limits are exceeded. Defaults to
+                       using the content-too-large-handler function."
   ([handler]
    (wrap-multipart-params handler {}))
   ([handler options]
-   (fn
-     ([request]
-      (handler (multipart-params-request request options)))
-     ([request respond raise]
-      (handler (multipart-params-request request options) respond raise)))))
+   (let [error-handler (:error-handler options content-too-large-handler)]
+     (fn
+       ([request]
+        (handle-request-and-errors
+         #(multipart-params-request request options)
+         handler
+         #(error-handler request)))
+       ([request respond raise]
+        (handle-request-and-errors
+         #(multipart-params-request request options)
+         #(handler % respond raise)
+         #(error-handler request respond raise)))))))

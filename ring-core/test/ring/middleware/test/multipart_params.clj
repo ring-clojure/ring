@@ -188,7 +188,8 @@
                        "Content-Type: text/plain\r\n\r\n"
                        "foobar\r\n"
                        "--XXXX--")
-        headers {"content-type" (str "multipart/form-data; boundary=XXXX")}]
+        headers {"content-type" (str "multipart/form-data; boundary=XXXX")}
+        handler (constantly {:status 200, :headers {}, :body "OK"})]
     (is (thrown? org.apache.commons.fileupload.FileUploadBase$FileUploadIOException
                  (multipart-params-request
                   {:headers headers, :body (string-input-stream form-body)}
@@ -196,4 +197,16 @@
     (is (thrown? clojure.lang.ExceptionInfo
                  (multipart-params-request
                   {:headers headers, :body (string-input-stream form-body)}
-                  {:max-file-count 1})))))
+                  {:max-file-count 1})))
+    (let [response ((wrap-multipart-params handler {:max-file-size 6})
+                    {:headers headers, :body (string-input-stream form-body)})]
+      (is (= 413 (:status response))))
+    (let [response ((wrap-multipart-params handler {:max-file-size 9})
+                    {:headers headers, :body (string-input-stream form-body)})]
+      (is (= 200 (:status response))))
+    (let [response ((wrap-multipart-params handler {:max-file-count 1})
+                    {:headers headers, :body (string-input-stream form-body)})]
+      (is (= 413 (:status response))))
+    (let [response ((wrap-multipart-params handler {:max-file-count 2})
+                    {:headers headers, :body (string-input-stream form-body)})]
+      (is (= 200 (:status response))))))
