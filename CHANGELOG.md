@@ -1,3 +1,11 @@
+## 1.10.0 (2023-04-03)
+
+* Added `:set-cookies?` option to session middleware (#456)
+* Added `:max-file-size` option to multipart middleware (#476)
+* Added `:max-file-count` option to multipart middleware (#476)
+* Fixed multipart middleware compile under GraalVM (#430)
+* Updated Jetty to 9.4.51.v20230217
+
 ## 1.9.6 (2022-09-09)
 
 * Updated Jetty to 9.4.48.v20220622 (#467)
