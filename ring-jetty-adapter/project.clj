@@ -7,7 +7,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [ring/ring-core "1.9.6"]
                  [ring/ring-servlet "1.9.6"]
-                 [org.eclipse.jetty/jetty-server "9.4.48.v20220622"]]
+                 [org.eclipse.jetty/jetty-server "9.4.51.v20230217"]]
   :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10:+1.11" "test"]}
   :profiles
   {:dev  {:dependencies [[clj-http "3.12.3"]
