@@ -168,7 +168,10 @@
 (defn- ^Server create-server [options]
   (let [pool   (or (:thread-pool options) (create-threadpool options))
         server (Server. pool)]
-    (when (:http? options true)
+    (when (:http? options (or ;; default is enabled when no socket specified
+                              (not (:unix-socket options))
+                              ;; enabled with socket when host/port set
+                              (some options [:host :port])))
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
@@ -190,13 +193,13 @@
   :join?                  - blocks the thread until server ends
                             (defaults to true)
   :daemon?                - use daemon threads (defaults to false)
-  :http?                  - listen on :port for HTTP traffic (defaults to true)
+  :http?                  - listen on :port for HTTP traffic (defaults to true
+                            unless :unix-socket is set)
   :ssl?                   - allow connections over HTTPS
   :ssl-port               - the SSL port to listen on (defaults to 443, implies
                             :ssl? is true)
-  :unix-socket            - File to be used as a Unix domain socket. will be
-                            passed to [io/file]. Use with `:http? false` to
-                            disable serving on a network port as well.
+  :unix-socket            - File to be used as a Unix domain socket; will be
+                            passed to [io/file]
   :ssl-context            - an optional SSLContext to use for SSL connections
   :exclude-ciphers        - when :ssl? is true, additionally exclude these
                             cipher suites
