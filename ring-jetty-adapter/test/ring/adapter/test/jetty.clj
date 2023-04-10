@@ -12,8 +12,12 @@
            [java.net ServerSocket ConnectException]
            [java.security KeyStore]
            [java.io SequenceInputStream ByteArrayInputStream InputStream
-                    IOException]
-           [org.apache.http MalformedChunkCodingException]))
+                    IOException
+                    File]
+           [java.util.function Supplier]
+           [org.apache.http MalformedChunkCodingException]
+           [io.netty.channel.unix DomainSocketAddress]
+           [reactor.netty.http.client HttpClient]))
 
 (defn- hello-world [request]
   {:status  200
@@ -97,6 +101,18 @@
         (is (.startsWith (get-in response [:headers "content-type"])
                          "text/plain"))
         (is (= (:body response) "Hello World")))))
+
+  (testing "socket server"
+    (let [sock (File/createTempFile "ring-jetty-server-" ".sock")]
+      (.delete sock)
+      (with-server hello-world {:unix-socket sock}
+        (is (= (-> (HttpClient/create)
+                   (.remoteAddress
+                     (reify Supplier
+                       (get [_]
+                         (DomainSocketAddress. (.getAbsolutePath sock)))))
+                   .get (.uri "/") .responseContent .aggregate .asString .block)
+               "Hello World")))))
 
   (testing "HTTPS server"
     (with-server hello-world {:port test-port
