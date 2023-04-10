@@ -133,14 +133,18 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- socket-connector ^UnixSocketConnector [^Server server options]
+(defn- socket-connector
+  ^UnixSocketConnector [^Server server {:keys [unix-socket] :as options}]
   (when (->> (System/getProperty "os.name")
              (re-find #"(?i)^windows"))
     (throw (ex-info "Unix sockets not supported on windows"
                     {:os (System/getProperty "os.name")
-                     :unix-socket (:unix-socket options)})))
+                     :unix-socket unix-socket})))
   (let [http-factory (HttpConnectionFactory. (http-config options))
-        socket (io/file (:unix-socket options))]
+        socket (io/file unix-socket)]
+    (when (.exists socket)
+      (throw (ex-info "File already exists at socket path; should be deleted before starting server"
+                      {:unix-socket unix-socket})))
     (.deleteOnExit socket)
     (doto (UnixSocketConnector.
             server
@@ -199,7 +203,8 @@
   :ssl-port               - the SSL port to listen on (defaults to 443, implies
                             :ssl? is true)
   :unix-socket            - File to be used as a Unix domain socket; will be
-                            passed to [io/file]
+                            passed to [io/file]. Ensure there is no file at
+                            this location when starting the server.
   :ssl-context            - an optional SSLContext to use for SSL connections
   :exclude-ciphers        - when :ssl? is true, additionally exclude these
                             cipher suites

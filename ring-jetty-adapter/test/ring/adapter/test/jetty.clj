@@ -112,7 +112,12 @@
                        (get [_]
                          (DomainSocketAddress. (.getAbsolutePath sock)))))
                    .get (.uri "/") .responseContent .aggregate .asString .block)
-               "Hello World")))))
+               "Hello World")
+            "able to serve basic request")
+        (is (thrown-with-msg?
+              clojure.lang.ExceptionInfo #"File already exists"
+              (run-jetty hello-world {:unix-socket sock, :join? false}))
+            "starting a new server on existing socket should fail"))))
 
   (testing "HTTPS server"
     (with-server hello-world {:port test-port
