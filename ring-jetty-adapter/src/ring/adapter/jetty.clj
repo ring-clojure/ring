@@ -20,6 +20,7 @@
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
            [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
+(set! *warn-on-reflection* true)
 
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
@@ -133,10 +134,13 @@
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
 (defn- socket-connector ^UnixSocketConnector [^Server server options]
+  (when (->> (System/getProperty "os.name")
+             (re-find #"(?i)^windows"))
+    (throw (ex-info "Unix sockets not supported on windows"
+                    {:os (System/getProperty "os.name")
+                     :unix-socket (:unix-socket options)})))
   (let [http-factory (HttpConnectionFactory. (http-config options))
-        socket (io/file (:socket options))]
-    (when (.exists socket)
-      (io/delete-file socket))
+        socket (io/file (:unix-socket options))]
     (.deleteOnExit socket)
     (doto (UnixSocketConnector.
             server
@@ -168,7 +172,7 @@
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
-    (when (:socket options)
+    (when (:unix-socket options)
       (.addConnector server (socket-connector server options)))
     server))
 
@@ -190,7 +194,7 @@
   :ssl?                   - allow connections over HTTPS
   :ssl-port               - the SSL port to listen on (defaults to 443, implies
                             :ssl? is true)
-  :socket                 - File to be used as a Unix domain socket. will be
+  :unix-socket            - File to be used as a Unix domain socket. will be
                             passed to [io/file]. Use with `:http? false` to
                             disable serving on a network port as well.
   :ssl-context            - an optional SSLContext to use for SSL connections
