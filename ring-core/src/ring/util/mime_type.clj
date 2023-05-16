@@ -86,6 +86,7 @@
    "ts"       "video/mp2t"
    "ttf"      "font/ttf"
    "txt"      "text/plain"
+   "wasm"     "application/wasm"
    "webm"     "video/webm"
    "wmv"      "video/x-ms-wmv"
    "woff"     "font/woff"
