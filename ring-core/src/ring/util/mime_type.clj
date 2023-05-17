@@ -88,6 +88,7 @@
    "txt"      "text/plain"
    "wasm"     "application/wasm"
    "webm"     "video/webm"
+   "webp"     "image/webp"
    "wmv"      "video/x-ms-wmv"
    "woff"     "font/woff"
    "woff2"    "font/woff2"
