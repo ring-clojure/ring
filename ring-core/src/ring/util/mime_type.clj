@@ -94,6 +94,7 @@
    "woff2"    "font/woff2"
    "xbm"      "image/x-xbitmap"
    "xls"      "application/vnd.ms-excel"
+   "xlsx"     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
    "xml"      "text/xml"
    "xpm"      "image/x-xpixmap"
    "xwd"      "image/x-xwindowdump"
