@@ -6,7 +6,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [ring/ring-codec "1.2.0"]
-                 [commons-io "2.11.0"]
+                 [commons-io "2.13.0"]
                  [commons-fileupload "1.5"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
