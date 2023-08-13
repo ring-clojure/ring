@@ -192,7 +192,7 @@
         handler       (constantly {:status 200, :headers {}, :body "OK"})
         handler-async (fn [_ respond _]
                         (respond {:status 200, :headers {}, :body "OK"}))]
-    (is (thrown? org.apache.commons.fileupload.FileUploadBase$FileUploadIOException
+    (is (thrown? org.apache.commons.fileupload2.core.FileUploadException
                  (multipart-params-request
                   {:headers headers, :body (string-input-stream form-body)}
                   {:max-file-size 6})))
