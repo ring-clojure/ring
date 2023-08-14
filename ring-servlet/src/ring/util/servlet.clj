@@ -4,20 +4,21 @@
             [ring.core.protocols :as protocols])
   (:import [java.util Locale]
            [javax.servlet AsyncContext]
-           [javax.servlet.http HttpServlet
-                               HttpServletRequest
-                               HttpServletResponse]))
+           [javax.servlet.http
+            HttpServlet
+            HttpServletRequest
+            HttpServletResponse]))
 
 (defn- get-headers [^HttpServletRequest request]
   (reduce
-    (fn [headers, ^String name]
-      (assoc headers
-        (.toLowerCase name Locale/ENGLISH)
-        (->> (.getHeaders request name)
-             (enumeration-seq)
-             (string/join ","))))
-    {}
-    (enumeration-seq (.getHeaderNames request))))
+   (fn [headers ^String name]
+     (assoc headers
+            (.toLowerCase name Locale/ENGLISH)
+            (->> (.getHeaders request name)
+                 (enumeration-seq)
+                 (string/join ","))))
+   {}
+   (enumeration-seq (.getHeaderNames request))))
 
 (defn- get-content-length [^HttpServletRequest request]
   (let [length (.getContentLength request)]
@@ -148,13 +149,13 @@
     (defservice my-handler)
     (defservice \"my-prefix-\" my-handler)"
   ([handler]
-     `(defservice "-" ~handler))
+   `(defservice "-" ~handler))
   ([prefix handler]
    (if (map? handler)
      `(defservice "-" ~prefix ~handler)
      `(defservice ~prefix ~handler {})))
   ([prefix handler options]
-     `(let [service-method# (make-service-method ~handler ~options)]
-        (defn ~(symbol (str prefix "service"))
-          [servlet# request# response#]
-          (service-method# servlet# request# response#)))))
+   `(let [service-method# (make-service-method ~handler ~options)]
+      (defn ~(symbol (str prefix "service"))
+        [servlet# request# response#]
+        (service-method# servlet# request# response#)))))
