@@ -82,12 +82,13 @@
   (doto (KeyStore/getInstance (KeyStore/getDefaultType)) (.load nil)))
 
 (def test-ssl-options
-  {:port         test-port
-   :ssl?         true
-   :ssl-port     test-ssl-port
-   :keystore     nil-keystore
-   :key-password "hunter2"
-   :join?        false})
+  {:port            test-port
+   :ssl?            true
+   :ssl-port        test-ssl-port
+   :keystore        nil-keystore
+   :key-password    "hunter2"
+   :join?           false
+   :sni-host-check? false})
 
 (deftest test-run-jetty
   (testing "HTTP server"
@@ -102,7 +103,8 @@
     (with-server hello-world {:port test-port
                               :ssl-port test-ssl-port
                               :keystore "test/keystore.jks"
-                              :key-password "password"}
+                              :key-password "password"
+                              :sni-host-check? false}
       (let [response (http/get test-ssl-url {:insecure? true})]
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))))
@@ -122,7 +124,8 @@
                               :port test-port
                               :ssl-port test-ssl-port
                               :keystore "test/keystore.jks"
-                              :key-password "password"}
+                              :key-password "password"
+                              :sni-host-check? false}
       (let [response (http/get test-ssl-url {:insecure? true})]
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))
@@ -135,7 +138,8 @@
                                       :key-password "password"
                                       :port test-port
                                       :ssl? true
-                                      :ssl-port test-ssl-port}
+                                      :ssl-port test-ssl-port
+                                      :sni-host-check? false}
       (is (thrown? java.io.IOException
                    (http/get test-ssl-url {:insecure? true}))
           "missing client certs will cause an exception")
@@ -153,7 +157,8 @@
                                       :key-password "password"
                                       :port test-port
                                       :ssl? true
-                                      :ssl-port test-ssl-port}
+                                      :ssl-port test-ssl-port
+                                      :sni-host-check? false}
       (let [response (http/get test-ssl-url {:insecure? true
                                              :throw-exceptions false})]
         (is (= 403 (:status response))
@@ -169,7 +174,8 @@
   (testing "HTTPS server using :ssl-context"
     (with-server hello-world {:port test-port
                               :ssl-port test-ssl-port
-                              :ssl-context (ssl-context)}
+                              :ssl-context (ssl-context)
+                              :sni-host-check? false}
       (let [response (http/get test-ssl-url {:insecure? true})]
         (is (= (:status response) 200))
         (is (= (:body response) "Hello World")))))
@@ -179,7 +185,8 @@
                                       :ssl-context (ssl-context)
                                       :port test-port
                                       :ssl? true
-                                      :ssl-port test-ssl-port}
+                                      :ssl-port test-ssl-port
+                                      :sni-host-check? false}
       (is (thrown? java.io.IOException
                    (http/get test-ssl-url {:insecure? true}))
           "missing client certs will cause an exception")
@@ -196,7 +203,8 @@
                                       :ssl-context (ssl-context)
                                       :port test-port
                                       :ssl? true
-                                      :ssl-port test-ssl-port}
+                                      :ssl-port test-ssl-port
+                                      :sni-host-check? false}
       (let [response (http/get test-ssl-url {:insecure? true
                                              :throw-exceptions false})]
         (is (= 403 (:status response))
@@ -243,7 +251,8 @@
                                          :keystore "test/keystore.jks"
                                          :key-password "password"
                                          :join? false
-                                         :max-idle-time 5000})
+                                         :max-idle-time 5000
+                                         :sni-host-check? false})
           connectors (. server getConnectors)]
       (is (= 5000 (. (first connectors) getIdleTimeout)))
       (is (= 5000 (. (second connectors) getIdleTimeout)))
@@ -254,6 +263,7 @@
                                          :ssl-port test-ssl-port
                                          :keystore "test/keystore.jks"
                                          :key-password "password"
+                                         :sni-host-check? false
                                          :join? false})
           connectors (. server getConnectors)]
       (is (= 200000 (. (first connectors) getIdleTimeout)))
