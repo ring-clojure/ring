@@ -8,9 +8,7 @@
                                HttpServletRequest
                                HttpServletResponse]))
 
-(defn- get-headers
-  "Creates a name/value map of all the request headers."
-  [^HttpServletRequest request]
+(defn- get-headers [^HttpServletRequest request]
   (reduce
     (fn [headers, ^String name]
       (assoc headers
@@ -21,15 +19,11 @@
     {}
     (enumeration-seq (.getHeaderNames request))))
 
-(defn- get-content-length
-  "Returns the content length, or nil if there is no content."
-  [^HttpServletRequest request]
+(defn- get-content-length [^HttpServletRequest request]
   (let [length (.getContentLength request)]
     (when (>= length 0) length)))
 
-(defn- get-client-cert
-  "Returns the SSL client certificate of the request, if one exists."
-  [^HttpServletRequest request]
+(defn- get-client-cert [^HttpServletRequest request]
   (first (.getAttribute request "javax.servlet.request.X509Certificate")))
 
 (defn build-request-map
@@ -64,9 +58,7 @@
           :servlet-context      (.getServletContext servlet)
           :servlet-context-path (.getContextPath request)}))
 
-(defn- set-headers
-  "Update a HttpServletResponse with a map of headers."
-  [^HttpServletResponse response, headers]
+(defn- set-headers [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
