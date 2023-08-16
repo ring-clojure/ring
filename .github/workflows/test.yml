@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '8'
+          java-version: '11'
 
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@10.1
@@ -24,6 +24,10 @@ jobs:
           path: ~/.m2/repository
           key: cljdeps-${{ hashFiles('project.clj', 'ring-*/project.clj') }}
           restore-keys: cljdeps-
+
+      - name: Install undeployed Jakarta servlet project locally
+        run: lein install
+        working-directory: ./ring-jakarta-servlet
 
       - name: Run tests
         run: lein sub test-all
