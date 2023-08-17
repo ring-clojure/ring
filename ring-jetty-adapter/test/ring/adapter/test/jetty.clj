@@ -604,16 +604,17 @@
   (swap! call-count inc)
   (raise (ex-info "unhandled exception" {})))
 
-(testing "broken handler is only called once"
-  (reset! call-count 0)
-  (with-server broken-handler {:port test-port}
-    (try (http/get test-url)
-      (catch Exception _ nil))
-    (is (= 1 @call-count))))
+(deftest broken-handler-test
+  (testing "broken handler is only called once"
+    (reset! call-count 0)
+    (with-server broken-handler {:port test-port}
+      (try (http/get test-url)
+           (catch Exception _ nil))
+      (is (= 1 @call-count))))
 
-(testing "broken async handler is only called once"
-  (reset! call-count 0)
-  (with-server broken-handler-cps {:async? true :port test-port}
-    (try (http/get test-url)
-      (catch Exception _ nil))
-    (is (= 1 @call-count))))
+  (testing "broken async handler is only called once"
+    (reset! call-count 0)
+    (with-server broken-handler-cps {:async? true :port test-port}
+      (try (http/get test-url)
+           (catch Exception _ nil))
+      (is (= 1 @call-count)))))
