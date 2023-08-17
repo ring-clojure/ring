@@ -1,3 +1,14 @@
+## 1.11.0-alpha1 (2023-08-17)
+
+* Added experimental websocket support (#484)
+* Added ring-jakarta-servlet project
+* Added .xlsx extension to default mimetypes (#480)
+* Added .webp extension to default mimetypes (#460)
+* Added .wasm extension to default mimetypes (#479)
+* Updated Commons-FileUpload to 2.0.0-M1 (#483)
+* Updated Jetty to 11.0.15 (#481)
+* Updated Commons-IO to 2.13.0
+
 ## 1.10.0 (2023-04-03)
 
 * Added `:set-cookies?` option to session middleware (#456)

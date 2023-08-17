@@ -1,12 +1,12 @@
-(defproject ring/ring-jetty-adapter "1.10.0"
+(defproject ring/ring-jetty-adapter "1.11.0-alpha1"
   :description "Ring Jetty adapter."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [ring/ring-core "1.10.0"]
-                 [org.ring-clojure/ring-jakarta-servlet "1.10.0"]
+                 [ring/ring-core "1.11.0-alpha1"]
+                 [org.ring-clojure/ring-jakarta-servlet "1.11.0-alpha1"]
                  [org.eclipse.jetty/jetty-server "11.0.15"]
                  [org.eclipse.jetty.websocket/websocket-jetty-server "11.0.15"]]
   :aliases {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10:+1.11" "test"]}
