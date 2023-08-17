@@ -11,11 +11,11 @@
             [ring.util.codec :refer [assoc-conj]]
             [ring.util.request :as req]
             [ring.util.parsing :as parsing])
-  (:import [org.apache.commons.fileupload
-            UploadContext
-            FileItemStream
-            FileUpload
-            FileUploadBase$FileUploadIOException
+  (:import [org.apache.commons.fileupload2.core
+            AbstractFileUpload
+            RequestContext
+            FileItemInput
+            FileUploadException
             ProgressListener]
            [org.apache.commons.io IOUtils]))
 
@@ -24,27 +24,28 @@
     (update [_ bytes-read content-length item-count]
       (progress-fn request bytes-read content-length item-count))))
 
-(defn- set-progress-listener [^FileUpload upload request progress-fn]
+(defn- set-progress-listener [^AbstractFileUpload upload request progress-fn]
   (when progress-fn
     (.setProgressListener upload (progress-listener request progress-fn))))
 
 (defn- file-upload [request {:keys [progress-fn max-file-size]}]
-  (doto (FileUpload.)
-    (.setFileSizeMax (or max-file-size -1))
+  (doto (proxy [AbstractFileUpload] [])
+    ;; There seems to be an off-by-one bug in FileUpload 2.0.0-M1 that requires
+    ;; us to increment the max-file-size option to get it to work correctly.
+    (.setFileSizeMax (if max-file-size (inc max-file-size) -1))
     (set-progress-listener request progress-fn)))
 
 (defn- multipart-form? [request]
   (= (req/content-type request) "multipart/form-data"))
 
-(defn- request-context ^UploadContext [request encoding]
-  (reify UploadContext
+(defn- request-context ^RequestContext [request encoding]
+  (reify RequestContext
     (getContentType [_]       (get-in request [:headers "content-type"]))
     (getContentLength [_]     (or (req/content-length request) -1))
-    (contentLength [_]        (or (req/content-length request) -1))
     (getCharacterEncoding [_] encoding)
     (getInputStream [_]       (:body request))))
 
-(defn- file-item-iterable [^FileUpload upload context]
+(defn- file-item-iterable [^AbstractFileUpload upload ^RequestContext context]
   (reify Iterable
     (iterator [_]
       (let [it (.getItemIterator upload context)]
@@ -52,18 +53,18 @@
           (hasNext [_] (.hasNext it))
           (next [_] (.next it)))))))
 
-(defn- parse-content-type-charset [^FileItemStream item]
+(defn- parse-content-type-charset [^FileItemInput item]
   (some->> (.getContentType item) parsing/find-content-type-charset))
 
-(defn- parse-file-item [^FileItemStream item store]
+(defn- parse-file-item [^FileItemInput item store]
   {:field? (.isFormField item)
    :name   (.getFieldName item)
    :value  (if (.isFormField item)
-             {:bytes    (IOUtils/toByteArray (.openStream item))
+             {:bytes    (IOUtils/toByteArray (.getInputStream item))
               :encoding (parse-content-type-charset item)}
              (store {:filename     (.getName item)
                      :content-type (.getContentType item)
-                     :stream       (.openStream item)}))})
+                     :stream       (.getInputStream item)}))})
 
 (defn- find-param [params name]
   (first (filter #(= name (:name %)) params)))
@@ -133,7 +134,7 @@
   ((try
      (let [request (requestf)]
        #(handlef request))
-     (catch FileUploadBase$FileUploadIOException _
+     (catch FileUploadException _
        errorf)
      (catch clojure.lang.ExceptionInfo _
        errorf))))
