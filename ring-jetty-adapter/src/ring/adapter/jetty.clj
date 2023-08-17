@@ -2,7 +2,8 @@
   "A Ring adapter that uses the Jetty 9 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
-  (:require [ring.util.servlet :as servlet])
+  (:require [clojure.java.io :as io]
+            [ring.util.servlet :as servlet])
   (:import [org.eclipse.jetty.server
             Request
             Server
@@ -13,11 +14,13 @@
             SslConnectionFactory
             SecureRequestCustomizer]
            [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.unixsocket UnixSocketConnector]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
            [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [javax.servlet.http HttpServletRequest HttpServletResponse]))
+(set! *warn-on-reflection* true)
 
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
@@ -130,6 +133,25 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
+(defn- socket-connector
+  ^UnixSocketConnector [^Server server {:keys [unix-socket] :as options}]
+  (when (->> (System/getProperty "os.name")
+             (re-find #"(?i)^windows"))
+    (throw (ex-info "Unix sockets not supported on windows"
+                    {:os (System/getProperty "os.name")
+                     :unix-socket unix-socket})))
+  (let [http-factory (HttpConnectionFactory. (http-config options))
+        socket (io/file unix-socket)]
+    (when (.exists socket)
+      (throw (ex-info "File already exists at socket path; should be deleted before starting server"
+                      {:unix-socket unix-socket})))
+    (.deleteOnExit socket)
+    (doto (UnixSocketConnector.
+            server
+            #^"[Lorg.eclipse.jetty.server.ConnectionFactory;" (into-array ConnectionFactory [http-factory]))
+      (.setUnixSocket (.getAbsolutePath socket))
+      (.setIdleTimeout (options :max-idle-time 200000)))))
+
 (defn- ^ThreadPool create-threadpool [options]
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
@@ -150,10 +172,15 @@
 (defn- ^Server create-server [options]
   (let [pool   (or (:thread-pool options) (create-threadpool options))
         server (Server. pool)]
-    (when (:http? options true)
+    (when (:http? options (or ;; default is enabled when no socket specified
+                              (not (:unix-socket options))
+                              ;; enabled with socket when host/port set
+                              (some options [:host :port])))
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
+    (when (:unix-socket options)
+      (.addConnector server (socket-connector server options)))
     server))
 
 (defn ^Server run-jetty
@@ -170,10 +197,14 @@
   :join?                  - blocks the thread until server ends
                             (defaults to true)
   :daemon?                - use daemon threads (defaults to false)
-  :http?                  - listen on :port for HTTP traffic (defaults to true)
+  :http?                  - listen on :port for HTTP traffic (defaults to true
+                            unless :unix-socket is set)
   :ssl?                   - allow connections over HTTPS
   :ssl-port               - the SSL port to listen on (defaults to 443, implies
                             :ssl? is true)
+  :unix-socket            - File to be used as a Unix domain socket; will be
+                            passed to [io/file]. Ensure there is no file at
+                            this location when starting the server.
   :ssl-context            - an optional SSLContext to use for SSL connections
   :exclude-ciphers        - when :ssl? is true, additionally exclude these
                             cipher suites
