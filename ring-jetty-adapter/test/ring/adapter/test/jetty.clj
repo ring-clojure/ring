@@ -3,9 +3,12 @@
             [ring.adapter.jetty :refer :all]
             [clj-http.client :as http]
             [clojure.java.io :as io]
+            [hato.websocket :as hato]
             [less.awful.ssl :as less-ssl]
-            [ring.core.protocols :as p])
-  (:import [org.eclipse.jetty.util.thread QueuedThreadPool]
+            [ring.core.protocols :as p]
+            [ring.websocket :as ws])
+  (:import [java.nio ByteBuffer]
+           [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
@@ -628,3 +631,89 @@
       (try (http/get test-url)
            (catch Exception _ nil))
       (is (= 1 @call-count)))))
+
+(def test-websocket-url (str "ws://localhost:" test-port))
+
+(defn- buf->str [buffer]
+  (let [bs (byte-array (.capacity buffer))]
+    (.get buffer bs)
+    (String. bs)))
+
+(deftest run-jetty-websocket-test
+  (testing "receiving websocket messages"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ _] (swap! log conj [:open]))
+                      (on-message [_ _ msg] (swap! log conj [:message msg]))
+                      (on-pong [_ _ data]
+                        (swap! log conj [:pong (buf->str data)]))
+                      (on-error [_ _ ex] (swap! log conj [:error ex]))
+                      (on-close [_ _ c r] (swap! log conj [:close c r])))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url {})]
+          @(hato/send! ws "foo")
+          @(hato/pong! ws (ByteBuffer/wrap (.getBytes "bar")))
+          @(hato/close! ws 1000 "Normal close")
+          ;; Short wait to prevent server from shutting down too abruptly
+          (Thread/sleep 100)))
+      (is (= [[:open]
+              [:message "foo"]
+              [:pong "bar"]
+              [:close 1000 "Normal close"]]
+             @log))))
+
+  (testing "sending websocket messages"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ sock]
+                        (ws/send sock "Hello")
+                        (ws/send sock (.getBytes "World")))
+                      (on-message [_ sock msg]
+                        (if (string? msg)
+                          (ws/send sock (str "t: " msg))
+                          (ws/send sock (str "b: " (buf->str msg)))))
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-message
+                                   (fn [_ msg _]
+                                     (if (instance? ByteBuffer msg)
+                                       (swap! log conj [:b (buf->str msg)])
+                                       (swap! log conj [:t (str msg)])))})]
+          @(hato/send! ws "one")
+          @(hato/send! ws (ByteBuffer/wrap (.getBytes "two")))
+          (Thread/sleep 100)
+          @(hato/close! ws 1000 "Normal close")
+          (Thread/sleep 100)))
+      (is (= [[:t "Hello"]
+              [:b "World"]
+              [:t "t: one"]
+              [:t "b: two"]]
+             @log))))
+
+  (testing "ping pong"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ sock]
+                        (ws/ping sock (ByteBuffer/wrap (.getBytes "foo")))
+                        (swap! log conj [:ping "foo"]))
+                      (on-message [_ _ _])
+                      (on-pong [_ _ data]
+                        (swap! log conj [:pong (buf->str data)]))
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url {})]
+          (Thread/sleep 100)
+          @(hato/close! ws)
+          (Thread/sleep 100)))
+      (is (= [[:ping "foo"] [:pong "foo"]]
+             @log)))))

@@ -2,8 +2,10 @@
   "A Ring adapter that uses the Jetty 9 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
-  (:require [ring.util.jakarta.servlet :as servlet])
-  (:import [org.eclipse.jetty.server
+  (:require [ring.util.jakarta.servlet :as servlet]
+            [ring.websocket :as ws])
+  (:import [java.nio ByteBuffer]
+           [org.eclipse.jetty.server
             Request
             Server
             ServerConnector
@@ -12,55 +14,126 @@
             HttpConnectionFactory
             SslConnectionFactory
             SecureRequestCustomizer]
+           [org.eclipse.jetty.servlet ServletContextHandler ServletHandler]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
+           [org.eclipse.jetty.websocket.server
+            JettyWebSocketServerContainer
+            JettyWebSocketCreator]
+           [org.eclipse.jetty.websocket.api
+            Session
+            WebSocketConnectionListener
+            WebSocketListener
+            WebSocketPingPongListener]
+           [org.eclipse.jetty.websocket.server.config
+            JettyWebSocketServletContainerInitializer]
            [jakarta.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
            [jakarta.servlet.http HttpServletRequest HttpServletResponse]))
 
-(defn- ^AbstractHandler proxy-handler [handler]
-  (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request ^HttpServletRequest request response]
-      (when-not (= (.getDispatcherType request) DispatcherType/ERROR)
-        (let [request-map  (servlet/build-request-map request)
-              response-map (handler request-map)]
-          (servlet/update-servlet-response response response-map)
-          (.setHandled base-request true))))))
+(defn- websocket-socket [^Session session]
+  (let [remote (.getRemote session)]
+    (reify ws/Socket
+      (-send [_ message]
+        (if (string? message)
+          (.sendString remote message)
+          (.sendBytes remote message)))
+      (-ping [_ data]
+        (.sendPing remote data))
+      (-pong [_ data]
+        (.sendPong remote data))
+      (-close [_ status reason]
+        (.close session status reason)))))
+
+(defn- websocket-listener [listener]
+  (let [socket (volatile! nil)]
+    (reify
+      WebSocketConnectionListener
+      (onWebSocketConnect [_ session]
+        (vreset! socket (websocket-socket session))
+        (ws/on-open listener @socket))
+      (onWebSocketClose [_ status reason]
+        (ws/on-close listener @socket status reason))
+      (onWebSocketError [_ throwable]
+        (ws/on-error listener @socket throwable))
+      WebSocketListener
+      (onWebSocketText [_ message]
+        (ws/on-message listener @socket message))
+      (onWebSocketBinary [_ payload offset length]
+        (let [buffer (ByteBuffer/wrap payload offset length)]
+          (ws/on-message listener @socket buffer)))
+      WebSocketPingPongListener
+      (onWebSocketPing [_ _])
+      (onWebSocketPong [_ payload]
+        (ws/on-pong listener @socket payload)))))
+
+(defn- websocket-creator [{listener ::ws/listener}]
+  (reify JettyWebSocketCreator
+    (createWebSocket [_ _ _]
+      (websocket-listener listener))))
+
+(defn- upgrade-to-websocket [^HttpServletRequest request response response-map]
+  (let [context   (.getServletContext request)
+        container (JettyWebSocketServerContainer/getContainer context)
+        creator   (websocket-creator response-map)]
+    (.upgrade container creator request response)))
+
+(defn- ^ServletHandler proxy-handler [handler]
+  (proxy [ServletHandler] []
+    (doHandle [_ ^Request base-request request response]
+      (let [request-map  (servlet/build-request-map request)
+            response-map (handler request-map)]
+        (try
+          (if (ws/websocket-response? response-map)
+            (upgrade-to-websocket request response response-map)
+            (servlet/update-servlet-response response response-map))
+          (finally
+            (.setHandled base-request true)))))))
 
 (defn- async-jetty-raise [^AsyncContext context ^HttpServletResponse response]
   (fn [^Throwable exception]
     (.sendError response 500 (.getMessage exception))
     (.complete context)))
 
-(defn- async-jetty-respond [context response]
+(defn- async-jetty-respond [context request response]
   (fn [response-map]
-    (servlet/update-servlet-response response context response-map)))
+    (if (ws/websocket-response? response-map)
+      (upgrade-to-websocket request response response-map)
+      (servlet/update-servlet-response response context response-map))))
 
 (defn- async-timeout-listener [request context response handler]
   (proxy [AsyncListener] []
     (onTimeout [^AsyncEvent _]
       (handler (servlet/build-request-map request)
-               (async-jetty-respond context response)
+               (async-jetty-respond context request response)
                (async-jetty-raise context response)))
     (onComplete [^AsyncEvent _])
     (onError [^AsyncEvent _])
     (onStartAsync [^AsyncEvent _])))
 
-(defn- ^AbstractHandler async-proxy-handler [handler timeout timeout-handler]
-  (proxy [AbstractHandler] []
-    (handle [_ ^Request base-request ^HttpServletRequest request ^HttpServletResponse response]
+(defn- ^ServletHandler async-proxy-handler [handler timeout timeout-handler]
+  (proxy [ServletHandler] []
+    (doHandle [_ ^Request base-request request response]
       (let [^AsyncContext context (.startAsync request)]
         (.setTimeout context timeout)
         (when timeout-handler
           (.addListener
            context
            (async-timeout-listener request context response timeout-handler)))
-        (handler
-         (servlet/build-request-map request)
-         (async-jetty-respond context response)
-         (async-jetty-raise context response))
-        (.setHandled base-request true)))))
+        (try
+          (handler
+           (servlet/build-request-map request)
+           (async-jetty-respond context request response)
+           (async-jetty-raise context response))
+          (finally
+            (.setHandled base-request true)))))))
+
+(defn- ^ServletContextHandler context-handler [proxy-handler]
+  (doto (ServletContextHandler.)
+    (.setServletHandler proxy-handler)
+    (.setAllowNullPathInfo true)
+    (JettyWebSocketServletContainerInitializer/configure nil)))
 
 (defn- ^ServerConnector server-connector [^Server server & factories]
   (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;" (into-array ConnectionFactory factories)))
@@ -213,13 +286,13 @@
   :response-header-size   - the maximum size of a response header (default 8192)
   :send-server-version?   - add Server header to HTTP response (default true)"
   [handler options]
-  (let [server (create-server (dissoc options :configurator))]
-    (if (:async? options)
-      (.setHandler server
-                   (async-proxy-handler handler
-                                        (:async-timeout options 0)
-                                        (:async-timeout-handler options)))
-      (.setHandler server (proxy-handler handler)))
+  (let [server (create-server (dissoc options :configurator))
+        proxy  (if (:async? options)
+                 (async-proxy-handler handler
+                                      (:async-timeout options 0)
+                                      (:async-timeout-handler options))
+                 (proxy-handler handler))]
+    (.setHandler server (context-handler proxy))
     (when-let [configurator (:configurator options)]
       (configurator server))
     (try
