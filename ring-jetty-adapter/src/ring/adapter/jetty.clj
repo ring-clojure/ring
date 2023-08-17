@@ -2,7 +2,7 @@
   "A Ring adapter that uses the Jetty 9 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
-  (:require [ring.util.servlet :as servlet])
+  (:require [ring.util.jakarta.servlet :as servlet])
   (:import [org.eclipse.jetty.server
             Request
             Server
@@ -16,8 +16,8 @@
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
-           [javax.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
-           [javax.servlet.http HttpServletRequest HttpServletResponse]))
+           [jakarta.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
+           [jakarta.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- ^AbstractHandler proxy-handler [handler]
   (proxy [AbstractHandler] []
@@ -113,13 +113,16 @@
           (.addExcludeProtocols context-server protocols))))
     context-server))
 
+
 (defn- ^ServerConnector ssl-connector [^Server server options]
   (let [ssl-port     (options :ssl-port 443)
+        customizer   (doto (SecureRequestCustomizer.)
+                       (.setSniHostCheck (options :sni-host-check? true)))
         http-factory (HttpConnectionFactory.
                       (doto (http-config options)
                         (.setSecureScheme "https")
                         (.setSecurePort ssl-port)
-                        (.addCustomizer (SecureRequestCustomizer.))))
+                        (.addCustomizer customizer)))
         ssl-context  (ssl-context-factory options)
         ssl-factory  (SslConnectionFactory. ssl-context "http/1.1")]
     (when-let [scan-interval (options :keystore-scan-interval)]
@@ -175,6 +178,7 @@
   :ssl-port               - the SSL port to listen on (defaults to 443, implies
                             :ssl? is true)
   :ssl-context            - an optional SSLContext to use for SSL connections
+  :sni-host-check?        - use SNI to check the hostname (default true)
   :exclude-ciphers        - when :ssl? is true, additionally exclude these
                             cipher suites
   :exclude-protocols      - when :ssl? is true, additionally exclude these
