@@ -26,7 +26,8 @@
             Session
             WebSocketConnectionListener
             WebSocketListener
-            WebSocketPingPongListener]
+            WebSocketPingPongListener
+            WriteCallback]
            [org.eclipse.jetty.websocket.server.config
             JettyWebSocketServletContainerInitializer]
            [jakarta.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
@@ -34,7 +35,8 @@
 
 (defn- websocket-socket [^Session session]
   (let [remote (.getRemote session)]
-    (reify ws/Socket
+    (reify
+      ws/Socket
       (-send [_ message]
         (if (string? message)
           (.sendString remote message)
@@ -44,7 +46,15 @@
       (-pong [_ data]
         (.sendPong remote data))
       (-close [_ status reason]
-        (.close session status reason)))))
+        (.close session status reason))
+      ws/AsyncSocket
+      (-send-async [_ message succeed fail]
+        (let [callback (reify WriteCallback
+                         (writeSuccess [_] (succeed))
+                         (writeFailed [_ ex] (fail ex)))]
+          (if (string? message)
+            (.sendString remote message callback)
+            (.sendBytes remote message callback)))))))
 
 (defn- websocket-listener [listener]
   (let [socket (volatile! nil)]

@@ -28,6 +28,9 @@
   (-pong  [socket data])
   (-close [socket status reason]))
 
+(defprotocol AsyncSocket
+  (-send-async [socket message succeed fail]))
+
 (defprotocol TextData
   (->string [data]))
 
@@ -51,8 +54,11 @@
     :else (throw (ex-info "message is not a valid text or binary data type"
                           {:message message}))))
 
-(defn send [socket message]
-  (-send socket (encode-message message)))
+(defn send
+  ([socket message]
+   (-send socket (encode-message message)))
+  ([socket message succeed fail]
+   (-send-async socket (encode-message message) succeed fail)))
 
 (defn ping
   ([socket]

@@ -718,6 +718,28 @@
       (is (= [[:ping "foo"] [:pong "foo"]]
              @log))))
 
+  (testing "sending websocket messages asynchronously"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ sock]
+                        (ws/send sock "Hello"
+                                 (fn [] (ws/send sock "World" (fn []) (fn [_])))
+                                 (fn [_])))
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-message
+                                   (fn [_ msg _] (swap! log conj (str msg)))})]
+          (Thread/sleep 100)
+          @(hato/close! ws)
+          (Thread/sleep 100)))
+      (is (= ["Hello" "World"] @log))))
+
   (testing "using a map as a listener"
     (let [listener {:on-open (fn [s] [:on-open s])
                     :on-message (fn [s m] [:on-message s m])
