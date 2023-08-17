@@ -25,7 +25,15 @@ jobs:
           key: cljdeps-${{ hashFiles('project.clj', 'ring-*/project.clj') }}
           restore-keys: cljdeps-
 
-      - name: Install undeployed Jakarta servlet project locally
+      - name: Install core project locally
+        run: lein install
+        working-directory: ./ring-core
+
+      - name: Install Java servlet project locally
+        run: lein install
+        working-directory: ./ring-servlet
+
+      - name: Install Jakarta servlet project locally
         run: lein install
         working-directory: ./ring-jakarta-servlet
 
