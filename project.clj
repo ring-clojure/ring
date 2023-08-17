@@ -6,7 +6,7 @@
   :dependencies [[ring/ring-core "1.11.0-alpha1"]
                  [ring/ring-devel "1.11.0-alpha1"]
                  [ring/ring-jetty-adapter "1.11.0-alpha1"]
-                 [ring/ring-jakarta-servlet "1.11.0-alpha1"]]
+                 [org.ring-clojure/ring-jakarta-servlet "1.11.0-alpha1"]]
   :plugins [[lein-sub "0.3.0"]
             [lein-codox "0.10.7"]]
   :sub ["ring-core"
