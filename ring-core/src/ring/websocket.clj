@@ -9,6 +9,19 @@
   (on-error   [listener socket throwable])
   (on-close   [listener socket code reason]))
 
+(extend-protocol Listener
+  clojure.lang.IPersistentMap
+  (on-open [m socket]
+    (when-let [kv (find m :on-open)] ((val kv) socket)))
+  (on-message [m socket message]
+    (when-let [kv (find m :on-message)] ((val kv) socket message)))
+  (on-pong [m socket data]
+    (when-let [kv (find m :on-pong)] ((val kv) socket data)))
+  (on-error [m socket throwable]
+    (when-let [kv (find m :on-error)] ((val kv) socket throwable)))
+  (on-close [m socket code reason]
+    (when-let [kv (find m :on-close)] ((val kv) socket code reason))))
+
 (defprotocol Socket
   (-send  [socket message])
   (-ping  [socket data])
