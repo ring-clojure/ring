@@ -106,12 +106,12 @@
   (for [[key value] attrs]
     (let [attr (name (set-cookie-attrs key))]
       (cond
-        (satisfies? CookieInterval value) (str ";" attr "=" (->seconds value))
-        (satisfies? CookieDateTime value) (str ";" attr "=" (rfc822-format value))
-        (true? value) (str ";" attr)
+        (satisfies? CookieInterval value) (str "; " attr "=" (->seconds value))
+        (satisfies? CookieDateTime value) (str "; " attr "=" (rfc822-format value))
+        (true? value) (str "; " attr)
         (false? value) ""
-        (= :same-site key) (str ";" attr "=" (same-site-values value))
-        :else (str ";" attr "=" value)))))
+        (= :same-site key) (str "; " attr "=" (same-site-values value))
+        :else (str "; " attr "=" value)))))
 
 (defn- write-cookies [cookies encoder]
   (for [[key value] cookies]

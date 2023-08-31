@@ -47,7 +47,7 @@
            (:headers resp)))))
 
 (defn- split-set-cookie [headers]
-  (letfn [(split-header [v] (set (mapcat #(str/split % #";") v)))]
+  (letfn [(split-header [v] (set (mapcat #(str/split % #"; ?") v)))]
     (update-in headers ["Set-Cookie"] split-header)))
 
 (deftest wrap-cookies-set-extra-attrs
@@ -168,6 +168,18 @@
                     (or day 1)
                     0 0 0 0
                     (ZoneId/of "UTC")))
+
+(deftest wrap-cookies-spaces-after-semicolons-test
+  (let [cookies {"a" {:value "b"
+                      :path "/", :secure true, :same-site :lax
+                      :expires (zoned-date-time 2015 12 31)
+                      :max-age (Duration/between (zoned-date-time 2012)
+                                                 (zoned-date-time 2015))}}
+        handler (constantly {:cookies cookies})
+        resp    ((wrap-cookies handler) {})
+        header  (first (get-in resp [:headers "Set-Cookie"]))]
+    (is (re-matches #"([^;]+; )+([^;]+)" header)
+        "spaces after semicolons in Set-Cookie")))
 
 (deftest wrap-cookies-accepts-max-age-from-java-time
   (let [cookies {"a" {:value "b", :path "/",
