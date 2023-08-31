@@ -8,51 +8,37 @@
             [clojure.string :as str]
             [ring.util.parsing :refer [re-token]]))
 
-(def ^{:private true, :doc "RFC6265 cookie-octet"}
-  re-cookie-octet
+;; RFC6265 regular expressions
+(def ^:private re-cookie-octet
   #"[!#$%&'()*+\-./0-9:<=>?@A-Z\[\]\^_`a-z\{\|\}~]")
 
-(def ^{:private true, :doc "RFC6265 cookie-value"}
-  re-cookie-value
+(def ^:private re-cookie-value
   (re-pattern (str "\"" re-cookie-octet "*\"|" re-cookie-octet "*")))
 
-(def ^{:private true, :doc "RFC6265 set-cookie-string"}
-  re-cookie
+(def ^:private re-cookie
   (re-pattern (str "\\s*(" re-token ")=(" re-cookie-value ")\\s*[;,]?")))
 
-(def ^{:private true
-       :doc "Attributes defined by RFC6265 that apply to the Set-Cookie header."}
-  set-cookie-attrs
+(def ^:private set-cookie-attrs
   {:domain "Domain", :max-age "Max-Age", :path "Path"
    :secure "Secure", :expires "Expires", :http-only "HttpOnly"
    :same-site "SameSite"})
 
-(def ^{:private true
-       :doc "Values defined by RFC6265 that apply to the SameSite cookie attribute header."}
-  same-site-values
-  {:strict "Strict"
-   :lax "Lax"
-   :none "None"})
+(def ^:private same-site-values
+  {:strict "Strict", :lax "Lax", :none "None"})
 
-(defn- parse-cookie-header
-  "Turn a HTTP Cookie header into a list of name/value pairs."
-  [header]
+(defn- parse-cookie-header [header]
   (for [[_ name value] (re-seq re-cookie header)]
     [name value]))
 
-(defn- strip-quotes
-  "Strip quotes from a cookie value."
-  [value]
+(defn- strip-quotes [value]
   (str/replace value #"^\"|\"$" ""))
 
 (defn- decode-values [cookies decoder]
   (for [[name value] cookies]
-    (if-let [value (decoder (strip-quotes value))]
+    (when-let [value (decoder (strip-quotes value))]
       [name {:value value}])))
 
-(defn- parse-cookies
-  "Parse the cookies from a request map."
-  [request encoder]
+(defn- parse-cookies [request encoder]
   (if-let [cookie (get-in request [:headers "cookie"])]
     (->> cookie
          parse-cookie-header
@@ -61,9 +47,7 @@
          (into {}))
     {}))
 
-(defn- write-value
-  "Write the main cookie value."
-  [key value encoder]
+(defn- write-value [key value encoder]
   (encoder {key value}))
 
 (defprotocol CookieInterval
@@ -72,7 +56,7 @@
 (defprotocol CookieDateTime
   (rfc822-format [this]))
 
-(defn- ^Class class-by-name [s]
+(defn- class-by-name ^Class [s]
   (try (Class/forName s)
        (catch ClassNotFoundException _)))
 
@@ -81,11 +65,12 @@
     CookieDateTime
     {:rfc822-format
      (eval
-       '(let [fmtr (.. (org.joda.time.format.DateTimeFormat/forPattern "EEE, dd MMM yyyy HH:mm:ss Z")
-                       (withZone org.joda.time.DateTimeZone/UTC)
-                       (withLocale java.util.Locale/US))]
-          (fn [interval]
-            (.print fmtr ^org.joda.time.DateTime interval))))}))
+      '(let [fmtr (.. (org.joda.time.format.DateTimeFormat/forPattern
+                       "EEE, dd MMM yyyy HH:mm:ss Z")
+                      (withZone org.joda.time.DateTimeZone/UTC)
+                      (withLocale java.util.Locale/US))]
+         (fn [interval]
+           (.print fmtr ^org.joda.time.DateTime interval))))}))
 
 (when-let [interval (class-by-name "org.joda.time.Interval")]
   (extend interval
@@ -98,17 +83,16 @@
   (->seconds [this]
     (.get this ChronoUnit/SECONDS)))
 
-(let [java-rfc822-formatter (.. (DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss Z")
-                                (withZone (ZoneId/of "UTC"))
-                                (withLocale Locale/US))]
+(let [java-rfc822-formatter
+      (.. (DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss Z")
+          (withZone (ZoneId/of "UTC"))
+          (withLocale Locale/US))]
   (extend-protocol CookieDateTime
     ZonedDateTime
     (rfc822-format [this]
       (.format java-rfc822-formatter this))))
 
-(defn- valid-attr?
-  "Is the attribute valid?"
-  [[key value]]
+(defn- valid-attr? [[key value]]
   (and (contains? set-cookie-attrs key)
        (not (.contains (str value) ";"))
        (case key
@@ -117,32 +101,26 @@
          :same-site (contains? same-site-values value)
          true)))
 
-(defn- write-attr-map
-  "Write a map of cookie attributes to a string."
-  [attrs]
+(defn- write-attr-map [attrs]
   {:pre [(every? valid-attr? attrs)]}
   (for [[key value] attrs]
-    (let [attr-name (name (set-cookie-attrs key))]
+    (let [attr (name (set-cookie-attrs key))]
       (cond
-        (satisfies? CookieInterval value) (str ";" attr-name "=" (->seconds value))
-        (satisfies? CookieDateTime value) (str ";" attr-name "=" (rfc822-format value))
-        (true? value)  (str ";" attr-name)
+        (satisfies? CookieInterval value) (str ";" attr "=" (->seconds value))
+        (satisfies? CookieDateTime value) (str ";" attr "=" (rfc822-format value))
+        (true? value) (str ";" attr)
         (false? value) ""
-        (= :same-site key) (str ";" attr-name "=" (same-site-values value))
-        :else (str ";" attr-name "=" value)))))
+        (= :same-site key) (str ";" attr "=" (same-site-values value))
+        :else (str ";" attr "=" value)))))
 
-(defn- write-cookies
-  "Turn a map of cookies into a seq of strings for a Set-Cookie header."
-  [cookies encoder]
+(defn- write-cookies [cookies encoder]
   (for [[key value] cookies]
     (if (map? value)
       (apply str (write-value key (:value value) encoder)
                  (write-attr-map (dissoc value :value)))
       (write-value key value encoder))))
 
-(defn- set-cookies
-  "Add a Set-Cookie header to a response if there is a :cookies key."
-  [response encoder]
+(defn- set-cookies [response encoder]
   (if-let [cookies (:cookies response)]
     (update-in response
                [:headers "Set-Cookie"]
