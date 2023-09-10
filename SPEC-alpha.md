@@ -287,5 +287,9 @@ It *may* optionally satisfy the `ring.websocket/AsyncSocket` protocol:
 
 ```clojure
 (defprotocol AsyncSocket
-  (-send-async [socket message callback]))
+  (-send-async [socket message succeed fail]))
 ```
+
+Where `succeed` is a callback function that expects zero arguments, and
+`fail` is a callback function expecting a single `java.lang.Throwable`
+argument.
