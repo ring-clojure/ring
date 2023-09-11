@@ -37,6 +37,8 @@
   (let [remote (.getRemote session)]
     (reify
       ws/Socket
+      (-open? [_]
+        (.isOpen session))
       (-send [_ message]
         (if (string? message)
           (.sendString remote message)

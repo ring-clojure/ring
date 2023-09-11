@@ -274,6 +274,7 @@ A socket must satisfy the `ring.websocket/Socket` protocol:
 
 ```clojure
 (defprotocol Socket
+  (-open? [socket])
   (-send  [socket message])
   (-ping  [socket data])
   (-pong  [socket data])
@@ -281,7 +282,7 @@ A socket must satisfy the `ring.websocket/Socket` protocol:
 ```
 
 The types of the arguments are the same as those described for the
-`Listener` protocol.
+`Listener` protocol. The `-open?` method must return true or false.
 
 It *may* optionally satisfy the `ring.websocket/AsyncSocket` protocol:
 

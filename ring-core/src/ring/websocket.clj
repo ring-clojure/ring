@@ -15,7 +15,7 @@
     "Called when a pong is received in response to an earlier ping. The client
     may provide additional binary data, represented by the data ByteBuffer.")
   (on-error [listener socket throwable]
-    "Called when an Throwable error is thrown.")
+    "Called when a Throwable error is thrown.")
   (on-close [listener socket code reason]
     "Called when the websocket is closed, along with an integer code and a
     plaintext string reason for being closed."))
@@ -35,6 +35,8 @@
 
 (defprotocol Socket
   "A protocol for sending data via websocket."
+  (-open? [socket]
+    "Returns true if the socket is open; false otherwise.")
   (-send [socket message]
     "Sends a String or ByteBuffer to the client via the websocket.")
   (-ping [socket data]
@@ -82,6 +84,9 @@
     (satisfies? BinaryData message) (->byte-buffer message)
     :else (throw (ex-info "message is not a valid text or binary data type"
                           {:message message}))))
+
+(defn open? [socket]
+  (boolean (-open? socket)))
 
 (defn send
   "Sends text or binary data via a websocket, either synchronously or

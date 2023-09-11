@@ -718,6 +718,26 @@
       (is (= [[:ping "foo"] [:pong "foo"]]
              @log))))
 
+  (testing "open?"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ sock]
+                        (swap! log conj [:open? (ws/open? sock)])
+                        (ws/close sock)
+                        (swap! log conj [:open? (ws/open? sock)]))
+                      (on-message [_ _ _])
+                      (on-pong [_ _ data])
+                      (on-error [_ _ _])
+                      (on-close [_ _ code reason]
+                        (swap! log conj [:close])))})]
+      (with-server handler {:port test-port}
+        (hato/websocket test-websocket-url {})
+        (Thread/sleep 100))
+      (is (= [[:open? true] [:open? false] [:close]]
+             @log))))
+
   (testing "sending websocket messages asynchronously"
     (let [log     (atom [])
           handler (constantly
