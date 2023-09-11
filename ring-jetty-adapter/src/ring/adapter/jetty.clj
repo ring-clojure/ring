@@ -15,7 +15,6 @@
             SslConnectionFactory
             SecureRequestCustomizer]
            [org.eclipse.jetty.servlet ServletContextHandler ServletHandler]
-           [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
@@ -30,7 +29,7 @@
             WriteCallback]
            [org.eclipse.jetty.websocket.server.config
             JettyWebSocketServletContainerInitializer]
-           [jakarta.servlet AsyncContext DispatcherType AsyncEvent AsyncListener]
+           [jakarta.servlet AsyncContext AsyncEvent AsyncListener]
            [jakarta.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- websocket-socket [^Session session]
