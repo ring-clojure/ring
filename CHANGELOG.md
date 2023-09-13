@@ -2,6 +2,7 @@
 
 * Added -open? method to Socket protocol
 * Fixed missing spaces after semicolons in Set-Cookie header (#486)
+* Updated Jetty to 11.0.16
 
 ## 1.11.0-alpha1 (2023-08-17)
 
