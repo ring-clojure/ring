@@ -1,3 +1,8 @@
+## 1.11.0-alpha2 (2023-09-13)
+
+* Added -open? method to Socket protocol
+* Fixed missing spaces after semicolons in Set-Cookie header (#486)
+
 ## 1.11.0-alpha1 (2023-08-17)
 
 * Added experimental websocket support (#484)
