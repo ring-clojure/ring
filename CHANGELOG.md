@@ -1,3 +1,7 @@
+## 1.11.0-alpha3 (2023-09-15)
+
+* Added `:ring.websocket/protocol` key for websocket subprotocols
+
 ## 1.11.0-alpha2 (2023-09-13)
 
 * Added -open? method to Socket protocol
