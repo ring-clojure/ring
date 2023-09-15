@@ -1,6 +1,7 @@
 (ns ring.websocket
   "Protocols and utility functions for websocket support."
   (:refer-clojure :exclude [send])
+  (:require [clojure.string :as str])
   (:import [java.nio ByteBuffer]))
 
 (defprotocol Listener
@@ -134,3 +135,11 @@
   "Returns true if the response contains a websocket listener."
   [response]
   (contains? response ::listener))
+
+(defn request-protocols
+  "Returns a collection of websocket subprotocols from a request map."
+  [request]
+  (some-> (:headers request)
+          (get "sec-websocket-protocol")
+          (str/split #",")
+          (as-> ps (map str/trim ps))))

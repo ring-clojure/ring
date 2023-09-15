@@ -222,28 +222,44 @@ For example:
 ## 3. Websockets
 
 A HTTP request can be promoted into a websocket by means of an
-"upgrade" header.
+""upgrade" header.
 
 In this situation, a Ring handler may choose to respond with a
 websocket response instead of a HTTP response.
 
 ### 3.1. Websocket Responses
 
-A websocket response is a map that has the `:ring.websocket/listener`
-key, which maps to a websocket listener, described in section 3.2.
+A websocket response is a map that represents a WebSocket, and may be
+returned from a handler in place of a response map.
 
 ```clojure
 (fn [request]
   #:ring.websocket{:listener websocket-listener})
 ```
 
-A websocket response may be returned from a synchronous listener, or
-via the response callback of an asynchronous listener.
+It may also be used from an asynchronous handler.
 
 ```clojure
 (fn [request respond raise]
   (respond #:ring.websocket{:listener websocket-listener}))
-```
+
+A websocket response contains the following keys. Any key not marked as
+**required** may be omitted.
+
+| Key                      | Type                    | Required |
+| ------------------------ | ----------------------- | -------- |
+|`:ring.websocket/listener`|`ring.websocket/Listener`| Yes      |
+|`:ring.websocket/protocol`|`String`                 |          |
+
+#### :ring.websocket/listener
+
+An event listener that satisfies the `ring.websocket/Listener` protocol,
+as described in section 3.2.
+
+#### :ring.websocket/protocol
+
+An optional websocket subprotocol. Must be one of the values listed in
+the `Sec-Websocket-Protocol` header on the request.
 
 ### 3.2. Websocket Listeners
 

@@ -728,7 +728,7 @@
                         (ws/close sock)
                         (swap! log conj [:open? (ws/open? sock)]))
                       (on-message [_ _ _])
-                      (on-pong [_ _ data])
+                      (on-pong [_ _ _])
                       (on-error [_ _ _])
                       (on-close [_ _ code reason]
                         (swap! log conj [:close])))})]
@@ -737,6 +737,24 @@
         (Thread/sleep 100))
       (is (= [[:open? true] [:open? false] [:close]]
              @log))))
+
+  (testing "subprotocols"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/protocol "mqtt"
+                    ::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:subprotocols ["soap" "mqtt"]})]
+          (is (= "mqtt" (.getSubprotocol ^java.net.http.WebSocket ws)))
+          @(hato/close! ws)
+          (Thread/sleep 100)))))
 
   (testing "sending websocket messages asynchronously"
     (let [log     (atom [])

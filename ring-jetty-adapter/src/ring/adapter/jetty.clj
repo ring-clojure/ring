@@ -5,6 +5,7 @@
   (:require [ring.util.jakarta.servlet :as servlet]
             [ring.websocket :as ws])
   (:import [java.nio ByteBuffer]
+           [java.util ArrayList]
            [org.eclipse.jetty.server
             Request
             Server
@@ -19,9 +20,12 @@
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
            [org.eclipse.jetty.websocket.server
+            JettyServerUpgradeRequest
+            JettyServerUpgradeResponse
             JettyWebSocketServerContainer
             JettyWebSocketCreator]
            [org.eclipse.jetty.websocket.api
+            ExtensionConfig
             Session
             WebSocketConnectionListener
             WebSocketListener
@@ -79,9 +83,13 @@
       (onWebSocketPong [_ payload]
         (ws/on-pong listener @socket payload)))))
 
-(defn- websocket-creator [{listener ::ws/listener}]
+(defn- ^JettyWebSocketCreator websocket-creator
+  [{:keys [::ws/listener ::ws/protocol]}]
   (reify JettyWebSocketCreator
-    (createWebSocket [_ _ _]
+    (createWebSocket [_ ^JettyServerUpgradeRequest _req
+                      ^JettyServerUpgradeResponse resp]
+      (when protocol
+        (.setAcceptedSubProtocol resp protocol))
       (websocket-listener listener))))
 
 (defn- upgrade-to-websocket [^HttpServletRequest request response response-map]
