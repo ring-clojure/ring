@@ -242,6 +242,7 @@ It may also be used from an asynchronous handler.
 ```clojure
 (fn [request respond raise]
   (respond #:ring.websocket{:listener websocket-listener}))
+```
 
 A websocket response contains the following keys. Any key not marked as
 **required** may be omitted.
@@ -275,14 +276,35 @@ protocol:
   (on-close   [listener socket code reason]))
 ```
 
-The arguments are described as follows:
+#### on-open
 
-* `socket`    - described in section 3.3.
-* `message`   - a `String` or `java.nio.ByteBuffer` containing a message
-* `data`      - a `java.nio.ByteBuffer` containing pong data
-* `throwable` - an error inheriting from `java.lang.Throwable`
-* `code`      - an integer from 1000 to 4999
-* `reason`    - a string describing the reason for closing the socket
+Called once when the websocket is first opened. Supplies a `socket`
+argument that satisfies `ring.websocket/Socket`, described in section
+3.3.
+
+#### on-message
+
+Called when a text or binary message frame is received from the client.
+The `message` argument may be a `String` or a `java.nio.ByteBuffer`
+depending on whether the message is text or binary.
+
+#### on-pong
+
+Called when a "pong" frame is received from the client. The `data`
+argument is a `java.nio.ByteBuffer` that contains optional client
+session data.
+
+#### on-error
+
+Called when an error occurs. This may cause the websocket to be closed.
+The `throwable` argument is a `java.lang.Throwable` that was generated
+by the error.
+
+#### on-close
+
+Called once when the websocket is closed. Guaranteed to be called, even
+if an error occurs, so may be used for finalizing/cleanup logic. Takes
+an integer `code` and a string `reason` as arguments.
 
 ### 3.3. Websocket Sockets
 
@@ -294,11 +316,8 @@ A socket must satisfy the `ring.websocket/Socket` protocol:
   (-send  [socket message])
   (-ping  [socket data])
   (-pong  [socket data])
-  (-close [socket status reason]))
+  (-close [socket code reason]))
 ```
-
-The types of the arguments are the same as those described for the
-`Listener` protocol. The `-open?` method must return true or false.
 
 It *may* optionally satisfy the `ring.websocket/AsyncSocket` protocol:
 
@@ -307,6 +326,34 @@ It *may* optionally satisfy the `ring.websocket/AsyncSocket` protocol:
   (-send-async [socket message succeed fail]))
 ```
 
-Where `succeed` is a callback function that expects zero arguments, and
-`fail` is a callback function expecting a single `java.lang.Throwable`
-argument.
+#### -open?
+
+Returns a truthy or falsey value denoting whether the socket is
+currently connected to the client.
+
+#### -send
+
+Sends a websocket message frame that may be a `String` (for text), or
+a `java.nio.ByteBuffer` (for binary).
+
+#### -send-async
+
+As above, but does not block and requires two callback functions:
+
+- `succeed` is called with zero arguments when the send succeeds
+- `fail` is called with a single `java.lang.Throwable` argument when the
+  send fails
+
+#### -ping
+
+Sends a websocket ping frame with a `java.nio.ByteBuffer` of session
+data (which may be empty).
+
+#### -pong
+
+Sends an unsolicited pong frame with a `java.nio.ByteBuffer` of session
+data (which may be empty).
+
+#### -close
+
+Closes the websocket with the supplied integer code and reason string.

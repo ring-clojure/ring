@@ -86,7 +86,9 @@
     :else (throw (ex-info "message is not a valid text or binary data type"
                           {:message message}))))
 
-(defn open? [socket]
+(defn open?
+  "Returns true if the Socket is open, false otherwise."
+  [socket]
   (boolean (-open? socket)))
 
 (defn send
