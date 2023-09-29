@@ -126,8 +126,8 @@
   ([socket code reason]
    (-close socket code reason)))
 
-(defn websocket-request?
-  "Returns true if the request map expects a websocket response."
+(defn upgrade-request?
+  "Returns true if the request map is a websocket upgrade request."
   [request]
   (let [headers (:headers request)]
     (and (.equalsIgnoreCase "upgrade" (get headers "connection"))
