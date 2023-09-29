@@ -79,7 +79,10 @@
         (let [buffer (ByteBuffer/wrap payload offset length)]
           (ws/on-message listener @socket buffer)))
       WebSocketPingPongListener
-      (onWebSocketPing [_ _])
+      (onWebSocketPing [_ payload]
+        (if (satisfies? ws/PingListener listener)
+          (ws/on-ping listener @socket payload)
+          (ws/pong @socket payload)))
       (onWebSocketPong [_ payload]
         (ws/on-pong listener @socket payload)))))
 

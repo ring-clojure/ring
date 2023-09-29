@@ -5,8 +5,8 @@
   (:import [java.nio ByteBuffer]))
 
 (defprotocol Listener
-  "A protocol for handling websocket events. The second argument is
-  always an object that satisfies the Socket protocol."
+  "A protocol for handling websocket events. The second argument is always an
+  object that satisfies the Socket protocol."
   (on-open [listener socket]
     "Called when the websocket is opened.")
   (on-message [listener socket message]
@@ -21,8 +21,17 @@
     "Called when the websocket is closed, along with an integer code and a
     plaintext string reason for being closed."))
 
-(extend-protocol Listener
-  clojure.lang.IPersistentMap
+(defprotocol PingListener
+  "A protocol for handling ping websocket events. The second argument is always
+  always an object that satisfies the Socket protocol. This is separate from
+  the Listener protocol as some APIs (for example Jakarta) don't support
+  listening for ping events."
+  (on-ping [listener socket data]
+    "Called when a ping is received from the client. The client may provide
+    additional binary data, represented by the data ByteBuffer."))
+
+(extend-type clojure.lang.IPersistentMap
+  Listener
   (on-open [m socket]
     (when-let [kv (find m :on-open)] ((val kv) socket)))
   (on-message [m socket message]
@@ -32,7 +41,10 @@
   (on-error [m socket throwable]
     (when-let [kv (find m :on-error)] ((val kv) socket throwable)))
   (on-close [m socket code reason]
-    (when-let [kv (find m :on-close)] ((val kv) socket code reason))))
+    (when-let [kv (find m :on-close)] ((val kv) socket code reason)))
+  PingListener
+  (on-ping [m socket data]
+    (when-let [kv (find m :on-ping)] ((val kv) socket data))))
 
 (defprotocol Socket
   "A protocol for sending data via websocket."

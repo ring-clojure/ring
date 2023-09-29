@@ -276,6 +276,17 @@ protocol:
   (on-close   [listener socket code reason]))
 ```
 
+It *may* optionally satisfy the `ring.websocket/PingListener` protocol:
+
+```clojure
+(defprotocol PingListener
+  (on-ping [listener socket data]))
+```
+
+If the `PingListener` protocol is not satisifed, the adapter *must*
+default to respond to each ping message with a corresponding pong
+message that has the same data.
+
 #### on-open
 
 Called once when the websocket is first opened. Supplies a `socket`
@@ -287,6 +298,15 @@ argument that satisfies `ring.websocket/Socket`, described in section
 Called when a text or binary message frame is received from the client.
 The `message` argument may be a `String` or a `java.nio.ByteBuffer`
 depending on whether the message is text or binary.
+
+#### on-ping
+
+Called when a "ping" frame is received from the client. The `data`
+argument is a `java.nio.ByteBuffer` that contains optional client
+session data.
+
+If the user implements this method, they are responsible for sending
+the return "pong" that the websocket protocol expects.
 
 #### on-pong
 

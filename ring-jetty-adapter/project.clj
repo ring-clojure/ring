@@ -14,7 +14,7 @@
   {:dev  {:dependencies [[clj-http "3.12.3"]
                          [less-awful-ssl "1.0.6"]
                          [hato "0.9.0"]
-                         [org.slf4j/slf4j-simple "2.0.9"]]
+                         #_[org.slf4j/slf4j-simple "2.0.9"]]
           :jvm-opts ["-Dorg.eclipse.jetty.server.HttpChannelState.DEFAULT_TIMEOUT=500"]}
    :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
    :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}

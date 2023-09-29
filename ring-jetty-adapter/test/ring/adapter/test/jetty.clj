@@ -718,6 +718,53 @@
       (is (= [[:ping "foo"] [:pong "foo"]]
              @log))))
 
+  (testing "ping pong from client"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-pong
+                                   (fn [_ d]
+                                     (swap! log conj [:pong (buf->str d)]))})]
+          (Thread/sleep 100)
+          (hato/ping! ws (ByteBuffer/wrap (.getBytes "foo")))
+          @(hato/close! ws)
+          (Thread/sleep 100)))
+      (is (= [[:pong "foo"]] @log))))
+
+  (testing "custom on-ping"
+    (let [log     (atom [])
+          handler (constantly
+                   {::ws/listener
+                    (reify ws/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _])
+                      ws/PingListener
+                      (on-ping [_ sock data]
+                        (ws/pong sock data)
+                        (swap! log conj [:ping (buf->str data)])))})]
+      (with-server handler {:port test-port}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-pong
+                                   (fn [_ d]
+                                     (swap! log conj [:pong (buf->str d)]))})]
+          (Thread/sleep 100)
+          (hato/ping! ws (ByteBuffer/wrap (.getBytes "foo")))
+          @(hato/close! ws)
+          (Thread/sleep 100)))
+      (is (= [[:ping "foo"] [:pong "foo"]]
+             @log))))
+
   (testing "open?"
     (let [log     (atom [])
           handler (constantly
