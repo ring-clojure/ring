@@ -296,8 +296,8 @@ argument that satisfies `ring.websocket/Socket`, described in section
 #### on-message
 
 Called when a text or binary message frame is received from the client.
-The `message` argument may be a `String` or a `java.nio.ByteBuffer`
-depending on whether the message is text or binary.
+The `message` argument must be a `java.lang.CharSequence` or a
+`java.nio.ByteBuffer` depending on whether the message is text or binary.
 
 #### on-ping
 
@@ -353,8 +353,8 @@ currently connected to the client.
 
 #### -send
 
-Sends a websocket message frame that may be a `String` (for text), or
-a `java.nio.ByteBuffer` (for binary).
+Sends a websocket message frame that may be a `java.lang.CharSequence`
+(for text), or a `java.nio.ByteBuffer` (for binary).
 
 #### -send-async
 

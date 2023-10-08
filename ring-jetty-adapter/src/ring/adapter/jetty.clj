@@ -43,8 +43,8 @@
       (-open? [_]
         (.isOpen session))
       (-send [_ message]
-        (if (string? message)
-          (.sendString remote message)
+        (if (instance? CharSequence message)
+          (.sendString remote (.toString ^CharSequence message))
           (.sendBytes remote message)))
       (-ping [_ data]
         (.sendPing remote data))
@@ -57,8 +57,8 @@
         (let [callback (reify WriteCallback
                          (writeSuccess [_] (succeed))
                          (writeFailed [_ ex] (fail ex)))]
-          (if (string? message)
-            (.sendString remote message callback)
+          (if (instance? CharSequence message)
+            (.sendString remote (.toString ^CharSequence message) callback)
             (.sendBytes remote message callback)))))))
 
 (defn- websocket-listener [listener]

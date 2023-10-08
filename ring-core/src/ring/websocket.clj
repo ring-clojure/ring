@@ -71,9 +71,9 @@
 
 (defprotocol TextData
   "A protocol for converting text data into a String."
-  (->string [data]
-    "Convert some data into a String, ready to be sent as a websocket text
-    message."))
+  (->char-sequence [data]
+    "Convert some data into a CharSequence, ready to be sent as a websocket
+    text message."))
 
 (defprotocol BinaryData
   "A protocol for converting binary data into a java.nio.ByteBuffer object."
@@ -82,8 +82,8 @@
     a websocket binary message."))
 
 (extend-protocol TextData
-  String
-  (->string [s] s))
+  CharSequence
+  (->char-sequence [cs] cs))
 
 (extend-protocol BinaryData
   (Class/forName "[B")
@@ -93,7 +93,7 @@
 
 (defn- encode-message [message]
   (cond
-    (satisfies? TextData message)   (->string message)
+    (satisfies? TextData message)   (->char-sequence message)
     (satisfies? BinaryData message) (->byte-buffer message)
     :else (throw (ex-info "message is not a valid text or binary data type"
                           {:message message}))))
