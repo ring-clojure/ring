@@ -1,7 +1,7 @@
 ## 1.11.0-alpha4 (2023-09-29)
 
 * Added `ring.websocket/PingListener` protocol
-* Renamed `websocket-request?`
+* Renamed `websocket-request?` to `upgrade-request?`
 * Fixed Jetty adapter not responding to websocket pings from client
 
 ## 1.11.0-alpha3 (2023-09-15)
