@@ -6,7 +6,8 @@
             [hato.websocket :as hato]
             [less.awful.ssl :as less-ssl]
             [ring.core.protocols :as p]
-            [ring.websocket :as ws])
+            [ring.websocket :as ws]
+            [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
            [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.util BlockingArrayQueue]
@@ -644,7 +645,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ _] (swap! log conj [:open]))
                       (on-message [_ _ msg] (swap! log conj [:message msg]))
                       (on-pong [_ _ data]
@@ -668,7 +669,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ sock]
                         (ws/send sock "Hello")
                         (ws/send sock (.getBytes "World")))
@@ -701,7 +702,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ sock]
                         (ws/ping sock (ByteBuffer/wrap (.getBytes "foo")))
                         (swap! log conj [:ping "foo"]))
@@ -722,7 +723,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ _])
                       (on-message [_ _ _])
                       (on-pong [_ _ _])
@@ -743,13 +744,13 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ _])
                       (on-message [_ _ _])
                       (on-pong [_ _ _])
                       (on-error [_ _ _])
                       (on-close [_ _ _ _])
-                      ws/PingListener
+                      wsp/PingListener
                       (on-ping [_ sock data]
                         (ws/pong sock data)
                         (swap! log conj [:ping (buf->str data)])))})]
@@ -769,7 +770,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ sock]
                         (swap! log conj [:open? (ws/open? sock)])
                         (ws/close sock)
@@ -790,7 +791,7 @@
           handler (constantly
                    {::ws/protocol "mqtt"
                     ::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ _])
                       (on-message [_ _ _])
                       (on-pong [_ _ _])
@@ -807,7 +808,7 @@
     (let [log     (atom [])
           handler (constantly
                    {::ws/listener
-                    (reify ws/Listener
+                    (reify wsp/Listener
                       (on-open [_ sock]
                         (ws/send sock "Hello"
                                  (fn [] (ws/send sock "World" (fn []) (fn [_])))
@@ -832,12 +833,12 @@
                     :on-error (fn [s e] [:on-error s e])
                     :on-close (fn [s c r] [:on-close s c r])}]
       (is (= [:on-open :sock]
-             (ws/on-open listener :sock)))
+             (wsp/on-open listener :sock)))
       (is (= [:on-message :sock "foo"]
-             (ws/on-message listener :sock "foo")))
+             (wsp/on-message listener :sock "foo")))
       (is (= [:on-pong :sock "data"]
-             (ws/on-pong listener :sock "data")))
+             (wsp/on-pong listener :sock "data")))
       (is (= [:on-error :sock "err"]
-             (ws/on-error listener :sock "err")))
+             (wsp/on-error listener :sock "err")))
       (is (= [:on-close :sock 1000 "closed"]
-             (ws/on-close listener :sock 1000 "closed"))))))
+             (wsp/on-close listener :sock 1000 "closed"))))))

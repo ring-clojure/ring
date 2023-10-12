@@ -3,7 +3,8 @@
 
   Adapters are used to convert Ring handlers into running web servers."
   (:require [ring.util.jakarta.servlet :as servlet]
-            [ring.websocket :as ws])
+            [ring.websocket :as ws]
+            [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
            [java.util ArrayList]
            [org.eclipse.jetty.server
@@ -39,7 +40,7 @@
 (defn- websocket-socket [^Session session]
   (let [remote (.getRemote session)]
     (reify
-      ws/Socket
+      wsp/Socket
       (-open? [_]
         (.isOpen session))
       (-send [_ message]
@@ -52,7 +53,7 @@
         (.sendPong remote data))
       (-close [_ status reason]
         (.close session status reason))
-      ws/AsyncSocket
+      wsp/AsyncSocket
       (-send-async [_ message succeed fail]
         (let [callback (reify WriteCallback
                          (writeSuccess [_] (succeed))
@@ -67,24 +68,24 @@
       WebSocketConnectionListener
       (onWebSocketConnect [_ session]
         (vreset! socket (websocket-socket session))
-        (ws/on-open listener @socket))
+        (wsp/on-open listener @socket))
       (onWebSocketClose [_ status reason]
-        (ws/on-close listener @socket status reason))
+        (wsp/on-close listener @socket status reason))
       (onWebSocketError [_ throwable]
-        (ws/on-error listener @socket throwable))
+        (wsp/on-error listener @socket throwable))
       WebSocketListener
       (onWebSocketText [_ message]
-        (ws/on-message listener @socket message))
+        (wsp/on-message listener @socket message))
       (onWebSocketBinary [_ payload offset length]
         (let [buffer (ByteBuffer/wrap payload offset length)]
-          (ws/on-message listener @socket buffer)))
+          (wsp/on-message listener @socket buffer)))
       WebSocketPingPongListener
       (onWebSocketPing [_ payload]
-        (if (satisfies? ws/PingListener listener)
-          (ws/on-ping listener @socket payload)
+        (if (satisfies? wsp/PingListener listener)
+          (wsp/on-ping listener @socket payload)
           (ws/pong @socket payload)))
       (onWebSocketPong [_ payload]
-        (ws/on-pong listener @socket payload)))))
+        (wsp/on-pong listener @socket payload)))))
 
 (defn- ^JettyWebSocketCreator websocket-creator
   [{:keys [::ws/listener ::ws/protocol]}]

@@ -254,8 +254,8 @@ A websocket response contains the following keys. Any key not marked as
 
 #### :ring.websocket/listener
 
-An event listener that satisfies the `ring.websocket/Listener` protocol,
-as described in section 3.2.
+An event listener that satisfies the `ring.websocket.protocols/Listener`
+protocol, as described in section 3.2.
 
 #### :ring.websocket/protocol
 
@@ -264,8 +264,8 @@ the `Sec-Websocket-Protocol` header on the request.
 
 ### 3.2. Websocket Listeners
 
-A websocket listener must satisfy the `ring.websocket/Listener`
-protocol:
+A websocket listener must satisfy the
+`ring.websocket.protocols/Listener` protocol:
 
 ```clojure
 (defprotocol Listener
@@ -276,7 +276,8 @@ protocol:
   (on-close   [listener socket code reason]))
 ```
 
-It *may* optionally satisfy the `ring.websocket/PingListener` protocol:
+It *may* optionally satisfy the `ring.websocket.protocols/PingListener`
+protocol:
 
 ```clojure
 (defprotocol PingListener
@@ -290,8 +291,8 @@ message that has the same data.
 #### on-open
 
 Called once when the websocket is first opened. Supplies a `socket`
-argument that satisfies `ring.websocket/Socket`, described in section
-3.3.
+argument that satisfies `ring.websocket.protools/Socket`, described in
+section 3.3.
 
 #### on-message
 
@@ -328,7 +329,7 @@ an integer `code` and a string `reason` as arguments.
 
 ### 3.3. Websocket Sockets
 
-A socket must satisfy the `ring.websocket/Socket` protocol:
+A socket must satisfy the `ring.websocket.protocols/Socket` protocol:
 
 ```clojure
 (defprotocol Socket
@@ -339,7 +340,8 @@ A socket must satisfy the `ring.websocket/Socket` protocol:
   (-close [socket code reason]))
 ```
 
-It *may* optionally satisfy the `ring.websocket/AsyncSocket` protocol:
+It *may* optionally satisfy the `ring.websocket.protocols/AsyncSocket`
+protocol:
 
 ```clojure
 (defprotocol AsyncSocket
