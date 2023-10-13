@@ -1,3 +1,9 @@
+## 1.11.0-alpha5 (2023-10-13)
+
+* Moved websocket protocols to separate library
+* Changed Strings in websocket API specification to CharSequences
+* Updated Jetty to 11.0.17
+
 ## 1.11.0-alpha4 (2023-09-29)
 
 * Added `ring.websocket/PingListener` protocol
