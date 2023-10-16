@@ -1,6 +1,6 @@
 (ns ring.adapter.test.jetty
-  (:require [clojure.test :refer :all]
-            [ring.adapter.jetty :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
+            [ring.adapter.jetty :refer [run-jetty]]
             [clj-http.client :as http]
             [clojure.java.io :as io]
             [hato.websocket :as hato]
@@ -10,7 +10,6 @@
             [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
            [org.eclipse.jetty.util.thread QueuedThreadPool]
-           [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
            [java.net ServerSocket ConnectException]
@@ -19,7 +18,7 @@
                     IOException]
            [org.apache.http MalformedChunkCodingException]))
 
-(defn- hello-world [request]
+(defn- hello-world [_request]
   {:status  200
    :headers {"Content-Type" "text/plain"}
    :body    "Hello World"})
@@ -55,10 +54,10 @@
        (finally (.stop server#)))))
 
 (defn- find-free-local-port []
-  (let [socket (ServerSocket. 0)]
-    (let [port (.getLocalPort socket)]
-      (.close socket)
-      port)))
+  (let [socket (ServerSocket. 0)
+        port   (.getLocalPort socket)]
+    (.close socket)
+    port))
 
 (defn- get-ssl-context-factory
   [^Server s]
@@ -327,7 +326,8 @@
 
   (testing "request translation"
     (with-server echo-handler {:port test-port}
-      (let [response (http/post (str test-url "/foo/bar/baz?surname=jones&age=123") {:body "hello"})]
+      (let [response (http/post (str test-url "/foo/bar/baz?surname=jones&age=123")
+                                {:body "hello"})]
         (is (= (:status response) 200))
         (is (= (:body response) "hello"))
         (let [request-map (read-string (get-in response [:headers "request-map"]))]
@@ -421,7 +421,7 @@
           (is (= thread-count (count (all-threads)))))))))
 
 (defn- chunked-stream-with-error
-  ([request]
+  ([_request]
    {:status  200
     :headers {"Transfer-Encoding" "chunked"}
     :body    (SequenceInputStream.
@@ -431,16 +431,16 @@
                    ([] (throw (IOException. "test error")))
                    ([^bytes _] (throw (IOException. "test error")))
                    ([^bytes _ _ _] (throw (IOException. "test error"))))))})
-  ([request response raise]
+  ([request response _raise]
    (response (chunked-stream-with-error request))))
 
 (defn- chunked-lazy-seq-with-error
-  ([request]
+  ([_request]
    {:status  200
     :headers {"Transfer-Encoding" "chunked"}
     :body    (lazy-cat (range 100000)
                        (throw (IOException. "test error")))})
-  ([request response raise]
+  ([request response _raise]
    (response (chunked-lazy-seq-with-error request))))
 
 (deftest streaming-with-error
@@ -462,12 +462,12 @@
 
 (def thread-exceptions (atom []))
 
-(defn- hello-world-cps [request respond raise]
+(defn- hello-world-cps [_request respond _raise]
   (respond {:status  200
             :headers {"Content-Type" "text/plain"}
             :body    "Hello World"}))
 
-(defn- hello-world-cps-future [request respond raise]
+(defn- hello-world-cps-future [_request respond _raise]
   (future
     (try (respond {:status  200
                    :headers {"Content-Type" "text/plain"}
@@ -475,7 +475,7 @@
          (catch Exception ex
            (swap! thread-exceptions conj ex)))))
 
-(defn- hello-world-streaming [request respond raise]
+(defn- hello-world-streaming [_request respond _raise]
   (future
     (respond
      {:status  200
@@ -491,7 +491,7 @@
                        (.write w "data: world\n\n")
                        (.flush w)))))})))
 
-(defn- hello-world-streaming-long [request respond raise]
+(defn- hello-world-streaming-long [_request respond _raise]
   (respond
    {:status  200
     :headers {"Content-Type" "text/event-stream"}
@@ -504,7 +504,7 @@
                        (.write w (str "data: " i "\n\n"))
                        (.flush w))))))}))
 
-(defn- error-cps [request respond raise]
+(defn- error-cps [_request _respond raise]
   (raise (ex-info "test" {:foo "bar"})))
 
 (defn- sometimes-error-cps [request respond raise]
@@ -512,7 +512,7 @@
     (error-cps request respond raise)
     (hello-world-cps request respond raise)))
 
-(defn- hello-world-slow-cps [request respond raise]
+(defn- hello-world-slow-cps [_request respond _raise]
   (future (Thread/sleep 1000)
           (respond {:status  200
                     :headers {"Content-Type" "text/plain"}
@@ -583,7 +583,7 @@
         {:port test-port
          :async? true
          :async-timeout 200
-         :async-timeout-handler (fn [request respond raise]
+         :async-timeout-handler (fn [_request respond _raise]
                                   (respond
                                    {:status 503
                                     :headers {"Content-Type" "text/plain"}
@@ -598,7 +598,7 @@
         {:port test-port
          :async? true
          :async-timeout 200
-         :async-timeout-handler (fn [request respond raise]
+         :async-timeout-handler (fn [_request _respond raise]
                                   (raise
                                    (ex-info "An exception was thrown" {})))}
         (let [response (http/get (str test-url "/test-path/testing")
@@ -610,11 +610,11 @@
 
 (def call-count (atom 0))
 
-(defn- broken-handler [request]
+(defn- broken-handler [_request]
   (swap! call-count inc)
   (throw (ex-info "unhandled exception" {})))
 
-(defn- broken-handler-cps [request respond raise]
+(defn- broken-handler-cps [_request _respond raise]
   (swap! call-count inc)
   (raise (ex-info "unhandled exception" {})))
 
@@ -778,7 +778,7 @@
                       (on-message [_ _ _])
                       (on-pong [_ _ _])
                       (on-error [_ _ _])
-                      (on-close [_ _ code reason]
+                      (on-close [_ _ _ _]
                         (swap! log conj [:close])))})]
       (with-server handler {:port test-port}
         (hato/websocket test-websocket-url {})
@@ -787,8 +787,7 @@
              @log))))
 
   (testing "subprotocols"
-    (let [log     (atom [])
-          handler (constantly
+    (let [handler (constantly
                    {::ws/protocol "mqtt"
                     ::ws/listener
                     (reify wsp/Listener

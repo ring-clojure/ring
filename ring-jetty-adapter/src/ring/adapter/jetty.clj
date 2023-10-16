@@ -6,7 +6,6 @@
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
-           [java.util ArrayList]
            [org.eclipse.jetty.server
             Request
             Server
@@ -26,7 +25,6 @@
             JettyWebSocketServerContainer
             JettyWebSocketCreator]
            [org.eclipse.jetty.websocket.api
-            ExtensionConfig
             Session
             WebSocketConnectionListener
             WebSocketListener
@@ -87,8 +85,8 @@
       (onWebSocketPong [_ payload]
         (wsp/on-pong listener @socket payload)))))
 
-(defn- ^JettyWebSocketCreator websocket-creator
-  [{:keys [::ws/listener ::ws/protocol]}]
+(defn-  websocket-creator
+  ^JettyWebSocketCreator [{:keys [::ws/listener ::ws/protocol]}]
   (reify JettyWebSocketCreator
     (createWebSocket [_ ^JettyServerUpgradeRequest _req
                       ^JettyServerUpgradeResponse resp]
@@ -102,7 +100,7 @@
         creator   (websocket-creator response-map)]
     (.upgrade container creator request response)))
 
-(defn- ^ServletHandler proxy-handler [handler]
+(defn- proxy-handler ^ServletHandler [handler]
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
@@ -135,7 +133,7 @@
     (onError [^AsyncEvent _])
     (onStartAsync [^AsyncEvent _])))
 
-(defn- ^ServletHandler async-proxy-handler [handler timeout timeout-handler]
+(defn- async-proxy-handler ^ServletHandler [handler timeout timeout-handler]
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request request response]
       (let [^AsyncContext context (.startAsync request)]
@@ -152,16 +150,17 @@
           (finally
             (.setHandled base-request true)))))))
 
-(defn- ^ServletContextHandler context-handler [proxy-handler]
+(defn- context-handler ^ServletContextHandler [proxy-handler]
   (doto (ServletContextHandler.)
     (.setServletHandler proxy-handler)
     (.setAllowNullPathInfo true)
     (JettyWebSocketServletContainerInitializer/configure nil)))
 
-(defn- ^ServerConnector server-connector [^Server server & factories]
-  (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;" (into-array ConnectionFactory factories)))
+(defn- server-connector ^ServerConnector [^Server server & factories]
+  (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
+                    (into-array ConnectionFactory factories)))
 
-(defn- ^HttpConfiguration http-config [options]
+(defn- http-config ^HttpConfiguration [options]
   (doto (HttpConfiguration.)
     (.setSendDateHeader (:send-date-header? options true))
     (.setOutputBufferSize (:output-buffer-size options 32768))
@@ -169,14 +168,14 @@
     (.setResponseHeaderSize (:response-header-size options 8192))
     (.setSendServerVersion (:send-server-version? options true))))
 
-(defn- ^ServerConnector http-connector [server options]
+(defn- http-connector ^ServerConnector [server options]
   (let [http-factory (HttpConnectionFactory. (http-config options))]
     (doto (server-connector server http-factory)
       (.setPort (options :port 80))
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- ^SslContextFactory$Server ssl-context-factory [options]
+(defn- ssl-context-factory ^SslContextFactory$Server [options]
   (let [context-server (SslContextFactory$Server.)]
     (if (string? (options :keystore))
       (.setKeyStorePath context-server (options :keystore))
@@ -210,7 +209,7 @@
     context-server))
 
 
-(defn- ^ServerConnector ssl-connector [^Server server options]
+(defn- ssl-connector ^ServerConnector [^Server server options]
   (let [ssl-port     (options :ssl-port 443)
         customizer   (doto (SecureRequestCustomizer.)
                        (.setSniHostCheck (options :sni-host-check? true)))
@@ -229,7 +228,7 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- ^ThreadPool create-threadpool [options]
+(defn- create-threadpool ^ThreadPool [options]
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
         queue-max-capacity  (-> (options :max-queued-requests Integer/MAX_VALUE) (max 8))
@@ -246,7 +245,7 @@
       (.setDaemon pool true))
     pool))
 
-(defn- ^Server create-server [options]
+(defn- create-server ^Server [options]
   (let [pool   (or (:thread-pool options) (create-threadpool options))
         server (Server. pool)]
     (when (:http? options true)
@@ -255,7 +254,7 @@
       (.addConnector server (ssl-connector server options)))
     server))
 
-(defn ^Server run-jetty
+(defn run-jetty
   "Start a Jetty webserver to serve the given handler according to the
   supplied options:
 
@@ -308,7 +307,7 @@
   :request-header-size    - the maximum size of a request header (default 8192)
   :response-header-size   - the maximum size of a response header (default 8192)
   :send-server-version?   - add Server header to HTTP response (default true)"
-  [handler options]
+  ^Server [handler options]
   (let [server (create-server (dissoc options :configurator))
         proxy  (if (:async? options)
                  (async-proxy-handler handler
