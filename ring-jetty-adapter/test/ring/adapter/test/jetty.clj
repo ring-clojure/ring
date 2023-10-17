@@ -672,7 +672,7 @@
                     (reify wsp/Listener
                       (on-open [_ sock]
                         (ws/send sock "Hello")
-                        (ws/send sock (.getBytes "World")))
+                        (ws/send sock (ByteBuffer/wrap (.getBytes "World"))))
                       (on-message [_ sock msg]
                         (if (string? msg)
                           (ws/send sock (str "t: " msg))

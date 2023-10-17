@@ -21,35 +21,6 @@
   (on-ping [m socket data]
     (when-let [kv (find m :on-ping)] ((val kv) socket data))))
 
-(defprotocol TextData
-  "A protocol for converting text data into a String."
-  (->char-sequence [data]
-    "Convert some data into a CharSequence, ready to be sent as a websocket
-    text message."))
-
-(defprotocol BinaryData
-  "A protocol for converting binary data into a java.nio.ByteBuffer object."
-  (->byte-buffer [data]
-    "Convert some binary data into a java.nio.ByteBuffer, ready to be sent as
-    a websocket binary message."))
-
-(extend-protocol TextData
-  CharSequence
-  (->char-sequence [cs] cs))
-
-(extend-protocol BinaryData
-  (Class/forName "[B")
-  (->byte-buffer [bs] (ByteBuffer/wrap bs))
-  ByteBuffer
-  (->byte-buffer [bb] bb))
-
-(defn- encode-message [message]
-  (cond
-    (satisfies? TextData message)   (->char-sequence message)
-    (satisfies? BinaryData message) (->byte-buffer message)
-    :else (throw (ex-info "message is not a valid text or binary data type"
-                          {:message message}))))
-
 (defn open?
   "Returns true if the Socket is open, false otherwise."
   [socket]
@@ -60,9 +31,9 @@
   asynchronously with callback functions. A convenient wrapper for the -send and
   -send-async protocol methods."
   ([socket message]
-   (p/-send socket (encode-message message)))
+   (p/-send socket message))
   ([socket message succeed fail]
-   (p/-send-async socket (encode-message message) succeed fail)))
+   (p/-send-async socket message succeed fail)))
 
 (defn ping
   "Sends a ping message via a websocket, with an optional byte array or
@@ -71,7 +42,7 @@
   ([socket]
    (p/-ping socket (ByteBuffer/allocate 0)))
   ([socket data]
-   (p/-ping socket (->byte-buffer data))))
+   (p/-ping socket data)))
 
 (defn pong
   "Sends an unsolicited pong message via a websocket, with an optional byte
@@ -80,7 +51,7 @@
   ([socket]
    (p/-pong socket (ByteBuffer/allocate 0)))
   ([socket data]
-   (p/-pong socket (->byte-buffer data))))
+   (p/-pong socket data)))
 
 (defn close
   "Closes the websocket, with an optional custom integer status code and reason
