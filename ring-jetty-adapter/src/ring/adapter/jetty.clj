@@ -135,7 +135,7 @@
 
 (defn- async-proxy-handler ^ServletHandler [handler timeout timeout-handler]
   (proxy [ServletHandler] []
-    (doHandle [_ ^Request base-request request response]
+    (doHandle [_ ^Request base-request ^HttpServletRequest request response]
       (let [^AsyncContext context (.startAsync request)]
         (.setTimeout context timeout)
         (when timeout-handler
@@ -228,7 +228,7 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
-(defn- create-threadpool ^ThreadPool [options]
+(defn- create-threadpool [options]
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
         queue-max-capacity  (-> (options :max-queued-requests Integer/MAX_VALUE) (max 8))
@@ -247,7 +247,7 @@
 
 (defn- create-server ^Server [options]
   (let [pool   (or (:thread-pool options) (create-threadpool options))
-        server (Server. pool)]
+        server (Server. ^ThreadPool pool)]
     (when (:http? options true)
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
