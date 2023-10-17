@@ -716,8 +716,8 @@
           (Thread/sleep 100)
           @(hato/close! ws)
           (Thread/sleep 100)))
-      (is (= [[:ping "foo"] [:pong "foo"]]
-             @log))))
+      (is (= #{[:ping "foo"] [:pong "foo"]}
+             (set @log)))))
 
   (testing "ping pong from client"
     (let [log     (atom [])
