@@ -107,5 +107,4 @@
   [request]
   (some-> (:headers request)
           (get "sec-websocket-protocol")
-          (str/split #",")
-          (as-> ps (map str/trim ps))))
+          (str/split #"\s*,\s*")))
