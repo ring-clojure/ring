@@ -1,3 +1,8 @@
+## 1.11.0-beta1 (2023-10-17)
+
+* Fixed reflection warnings
+* Updated Commons-IO to 2.14.0
+
 ## 1.11.0-alpha5 (2023-10-13)
 
 * Moved websocket protocols to separate library

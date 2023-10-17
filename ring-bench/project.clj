@@ -1,4 +1,4 @@
-(defproject ring/ring-bench "1.11.0-alpha5"
+(defproject ring/ring-bench "1.11.0-beta1"
   :description "Ring core libraries."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
@@ -6,7 +6,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [jmh-clojure "0.4.0"]
-                 [ring/ring-jetty-adapter "1.11.0-alpha5"]
-                 [ring/ring-servlet "1.11.0-alpha5"]]
+                 [ring/ring-jetty-adapter "1.11.0-beta1"]
+                 [ring/ring-servlet "1.11.0-beta1"]]
   :jvm-opts {}
   :main ring.bench.servlet)
