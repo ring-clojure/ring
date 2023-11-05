@@ -19,7 +19,9 @@
     (when-let [kv (find m :on-close)] ((val kv) socket code reason)))
   p/PingListener
   (on-ping [m socket data]
-    (when-let [kv (find m :on-ping)] ((val kv) socket data))))
+    (if-let [kv (find m :on-ping)]
+      ((val kv) socket data)
+      (p/-pong socket data))))
 
 (defn open?
   "Returns true if the Socket is open, false otherwise."
