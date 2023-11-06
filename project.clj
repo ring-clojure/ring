@@ -8,7 +8,7 @@
                  [ring/ring-jetty-adapter "1.11.0-beta2"]
                  [org.ring-clojure/ring-jakarta-servlet "1.11.0-beta2"]]
   :plugins [[lein-sub "0.3.0"]
-            [lein-codox "0.10.7"]]
+            [lein-codox "0.10.8"]]
   :sub ["ring-core"
         "ring-devel"
         "ring-jetty-adapter"
@@ -19,7 +19,12 @@
           :source-paths ["ring-core/src"
                          "ring-devel/src"
                          "ring-jetty-adapter/src"
-                         "ring-servlet/src"]}
+                         "ring-servlet/src"
+                         "ring-jakarta-servlet/src"
+                         "ring-websocket-protocols/src"]}
   :aliases {"test"     ["sub" "test"]
             "test-all" ["sub" "test-all"]
-            "bench"    ["sub" "-s" "ring-bench" "run"]})
+            "bench"    ["sub" "-s" "ring-bench" "run"]
+            "codox"    ["with-profile" "+codox" "codox"]}
+  :profiles
+  {:codox {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]]}})
