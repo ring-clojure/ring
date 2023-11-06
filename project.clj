@@ -12,7 +12,8 @@
   :sub ["ring-core"
         "ring-devel"
         "ring-jetty-adapter"
-        "ring-servlet"]
+        "ring-servlet"
+        "ring-jakarta-servlet"]
   :codox {:output-path "codox"
           :source-uri "http://github.com/ring-clojure/ring/blob/{version}/{filepath}#L{line}"
           :source-paths ["ring-core/src"
