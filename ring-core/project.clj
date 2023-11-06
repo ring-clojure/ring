@@ -7,7 +7,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.ring-clojure/ring-websocket-protocols "1.11.0-beta2"]
                  [ring/ring-codec "1.2.0"]
-                 [commons-io "2.14.0"]
+                 [commons-io "2.15.0"]
                  [org.apache.commons/commons-fileupload2-core "2.0.0-M1"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
