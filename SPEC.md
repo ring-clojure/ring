@@ -1,4 +1,4 @@
-# Ring Spec (1.5-DRAFT)
+# Ring Spec (1.5-RC1)
 
 Ring is an abstraction layer for building HTTP server applications in
 Clojure.

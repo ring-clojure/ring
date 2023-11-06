@@ -1,3 +1,7 @@
+## 1.11.0-RC1 (2023-11-06)
+
+* Fixed default `:on-ping` behavior of websocket listener maps
+
 ## 1.11.0-beta2 (2023-10-18)
 
 * Removed automatic text/binary coercion from `ring.websocket/send`
