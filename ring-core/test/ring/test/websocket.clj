@@ -3,6 +3,14 @@
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp]))
 
+
+(deftest test-upgrade-request?
+  (is (not (ws/upgrade-request? {})))
+  (is (ws/upgrade-request? {:headers {"connection" "Upgrade"
+                                      "upgrade"    "websocket"}}))
+  (is (ws/upgrade-request? {:headers {"connection" "keep-alive, Upgrade"
+                                      "upgrade"    "websocket"}})))
+
 (deftest test-request-protocols
   (is (empty? (ws/request-protocols {:headers {}})))
   (is (= ["mqtt"]
