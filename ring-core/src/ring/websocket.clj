@@ -66,9 +66,11 @@
 (defn upgrade-request?
   "Returns true if the request map is a websocket upgrade request."
   [request]
-  (let [headers (:headers request)]
-    (and (.equalsIgnoreCase "upgrade" (get headers "connection"))
-         (.equalsIgnoreCase "websocket" (get headers "upgrade")))))
+  (let [{{:strs [connection upgrade]} :headers} request]
+    (and upgrade
+         connection
+         (re-find #"\b(?i)upgrade\b" connection)
+         (.equalsIgnoreCase "websocket" upgrade))))
 
 (defn websocket-response?
   "Returns true if the response contains a websocket listener."
