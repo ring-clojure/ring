@@ -1,3 +1,7 @@
+## 1.11.0-RC2 (2023-12-07)
+
+* Fixed `ring.websocket/upgrade-request?` header parsing (#489)
+
 ## 1.11.0-RC1 (2023-11-06)
 
 * Fixed default `:on-ping` behavior of websocket listener maps
