@@ -1,3 +1,7 @@
+## 1.11.0 (2023-12-25)
+
+* Functionally the same as 1.11.0-RC2
+
 ## 1.11.0-RC2 (2023-12-07)
 
 * Fixed `ring.websocket/upgrade-request?` header parsing (#489)
