@@ -21,7 +21,7 @@
 (def ^:private set-cookie-attrs
   {:domain "Domain", :max-age "Max-Age", :path "Path"
    :secure "Secure", :expires "Expires", :http-only "HttpOnly"
-   :same-site "SameSite"})
+   :same-site "SameSite", :partitioned "Partitioned"})
 
 (def ^:private same-site-values
   {:strict "Strict", :lax "Lax", :none "None"})
