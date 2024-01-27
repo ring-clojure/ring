@@ -1,6 +1,8 @@
 (ns ring.util.request
   "Functions for augmenting and pulling information from request maps."
-  (:require [ring.util.parsing :as parsing]))
+  (:require
+    [clojure.string :as str]
+    [ring.util.parsing :as parsing]))
 
 (defn request-url
   "Return the full URL of the request."
@@ -34,6 +36,33 @@
   [request]
   (some-> (get-in request [:headers "content-type"])
           parsing/find-content-type-charset))
+
+(defn authorization
+  "Parse 'Authorization' header.
+
+  See RFC 7235 Section 2 (https://datatracker.ietf.org/doc/html/rfc7235#section-2),
+  and RFC 9110 Section 11 (https://datatracker.ietf.org/doc/html/rfc9110#section-11)."
+  {:added "1.12"}
+  [request]
+  (when-let [[auth-scheme token-or-params] (some-> (get-in request [:headers "authorization"])
+                                                   (str/split #"\s" 2))]
+    (cond
+      (empty? token-or-params)
+      {:scheme auth-scheme}
+
+      (re-matches parsing/re-token68 token-or-params)
+      {:scheme  auth-scheme
+       :token68 token-or-params}
+
+      :else
+      (let [auth-params (->> (str/split token-or-params #"\s*,\s*")
+                             (map #(re-matches parsing/re-auth-param %))
+                             (filter some?)
+                             (map (fn [[_ k v1 v2]]
+                                    [k (or v1 v2)]))
+                             (into {}))]
+        {:scheme auth-scheme
+         :params auth-params}))))
 
 (defn urlencoded-form?
   "True if a request contains a urlencoded form in the body."

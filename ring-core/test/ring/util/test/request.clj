@@ -48,6 +48,28 @@
     (is (= (character-encoding {:headers {"content-type" "text/plain; charset=\"UTF-8\""}})
            "UTF-8"))))
 
+(deftest test-authorization
+  (testing "no authorization"
+    (is (= (authorization {:headers {}})
+           nil)))
+  (testing "scheme without token"
+    (is (= (authorization {:headers {"authorization" "Basic"}})
+           {:scheme "Basic"})))
+  (testing "scheme with zero-length token"
+    (is (= (authorization {:headers {"authorization" "Basic "}})
+           {:scheme "Basic"})))
+  (testing "token68"
+    (is (= (authorization {:headers {"authorization" "Basic dGVzdA=="}})
+           {:scheme "Basic"
+            :token68 "dGVzdA=="})))
+  (testing "auth-params, some malformed"
+    (is (= (authorization {:headers {"authorization" "Basic a=b, c=\"d\", eeee=\"dGVzdA==\", fparam=dGVzdA==, g, \"h\"=i, =j, = ,, , k=1"}})
+           {:scheme "Basic"
+            :params {"a"    "b"
+                     "c"    "d"
+                     "eeee" "dGVzdA=="
+                     "k"    "1"}}))))
+
 (deftest test-urlencoded-form?
   (testing "urlencoded form"
     (is (urlencoded-form? {:headers {"content-type" "application/x-www-form-urlencoded"}}))

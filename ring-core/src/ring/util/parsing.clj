@@ -29,3 +29,17 @@
   [s]
   (when-let [m (re-find re-charset s)]
     (or (m 1) (m 2))))
+
+(def ^{:added "1.12"} re-token68
+  "Pattern for base64/base64url/base32/base16 tokens.
+
+  See RFC 7235 Section 2 (https://datatracker.ietf.org/doc/html/rfc7235#section-2),
+  and RFC 9110 Section 11.2 (https://datatracker.ietf.org/doc/html/rfc9110#section-11.2)."
+  (re-pattern "[A-Za-z0-9._~+/-]+=*"))
+
+(def ^{:added "1.12"} re-auth-param
+  "Pattern for authentication parameters.
+
+  See RFC 7235 Section 2 (https://datatracker.ietf.org/doc/html/rfc7235#section-2),
+  and RFC 9110 Section 11.2 (https://datatracker.ietf.org/doc/html/rfc9110#section-11.2)."
+  (re-pattern (str "(" re-token ")\\s*=\\s*(?:" re-value ")")))
