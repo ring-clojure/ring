@@ -2,8 +2,7 @@
   "Protocols necessary for Ring."
   {:added "1.6"}
   (:import [java.io Writer OutputStream])
-  (:require [clojure.java.io :as io]
-            [ring.util.response :as response]))
+  (:require [clojure.java.io :as io]))
 
 (defprotocol ^{:added "1.6"} StreamableResponseBody
   "A protocol for writing data to the response body via an output stream."
@@ -12,8 +11,27 @@
     will be closed after the value had been written. The stream may be written
     asynchronously."))
 
-(defn- ^Writer response-writer [response output-stream]
-  (if-let [charset (response/get-charset response)]
+;; The following private functions are replicated from ring.util.response in
+;; order to allow third-party adapters to use StreamableResponseBody without the
+;; need for a ring-core dependency.
+
+(def ^:private re-charset
+  #"(?x);(?:.*\s)?(?i:charset)=(?:
+      ([!\#$%&'*\-+.0-9A-Z\^_`a-z\|~]+)|  # token
+      \"((?:\\\"|[^\"])*)\"               # quoted
+    )\s*(?:;|$)")
+
+(defn- find-charset-in-content-type [content-type]
+  (when-let [m (re-find re-charset content-type)]
+    (or (m 1) (m 2))))
+
+(defn- response-charset [response]
+  (some->> (:headers response)
+           (some #(when (.equalsIgnoreCase "content-type" (key %)) (val %)))
+           (find-charset-in-content-type)))
+
+(defn- response-writer ^Writer [response output-stream]
+  (if-let [charset (response-charset response)]
     (io/writer output-stream :encoding charset)
     (io/writer output-stream)))
 

@@ -25,6 +25,10 @@ jobs:
           key: cljdeps-${{ hashFiles('project.clj', 'ring-*/project.clj') }}
           restore-keys: cljdeps-
 
+      - name: Install core protocols project locally
+        run: lein install
+        working-directory: ./ring-core-protocols
+
       - name: Install websocket protocols project locally
         run: lein install
         working-directory: ./ring-websocket-protocols
