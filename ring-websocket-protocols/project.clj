@@ -6,4 +6,4 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies []
   :profiles
-  {:dev {:dependencies [[org.clojure/clojure "1.7.0"]]}})
+  {:dev {:dependencies [[org.clojure/clojure "1.9.0"]]}})
