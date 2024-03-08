@@ -205,7 +205,7 @@
                       :expires (date-time 2015 12 31)}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})
-        expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+        expires "Thu, 31 Dec 2015 00:00:00 GMT"]
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
            (split-set-cookie (:headers resp))))))
 
@@ -215,7 +215,7 @@
                       :expires (zoned-date-time 2015 12 31)}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})
-        expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+        expires "Thu, 31 Dec 2015 00:00:00 GMT"]
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
            (split-set-cookie (:headers resp))))))
 
@@ -228,7 +228,7 @@
                           :expires (date-time 2015 12 31)}}
             handler (constantly {:cookies cookies})
             resp    ((wrap-cookies handler) {})
-            expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+            expires "Thu, 31 Dec 2015 00:00:00 GMT"]
         (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
           (split-set-cookie (:headers resp)))))
       (finally
@@ -243,7 +243,7 @@
                           :expires (zoned-date-time 2015 12 31)}}
             handler (constantly {:cookies cookies})
             resp    ((wrap-cookies handler) {})
-            expires "Thu, 31 Dec 2015 00:00:00 +0000"]
+            expires "Thu, 31 Dec 2015 00:00:00 GMT"]
         (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
                (split-set-cookie (:headers resp)))))
       (finally

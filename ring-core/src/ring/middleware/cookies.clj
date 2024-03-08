@@ -60,13 +60,19 @@
   (try (Class/forName s)
        (catch ClassNotFoundException _)))
 
+;; RFC2616 requires a 'GMT' timezone, and while this is obsoleted by RFC6262,
+;; which is more permissive in its parsing, in order to be as backward-
+;; compatible as possible, we'll use a fixed 'GMT' timezone, which in this
+;; case is equivalent to UTC.
+(def ^:private datetime-format "EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+
 (when-let [dt (class-by-name "org.joda.time.DateTime")]
   (extend dt
     CookieDateTime
     {:rfc822-format
      (eval
       '(let [fmtr (.. (org.joda.time.format.DateTimeFormat/forPattern
-                       "EEE, dd MMM yyyy HH:mm:ss Z")
+                       datetime-format)
                       (withZone org.joda.time.DateTimeZone/UTC)
                       (withLocale java.util.Locale/US))]
          (fn [interval]
@@ -84,7 +90,7 @@
     (.get this ChronoUnit/SECONDS)))
 
 (let [java-rfc822-formatter
-      (.. (DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss Z")
+      (.. (DateTimeFormatter/ofPattern datetime-format)
           (withZone (ZoneId/of "UTC"))
           (withLocale Locale/US))]
   (extend-protocol CookieDateTime
