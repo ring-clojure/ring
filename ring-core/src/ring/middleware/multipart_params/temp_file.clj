@@ -11,7 +11,7 @@
 (defmacro ^{:private true} do-every [delay & body]
   `(background-thread
      #(while true
-        (Thread/sleep (* ~delay 1000))
+        (Thread/sleep ~(with-meta `(* ~delay 1000) {:tag 'long}))
         (try ~@body
              (catch Exception ex#)))))
 
