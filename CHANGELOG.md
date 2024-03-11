@@ -1,3 +1,13 @@
+## 1.12.0 (2024-03-11)
+
+* Moved ring.core.protocols into its own library
+* Added support for Partitioned/CHIPS cookies (#493)
+* Added ring.util.async/raising function (#403)
+* Updated minimum Clojure version to 1.9.0
+* Updated Jetty to 11.0.20
+* Fixed cookie date timezone format (#349)
+* Fixed reflection warning in temp-file multipart store (#498)
+
 ## 1.11.0 (2023-12-25)
 
 * Functionally the same as 1.11.0-RC2

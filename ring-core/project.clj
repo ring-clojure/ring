@@ -1,12 +1,12 @@
-(defproject ring/ring-core "1.11.0"
+(defproject ring/ring-core "1.12.0"
   :description "Ring core libraries."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.ring-clojure/ring-core-protocols "1.11.0"]
-                 [org.ring-clojure/ring-websocket-protocols "1.11.0"]
+                 [org.ring-clojure/ring-core-protocols "1.12.0"]
+                 [org.ring-clojure/ring-websocket-protocols "1.12.0"]
                  [ring/ring-codec "1.2.0"]
                  [commons-io "2.15.1"]
                  [org.apache.commons/commons-fileupload2-core "2.0.0-M1"]

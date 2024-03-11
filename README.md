@@ -18,6 +18,8 @@ more in-depth documentation on how to use Ring.
 * `ring/ring` - meta-package containing all relevant dependencies
 * `ring/ring-core` - core functions and middleware for Ring handlers,
   requests and responses
+* `org.ring-clojure/ring-core-protocols` - contains only the protocols
+  necessary for building Ring responses
 * `org.ring-clojure/ring-websocket-protocols` - contains only the protocols
   necessary for WebSockets
 * `ring/ring-devel` - functions for developing and debugging Ring
@@ -37,11 +39,11 @@ more in-depth documentation on how to use Ring.
 To include one of the above libraries, for instance `ring-core`, add
 the following dependency to your `deps.edn` file:
 
-    ring/ring-core {:mvn/version "1.11.0"}
+    ring/ring-core {:mvn/version "1.12.0"}
 
 Or to your Leiningen project file:
 
-    [ring/ring-core "1.11.0"]
+    [ring/ring-core "1.12.0"]
 
 ## Documentation
 
