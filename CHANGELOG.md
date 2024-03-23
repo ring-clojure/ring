@@ -1,3 +1,7 @@
+## 1.12.1 (2024-03-23)
+
+* Fixed Jetty adapter hanging with websockets when :async? set (#499)
+
 ## 1.12.0 (2024-03-11)
 
 * Moved ring.core.protocols into its own library
