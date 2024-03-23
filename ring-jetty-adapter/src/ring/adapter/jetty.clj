@@ -117,10 +117,11 @@
     (.sendError response 500 (.getMessage exception))
     (.complete context)))
 
-(defn- async-jetty-respond [context request response]
+(defn- async-jetty-respond [^AsyncContext context request response]
   (fn [response-map]
     (if (ws/websocket-response? response-map)
-      (upgrade-to-websocket request response response-map)
+      (do (upgrade-to-websocket request response response-map)
+          (.complete context))
       (servlet/update-servlet-response response context response-map))))
 
 (defn- async-timeout-listener [request context response handler]

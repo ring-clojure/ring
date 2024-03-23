@@ -824,3 +824,59 @@
           @(hato/close! ws)
           (Thread/sleep 100)))
       (is (= ["Hello" "World"] @log)))))
+
+(deftest run-jetty-async-websocket-test
+  (testing "ping/pong"
+    (let [log     (atom [])
+          handler (fn [_ respond _]
+                    (respond {::ws/listener
+                              (reify wsp/Listener
+                                (on-open [_ sock]
+                                  (ws/ping sock)
+                                  (swap! log conj [:ping]))
+                                (on-message [_ _ _])
+                                (on-pong [_ _ _]
+                                  (swap! log conj [:pong]))
+                                (on-error [_ _ _])
+                                (on-close [_ _ _ _]))}))]
+      (with-server handler {:port test-port, :async? true}
+        (let [ws @(hato/websocket test-websocket-url {})]
+          (Thread/sleep 100)
+          @(hato/close! ws)
+          (Thread/sleep 100)))
+      (is (= #{[:ping] [:pong]}
+             (set @log)))))
+
+  (testing "send/receive"
+    (let [log     (atom [])
+          handler (fn [_ respond _]
+                    (respond
+                     {::ws/listener
+                      (reify wsp/Listener
+                        (on-open [_ sock]
+                          (ws/send sock "Hello")
+                          (ws/send sock (ByteBuffer/wrap (.getBytes "World"))))
+                        (on-message [_ sock msg]
+                          (if (string? msg)
+                            (ws/send sock (str "t: " msg))
+                            (ws/send sock (str "b: " (buf->str msg)))))
+                        (on-pong [_ _ _])
+                        (on-error [_ _ _])
+                        (on-close [_ _ _ _]))}))]
+      (with-server handler {:port test-port, :async? true}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-message
+                                   (fn [_ msg _]
+                                     (if (instance? ByteBuffer msg)
+                                       (swap! log conj [:b (buf->str msg)])
+                                       (swap! log conj [:t (str msg)])))})]
+          @(hato/send! ws "one")
+          @(hato/send! ws (ByteBuffer/wrap (.getBytes "two")))
+          (Thread/sleep 100)
+          @(hato/close! ws 1000 "Normal close")
+          (Thread/sleep 100)))
+      (is (= [[:t "Hello"]
+              [:b "World"]
+              [:t "t: one"]
+              [:t "b: two"]]
+             @log)))))
