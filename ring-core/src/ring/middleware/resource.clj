@@ -51,6 +51,9 @@
   the request map is passed onto the handler. The root-path argument will be
   added to the beginning of the resource path.
 
+  Note that a root-path of \"\" will expose your whole classpath, which is
+  unlikely to be what you want!
+
   Accepts the following options:
 
   :loader          - resolve the resource using this class loader
