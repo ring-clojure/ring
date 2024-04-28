@@ -51,6 +51,12 @@
   the request map is passed onto the handler. The root-path argument will be
   added to the beginning of the resource path.
 
+  The root-path argument should specify a prefix that only public resources
+  have. By default, a resource is any file on the classpath, so it is important
+  to choose a prefix that excludes any resources you want to keep private, such
+  as source or class files. A root-path of \"\" will make all resources public,
+  so should be avoided.
+
   Accepts the following options:
 
   :loader          - resolve the resource using this class loader
