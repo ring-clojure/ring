@@ -1,4 +1,4 @@
-# Ring Spec (1.5)
+# Ring Spec (1.5.1)
 
 Ring is an abstraction layer for building HTTP server applications in
 Clojure.
@@ -290,9 +290,9 @@ message that has the same data.
 
 #### on-open
 
-Called once when the websocket is first opened. Supplies a `socket`
-argument that satisfies `ring.websocket.protools/Socket`, described in
-section 3.3.
+Called once when the websocket is *successfully* opened. Supplies a
+`socket` argument that satisfies `ring.websocket.protools/Socket`,
+described in section 3.3.
 
 #### on-message
 
@@ -323,9 +323,11 @@ by the error.
 
 #### on-close
 
-Called once when the websocket is closed. Guaranteed to be called, even
-if an error occurs, so may be used for finalizing/cleanup logic. Takes
-an integer `code` and a string `reason` as arguments.
+Called once when the websocket is closed, either via a valid close
+frame or by an abnormal disconnect of the underlying TCP connection.
+Guaranteed to be called if and only if `on-open` was called, so may be
+used for finalizing/cleanup logic. Takes an integer `code` and a string
+`reason` as arguments.
 
 ### 3.3. Websocket Sockets
 
