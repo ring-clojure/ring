@@ -1,3 +1,8 @@
+## 1.12.2 (2024-06-13)
+
+* Updated Jetty to 11.0.21
+* Updated Apache Commons IO to 2.16.1
+
 ## 1.12.1 (2024-03-23)
 
 * Fixed Jetty adapter hanging with websockets when :async? set (#499)

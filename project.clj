@@ -1,12 +1,12 @@
-(defproject ring "1.12.1"
+(defproject ring "1.12.2"
   :description "A Clojure web applications library."
   :url "https://github.com/ring-clojure/ring"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[ring/ring-core "1.12.1"]
-                 [ring/ring-devel "1.12.1"]
-                 [ring/ring-jetty-adapter "1.12.1"]
-                 [org.ring-clojure/ring-jakarta-servlet "1.12.1"]]
+  :dependencies [[ring/ring-core "1.12.2"]
+                 [ring/ring-devel "1.12.2"]
+                 [ring/ring-jetty-adapter "1.12.2"]
+                 [org.ring-clojure/ring-jakarta-servlet "1.12.2"]]
   :plugins [[lein-sub "0.3.0"]
             [lein-codox "0.10.8"]]
   :sub ["ring-core"
