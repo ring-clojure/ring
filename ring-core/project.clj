@@ -8,7 +8,7 @@
                  [org.ring-clojure/ring-core-protocols "1.12.1"]
                  [org.ring-clojure/ring-websocket-protocols "1.12.1"]
                  [ring/ring-codec "1.2.0"]
-                 [commons-io "2.15.1"]
+                 [commons-io "2.16.1"]
                  [org.apache.commons/commons-fileupload2-core "2.0.0-M1"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
