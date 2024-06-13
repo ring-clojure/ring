@@ -1,6 +1,10 @@
 (ns ring.middleware.test.content-type
   (:require [clojure.test :refer :all]
-            [ring.middleware.content-type :refer :all]))
+            [ring.middleware.content-type :refer :all])
+  (:import [java.io File]))
+
+(def public-dir "test/ring/assets")
+(def index-html (File. ^String public-dir "index.html"))
 
 (deftest wrap-content-type-test
   (testing "response without content-type"
@@ -10,6 +14,15 @@
              {:headers {"Content-Type" "image/png"}}))
       (is (= (handler {:uri "/foo/bar.txt"})
              {:headers {"Content-Type" "text/plain"}}))))
+  
+  (testing "response body is java.io.File"
+    (let [response {:headers {}
+                    :body index-html}
+          handler (wrap-content-type (constantly response))]
+      (is (= (get-in (handler {:uri "/index.html"}) [:headers "Content-Type"])
+             "text/html"))
+      (is (= (get-in (handler {:uri "/"}) [:headers "Content-Type"])
+             "text/html"))))
 
   (testing "response with content-type"
     (let [response {:headers {"Content-Type" "application/x-foo"}}

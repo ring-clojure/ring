@@ -1,7 +1,12 @@
 (ns ring.middleware.content-type
   "Middleware for automatically adding a content type to response maps."
   (:require [ring.util.mime-type :refer [ext-mime-type]]
-            [ring.util.response :refer [content-type get-header]]))
+            [ring.util.response :refer [content-type get-header]])
+  (:import [java.io File]))
+
+(defn- mime-type-from-response-body [response mime-types]
+  (when (instance? File (:body response))
+    (ext-mime-type (.getAbsolutePath (:body response)) mime-types)))
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
@@ -12,8 +17,10 @@
    (if response
      (if (get-header response "Content-Type")
        response
-       (let [mime-type (ext-mime-type (:uri request) (:mime-types options))]
-         (content-type response (or mime-type "application/octet-stream")))))))
+       (let [mime-type (or (ext-mime-type (:uri request) (:mime-types options))
+                           (mime-type-from-response-body response (:mime-types options))
+                           "application/octet-stream")]
+         (content-type response mime-type))))))
 
 (defn wrap-content-type
   "Middleware that adds a content-type header to the response if one is not
