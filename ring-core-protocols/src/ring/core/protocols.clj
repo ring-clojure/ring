@@ -9,7 +9,8 @@
   (write-body-to-stream [body response output-stream]
     "Write a value representing a response body to an output stream. The stream
     will be closed after the value had been written. The stream may be written
-    asynchronously."))
+    asynchronously from asynchronous handlers. In synchronous handlers, the
+    response is considered completed once this method ends."))
 
 ;; The following private functions are replicated from ring.util.response in
 ;; order to allow third-party adapters to use StreamableResponseBody without the
