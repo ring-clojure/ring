@@ -297,6 +297,14 @@
        :content-length (connection-content-length conn)
        :last-modified  (connection-last-modified conn)})))
 
+(defmethod resource-data :resource
+  [^java.net.URL url]
+  ;; GraalVM resource scheme
+  (let [resource     (.openConnection url)]
+    {:content        (.getInputStream resource)
+     :content-length (connection-content-length resource)
+     :last-modified  (connection-last-modified resource)}))
+
 (defn url-response
   "Return a response for the supplied URL."
   {:added "1.2"}
