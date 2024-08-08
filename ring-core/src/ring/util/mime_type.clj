@@ -26,6 +26,7 @@
    "dmg"      "application/octet-stream"
    "dms"      "application/octet-stream"
    "doc"      "application/msword"
+   "docx"     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
    "dvi"      "application/x-dvi"
    "edn"      "application/edn"
    "eot"      "application/vnd.ms-fontobject"
