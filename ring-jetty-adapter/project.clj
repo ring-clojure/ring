@@ -8,6 +8,7 @@
                  [ring/ring-core "1.12.2"]
                  [org.ring-clojure/ring-jakarta-servlet "1.12.2"]
                  [org.eclipse.jetty/jetty-server "11.0.21"]
+                 [org.eclipse.jetty/jetty-unixdomain-server "11.0.21"]
                  [org.eclipse.jetty.websocket/websocket-jetty-server "11.0.21"]]
   :aliases {"test-all" ["with-profile" "default:+1.10:+1.11:+1.12" "test"]}
   :profiles
@@ -15,6 +16,7 @@
                          [less-awful-ssl "1.0.6"]
                          [hato "0.9.0"]]
           :jvm-opts ["-Dorg.eclipse.jetty.server.HttpChannelState.DEFAULT_TIMEOUT=500"]}
+   :test {:dependencies [[org.eclipse.jetty/jetty-client "11.0.21"]]}
    :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
    :1.11 {:dependencies [[org.clojure/clojure "1.11.2"]]}
    :1.12 {:dependencies [[org.clojure/clojure "1.12.0-alpha9"]]}})

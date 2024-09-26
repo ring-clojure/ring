@@ -2,7 +2,8 @@
   "A Ring adapter that uses the Jetty 9 embedded web server.
 
   Adapters are used to convert Ring handlers into running web servers."
-  (:require [ring.util.jakarta.servlet :as servlet]
+  (:require [clojure.java.io :as io]
+            [ring.util.jakarta.servlet :as servlet]
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
@@ -15,6 +16,7 @@
             HttpConnectionFactory
             SslConnectionFactory
             SecureRequestCustomizer]
+           [org.eclipse.jetty.unixdomain.server UnixDomainServerConnector]
            [org.eclipse.jetty.servlet ServletContextHandler ServletHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
@@ -161,6 +163,10 @@
   (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
                     (into-array ConnectionFactory factories)))
 
+(defn- unix-domain-server-connector ^UnixDomainServerConnector [^Server server & factories]
+  (UnixDomainServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
+                              (into-array ConnectionFactory factories)))
+
 (defn- http-config ^HttpConfiguration [options]
   (doto (HttpConfiguration.)
     (.setSendDateHeader (:send-date-header? options true))
@@ -229,6 +235,14 @@
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
+(defn- unix-socket-connector ^ServerConnector [server options]
+  (let [http-factory (HttpConnectionFactory. (http-config options))
+        socket (io/file (options :unix-socket))]
+    (.deleteOnExit socket)
+    (doto (unix-domain-server-connector server http-factory)
+      (.setUnixDomainPath (.toPath socket))
+      (.setIdleTimeout (options :max-idle-time 200000)))))
+
 (defn- create-threadpool [options]
   (let [min-threads         (options :min-threads 8)
         max-threads         (options :max-threads 50)
@@ -253,6 +267,8 @@
       (.addConnector server (http-connector server options)))
     (when (or (options :ssl?) (options :ssl-port))
       (.addConnector server (ssl-connector server options)))
+    (when (options :unix-socket)
+      (.addConnector server (unix-socket-connector server options)))
     server))
 
 (defn run-jetty
@@ -266,6 +282,7 @@
   :async-timeout-handler  - an async handler to handle an async context timeout
   :port                   - the port to listen on (defaults to 80)
   :host                   - the hostname to listen on
+  :unix-socket            - the unix domain socket path to listen on
   :join?                  - blocks the thread until server ends
                             (defaults to true)
   :daemon?                - use daemon threads (defaults to false)
