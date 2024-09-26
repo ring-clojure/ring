@@ -8,10 +8,15 @@
             [ring.core.protocols :as p]
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp])
-  (:import [java.nio ByteBuffer]
+  (:import [java.io File]
+           [java.nio ByteBuffer]
+           [java.nio.file Paths]
            [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.io ClientConnector]
+           [org.eclipse.jetty.client HttpClient]
+           [org.eclipse.jetty.client.http HttpClientTransportOverHTTP]
            [java.net ServerSocket ConnectException]
            [java.security KeyStore]
            [java.io SequenceInputStream ByteArrayInputStream InputStream
@@ -81,6 +86,11 @@
 
 (def test-ssl-url (str "https://localhost:" test-ssl-port))
 
+(def test-unix-domain-socket
+  (let [sock-file (File/createTempFile "ring-jetty-" ".sock")]
+    (.delete sock-file)
+    (.getAbsolutePath sock-file)))
+
 (def nil-keystore
   (doto (KeyStore/getInstance (KeyStore/getDefaultType)) (.load nil)))
 
@@ -101,6 +111,22 @@
         (is (.startsWith (get-in response [:headers "content-type"])
                          "text/plain"))
         (is (= (:body response) "Hello World")))))
+
+  (let [java-version (->> (System/getProperty "java.version")
+                          (re-find #"\A\d+")
+                          (Integer/parseInt))]
+    (when (>= java-version 16)
+      (testing "UNIX Socket server"
+        (with-server hello-world {:http? false
+                                  :unix-socket test-unix-domain-socket}
+          (let [path (Paths/get test-unix-domain-socket (make-array String 0))
+                connector (ClientConnector/forUnixDomain path)
+                transport (HttpClientTransportOverHTTP. connector)
+                client (doto (HttpClient. transport) (.start))
+                response (.GET client "http://localhost")]
+            (is (= (.getStatus response) 200))
+            (is (.getMediaType response) "text/plain")
+            (is (= (.getContentAsString response) "Hello World")))))))
 
   (testing "HTTPS server"
     (with-server hello-world {:port test-port
