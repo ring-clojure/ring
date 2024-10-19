@@ -3,6 +3,11 @@
   (:require [ring.util.mime-type :refer [ext-mime-type]]
             [ring.util.response :refer [content-type get-header]]))
 
+(defn- guess-mime-type [{:keys [uri]} {:keys [body]} mime-types]
+  (or (ext-mime-type uri mime-types)
+      (when (instance? java.io.File body)
+        (ext-mime-type (str body) mime-types))))
+
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
   {:added "1.2"}
@@ -12,7 +17,7 @@
    (if response
      (if (get-header response "Content-Type")
        response
-       (let [mime-type (ext-mime-type (:uri request) (:mime-types options))]
+       (let [mime-type (guess-mime-type request response (:mime-types options))]
          (content-type response (or mime-type "application/octet-stream")))))))
 
 (defn wrap-content-type

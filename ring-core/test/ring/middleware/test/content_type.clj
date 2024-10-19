@@ -39,7 +39,15 @@
     (let [response {:headers {"CoNteNt-typE" "application/x-overridden"}}
           handler (wrap-content-type (constantly response))]
       (is (= (handler {:uri "/foo/bar.png"})
-             {:headers {"CoNteNt-typE" "application/x-overridden"}})))))
+             {:headers {"CoNteNt-typE" "application/x-overridden"}}))))
+
+  (testing "fallback on response file extension"
+    (let [response {:body (java.io.File. "test/ring/assets/index.html")}
+          handler  (wrap-content-type (constantly response))]
+      (is (= (-> (handler {:uri "/"}) (dissoc :body))
+             {:headers {"Content-Type" "text/html"}}))
+      (is (= (-> (handler {:uri "/index.txt"}) (dissoc :body))
+             {:headers {"Content-Type" "text/plain"}})))))
 
 (deftest wrap-content-type-cps-test
   (testing "response without content-type"
