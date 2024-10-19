@@ -111,7 +111,7 @@
   "Get the mimetype from the filename extension. Takes an optional map of
   extensions to mimetypes that overrides values in the default-mime-types map."
   ([filename]
-     (ext-mime-type filename {}))
+   (ext-mime-type filename {}))
   ([filename mime-types]
-     (let [mime-types (merge default-mime-types mime-types)]
-       (mime-types (filename-ext filename)))))
+   (let [mime-types (merge default-mime-types mime-types)]
+     (mime-types (filename-ext filename)))))

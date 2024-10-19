@@ -51,7 +51,7 @@
     (update-in headers ["Set-Cookie"] split-header)))
 
 (deftest wrap-cookies-set-extra-attrs
-  (let [cookies {"a" {:value "b", :path "/", :secure true, :http-only true }}
+  (let [cookies {"a" {:value "b", :path "/", :secure true, :http-only true}}
         handler (constantly {:cookies cookies})
         resp    ((wrap-cookies handler) {})]
     (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly"}}
@@ -230,7 +230,7 @@
             resp    ((wrap-cookies handler) {})
             expires "Thu, 31 Dec 2015 00:00:00 GMT"]
         (is (= {"Set-Cookie" #{"a=b" "Path=/" "Secure" "HttpOnly" (str "Expires=" expires)}}
-          (split-set-cookie (:headers resp)))))
+               (split-set-cookie (:headers resp)))))
       (finally
         (java.util.Locale/setDefault default-locale)))))
 

@@ -5,7 +5,6 @@
 (def exception-app (wrap-stacktrace (fn [_] (throw (Exception. "fail")))))
 (def assert-app    (wrap-stacktrace (fn [_] (assert (= 1 2)))))
 
-
 (def html-req  {:headers {"accept" "text/html"}})
 (def js-req    {:headers {"accept" "application/javascript"}})
 (def plain-req {})

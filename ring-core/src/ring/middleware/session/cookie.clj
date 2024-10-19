@@ -42,8 +42,8 @@
         iv         (random/bytes (.getBlockSize cipher))]
     (.init cipher Cipher/ENCRYPT_MODE secret-key (IvParameterSpec. iv))
     (->> (.doFinal cipher data)
-      (concat iv)
-      (byte-array))))
+         (concat iv)
+         (byte-array))))
 
 (defn- decrypt
   "Decrypt an array of bytes with a key."
@@ -121,6 +121,6 @@
              clojure.core/print-method or clojure.core/print-dup multimethods."
   ([] (cookie-store {}))
   ([options]
-    (let [key (get-secret-key options)]
-      (assert (valid-secret-key? key) "the secret key must be exactly 16 bytes")
-      (CookieStore. key options))))
+   (let [key (get-secret-key options)]
+     (assert (valid-secret-key? key) "the secret key must be exactly 16 bytes")
+     (CookieStore. key options))))

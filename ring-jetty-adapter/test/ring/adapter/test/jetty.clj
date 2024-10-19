@@ -20,7 +20,7 @@
            [java.net ServerSocket ConnectException]
            [java.security KeyStore]
            [java.io SequenceInputStream ByteArrayInputStream InputStream
-                    IOException]
+            IOException]
            [org.apache.http MalformedChunkCodingException]))
 
 (defn- hello-world [_request]
@@ -451,12 +451,12 @@
    {:status  200
     :headers {"Transfer-Encoding" "chunked"}
     :body    (SequenceInputStream.
-               (ByteArrayInputStream. (.getBytes (str (range 100000)) "UTF-8"))
-               (proxy [InputStream] []
-                 (read
-                   ([] (throw (IOException. "test error")))
-                   ([^bytes _] (throw (IOException. "test error")))
-                   ([^bytes _ _ _] (throw (IOException. "test error"))))))})
+              (ByteArrayInputStream. (.getBytes (str (range 100000)) "UTF-8"))
+              (proxy [InputStream] []
+                (read
+                  ([] (throw (IOException. "test error")))
+                  ([^bytes _] (throw (IOException. "test error")))
+                  ([^bytes _ _ _] (throw (IOException. "test error"))))))})
   ([request response _raise]
    (response (chunked-stream-with-error request))))
 

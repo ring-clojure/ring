@@ -88,9 +88,9 @@
                    :body    (string-input-stream form-body "UTF-8")}
         response  (promise)
         exception (promise)]
-        (handler request response exception)
-        (is (= (get-in @response [:multipart-params "foo"]) "bar"))
-        (is (not (realized? exception)))))
+    (handler request response exception)
+    (is (= (get-in @response [:multipart-params "foo"]) "bar"))
+    (is (not (realized? exception)))))
 
 (deftest multipart-params-request-test
   (is (fn? multipart-params-request)))
@@ -105,7 +105,7 @@
                            (str "multipart/form-data; boundary=XXXX")}
                  :body (string-input-stream form-body "UTF-8")}
         request* (multipart-params-request request)]
-        (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))
+    (is (= (get-in request* [:multipart-params "foo"]) "Øæßç®£èé"))))
 
 (deftest parts-may-have-invidual-charsets-in-content-type
   (let [form-body (str "--XXXX\r\n"

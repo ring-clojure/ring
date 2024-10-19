@@ -123,7 +123,7 @@
   (for [[key value] cookies]
     (if (map? value)
       (apply str (write-value key (:value value) encoder)
-                 (write-attr-map (dissoc value :value)))
+             (write-attr-map (dissoc value :value)))
       (write-value key value encoder))))
 
 (defn- set-cookies [response encoder]

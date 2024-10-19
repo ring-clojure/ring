@@ -2,11 +2,11 @@
   "Utility functions for handling I/O."
   (:require [clojure.java.io :as io])
   (:import [java.io PipedInputStream
-                    PipedOutputStream
-                    ByteArrayInputStream
-                    File
-                    Closeable
-                    IOException]))
+            PipedOutputStream
+            ByteArrayInputStream
+            File
+            Closeable
+            IOException]))
 
 (defn piped-input-stream
   "Create an input stream from a function that takes an output stream as its
@@ -33,9 +33,9 @@
   "Returns a ByteArrayInputStream for the given String."
   {:added "1.1"}
   ([^String s]
-     (ByteArrayInputStream. (.getBytes s)))
+   (ByteArrayInputStream. (.getBytes s)))
   ([^String s ^String encoding]
-     (ByteArrayInputStream. (.getBytes s encoding))))
+   (ByteArrayInputStream. (.getBytes s encoding))))
 
 (defn close!
   "Ensure a stream is closed, swallowing any exceptions."

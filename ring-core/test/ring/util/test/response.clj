@@ -12,12 +12,12 @@
                      (redirect "/foo")
                      :status)
                 y)
-       :moved-permanently 301
-       :found 302
-       :see-other 303
-       :temporary-redirect 307
-       :permanent-redirect 308
-       300 300))
+    :moved-permanently 301
+    :found 302
+    :see-other 303
+    :temporary-redirect 307
+    :permanent-redirect 308
+    300 300))
 
 (deftest test-redirect-after-post
   (is (= {:status 303 :headers {"Location" "http://example.com"} :body ""}
@@ -103,10 +103,10 @@
          new-loader# (java.net.URLClassLoader. (into-array [(.toURL ~dir)])
                                                original-loader#)]
      (try
-        (.setContextClassLoader current-thread# new-loader#)
-        ~@forms
-        (finally
-          (.setContextClassLoader current-thread# original-loader#)))))
+       (.setContextClassLoader current-thread# new-loader#)
+       ~@forms
+       (finally
+         (.setContextClassLoader current-thread# original-loader#)))))
 
 (defn- make-jar-url [jar-path res-path]
   (io/as-url (str "jar:file:" jar-path "!/" res-path)))

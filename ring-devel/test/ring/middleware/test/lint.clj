@@ -40,12 +40,12 @@
          (doseq [good# ~goods]
            (is (= valid-response
                   (valid-response-app (assoc valid-request ~key good#)))
-             (format "%s is a valid value for request key %s"
-               (pr-str good#) ~key))))
+               (format "%s is a valid value for request key %s"
+                       (pr-str good#) ~key))))
        (deftest ~bad-name
          (doseq [bad# ~bads]
            (is-lint-error
-             (fn [] (valid-response-app (assoc valid-request ~key bad#)))))))))
+            (fn [] (valid-response-app (assoc valid-request ~key bad#)))))))))
 
 (defmacro lints-resp
   [key goods bads]
@@ -57,8 +57,8 @@
            (let [response# (assoc valid-response ~key good#)
                  app#      (constant-app response#)]
              (is (= response# (app# valid-request))
-               (format "%s is a valid value for response key %s"
-                 (pr-str good#) ~key)))))
+                 (format "%s is a valid value for response key %s"
+                         (pr-str good#) ~key)))))
        (deftest ~bad-name
          (doseq [bad# ~bads]
            (let [response# (assoc valid-response ~key bad#)
@@ -66,69 +66,68 @@
              (is-lint-error (fn [] (app# valid-request)))))))))
 
 (lints-req :server-port
-  [80 8080]
-  [nil "80"])
+           [80 8080]
+           [nil "80"])
 
 (lints-req :server-name
-  ["localhost" "www.amazon.com" "192.0.2.235"]
-  [nil 123])
+           ["localhost" "www.amazon.com" "192.0.2.235"]
+           [nil 123])
 
 (lints-req :remote-addr
-  ["192.0.2.235" "0:0:0:0:0:0:0:1%0"]
-  [nil 123])
+           ["192.0.2.235" "0:0:0:0:0:0:0:1%0"]
+           [nil 123])
 
 (lints-req :uri
-  ["/" "/foo" "/foo/bar"]
-  [nil ""])
+           ["/" "/foo" "/foo/bar"]
+           [nil ""])
 
 (lints-req :query-string
-  [nil "" "foo=bar" "foo=bar&biz=bat"]
-  [:foo])
+           [nil "" "foo=bar" "foo=bar&biz=bat"]
+           [:foo])
 
 (lints-req :scheme
-  [:http :https]
-  [nil "http"])
+           [:http :https]
+           [nil "http"])
 
 (lints-req :request-method
-  [:get :head :options :put :patch :post :delete]
-  [nil :FOOBAR "get" 'get])
+           [:get :head :options :put :patch :post :delete]
+           [nil :FOOBAR "get" 'get])
 
 (lints-req :content-type
-  [nil "text/html"]
-  [:text/html])
+           [nil "text/html"]
+           [:text/html])
 
 (lints-req :content-length
-  [nil 123]
-  ["123"])
+           [nil 123]
+           ["123"])
 
 (lints-req :character-encoding
-  [nil "UTF-8"]
-  [:utf-8])
+           [nil "UTF-8"]
+           [:utf-8])
 
 (lints-req :ssl-client-cert
-  [nil (proxy [java.security.cert.X509Certificate] [] (toString [] "X509Certificate"))]
-  ["01234567890ABCDEF"])
+           [nil (proxy [java.security.cert.X509Certificate] [] (toString [] "X509Certificate"))]
+           ["01234567890ABCDEF"])
 
 (lints-req :headers
-  [{"foo" "bar"} {"bat" "Biz"} {"whiz-bang" "high-low"}]
-  [nil {:foo "bar"} {"bar" :foo} {"Bar" "foo"}])
+           [{"foo" "bar"} {"bat" "Biz"} {"whiz-bang" "high-low"}]
+           [nil {:foo "bar"} {"bar" :foo} {"Bar" "foo"}])
 
 (lints-req :body
-  [nil (string-input-stream "thebody")]
-  ["thebody" :thebody])
-
+           [nil (string-input-stream "thebody")]
+           ["thebody" :thebody])
 
 (lints-resp :status
-  [100 301 500]
-  [nil "100" 99])
+            [100 301 500]
+            [nil "100" 99])
 
 (lints-resp :headers
-  [{} {"foo" "bar"} {"Biz" "Bat"} {"vert" ["high" "low"]} {"horz" #{"left right"}}]
-  [nil {:foo "bar"} {"foo" :bar} {"dir" 123}])
+            [{} {"foo" "bar"} {"Biz" "Bat"} {"vert" ["high" "low"]} {"horz" #{"left right"}}]
+            [nil {:foo "bar"} {"foo" :bar} {"dir" 123}])
 
 (lints-resp :body
-  [nil "thebody" (list "foo" "bar") (string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
-  [123 :thebody])
+            [nil "thebody" (list "foo" "bar") (string-input-stream "thebody") (File. "test/ring/assets/foo.html")]
+            [123 :thebody])
 
 (deftest wrap-lint-cps-test
   (testing "valid request and response"

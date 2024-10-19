@@ -11,9 +11,9 @@
 (deftest flash-is-retrieved-from-session
   (let [message  {:error "Could not save"}
         handler  (wrap-flash
-                   (fn [request]
-                     (is (= (:flash request) message))
-                     {}))]
+                  (fn [request]
+                    (is (= (:flash request) message))
+                    {}))]
     (handler {:session {:_flash message}})))
 
 (deftest flash-is-removed-after-read

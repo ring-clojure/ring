@@ -38,11 +38,11 @@
   "Return a list of name-value pairs for a parameter map."
   [params]
   (mapcat
-    (fn [[name value]]
-      (if (and (sequential? value) (not (coll? (first value))))
-        (for [v value] [name v])
-        [[name value]]))
-    params))
+   (fn [[name value]]
+     (if (and (sequential? value) (not (coll? (first value))))
+       (for [v value] [name v])
+       [[name value]]))
+   params))
 
 (defn- nest-params
   "Takes a flat map of parameters and turns it into a nested map of
@@ -50,10 +50,10 @@
   into keys."
   [params parse]
   (reduce
-    (fn [m [k v]]
-      (assoc-nested m (parse k) v))
-    {}
-    (param-pairs params)))
+   (fn [m [k v]]
+     (assoc-nested m (parse k) v))
+   {}
+   (param-pairs params)))
 
 (defn nested-params-request
   "Converts a request with a flat map of parameters to a nested map.

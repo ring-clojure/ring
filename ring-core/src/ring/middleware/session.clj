@@ -44,7 +44,7 @@
 (defn- bare-session-response
   [response {session-key :session/key} {:keys [store cookie-name cookie-attrs]}]
   (let [new-session-key (if (contains? response :session)
-                         (if-let [session (response :session)]
+                          (if-let [session (response :session)]
                             (if (:recreate (meta session))
                               (do
                                 (store/delete-session store session-key)
@@ -103,17 +103,17 @@
   :set-cookies? - If true, automatically include cookie middleware. Defaults to
                   true for backward compatibility."
   ([handler]
-     (wrap-session handler {}))
+   (wrap-session handler {}))
   ([handler options]
-     (let [options (session-options options)]
-       (fn
-         ([request]
-          (let [request (session-request request options)]
-            (-> (handler request)
-                (session-response request options))))
-         ([request respond raise]
-          (let [request (session-request request options)]
-            (handler request
-                     (fn [response]
-                       (respond (session-response response request options)))
-                     raise)))))))
+   (let [options (session-options options)]
+     (fn
+       ([request]
+        (let [request (session-request request options)]
+          (-> (handler request)
+              (session-response request options))))
+       ([request respond raise]
+        (let [request (session-request request options)]
+          (handler request
+                   (fn [response]
+                     (respond (session-response response request options)))
+                   raise)))))))

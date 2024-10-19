@@ -40,9 +40,9 @@
   {:added "1.2"}
   ([url] (created url nil))
   ([url body]
-     {:status  201
-      :headers {"Location" url}
-      :body    body}))
+   {:status  201
+    :headers {"Location" url}
+    :body    body}))
 
 (defn bad-request
   "Returns a 400 'bad request' response."
@@ -126,9 +126,9 @@
   (if-let [^File file (safely-find-file path opts)]
     (cond
       (.isDirectory file)
-        (and (:index-files? opts true) (find-index-file file))
+      (and (:index-files? opts true) (find-index-file file))
       (.exists file)
-        file)))
+      file)))
 
 (defn- file-data [^File file]
   {:content        file
@@ -214,10 +214,10 @@
   {:added "1.1"}
   [resp charset]
   (update-header resp "Content-Type"
-    (fn [content-type]
-      (-> (or content-type "text/plain")
-          (str/replace #";\s*charset=[^;]*" "")
-          (str "; charset=" charset)))))
+                 (fn [content-type]
+                   (-> (or content-type "text/plain")
+                       (str/replace #";\s*charset=[^;]*" "")
+                       (str "; charset=" charset)))))
 
 (defn get-charset
   "Gets the character encoding of a Ring response."

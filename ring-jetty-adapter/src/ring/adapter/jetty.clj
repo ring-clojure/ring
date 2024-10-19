@@ -161,11 +161,11 @@
 
 (defn- server-connector ^ServerConnector [^Server server & factories]
   (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
-                    (into-array ConnectionFactory factories)))
+                             (into-array ConnectionFactory factories)))
 
 (defn- unix-domain-server-connector ^UnixDomainServerConnector [^Server server & factories]
   (UnixDomainServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
-                              (into-array ConnectionFactory factories)))
+                                       (into-array ConnectionFactory factories)))
 
 (defn- http-config ^HttpConfiguration [options]
   (doto (HttpConfiguration.)
@@ -214,7 +214,6 @@
           (.setExcludeProtocols context-server protocols)
           (.addExcludeProtocols context-server protocols))))
     context-server))
-
 
 (defn- ssl-connector ^ServerConnector [^Server server options]
   (let [ssl-port     (options :ssl-port 443)

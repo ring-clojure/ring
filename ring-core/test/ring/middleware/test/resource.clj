@@ -33,7 +33,7 @@
         no-loader   (wrap-resource test-handler "/ring/assets")
         with-loader (wrap-resource test-handler "/ring/assets" {:loader loader})]
     (are [request body] (= (slurp (:body (no-loader request))) body)
-         {:request-method :get, :uri "/foo.html"} "foo")
+      {:request-method :get, :uri "/foo.html"} "foo")
     (are [request body] (= (slurp (:body (with-loader request))) body)
       {:request-method :get, :uri "/foo.html"} "foo-in-jar")
     (testing "does accept trailing slash in asset path"

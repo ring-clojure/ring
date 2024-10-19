@@ -81,5 +81,5 @@
   [request ^String context]
   {:pre [(in-context? request context)]}
   (assoc request
-    :context context
-    :path-info (subs (:uri request) (.length context))))
+         :context context
+         :path-info (subs (:uri request) (.length context))))

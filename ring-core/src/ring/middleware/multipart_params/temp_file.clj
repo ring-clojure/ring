@@ -10,10 +10,10 @@
 
 (defmacro ^{:private true} do-every [delay & body]
   `(background-thread
-     #(while true
-        (Thread/sleep ~(with-meta `(* ~delay 1000) {:tag 'long}))
-        (try ~@body
-             (catch Exception ex#)))))
+    #(while true
+       (Thread/sleep ~(with-meta `(* ~delay 1000) {:tag 'long}))
+       (try ~@body
+            (catch Exception ex#)))))
 
 (defn- expired? [^File file expiry-time]
   (< (.lastModified file)
@@ -34,14 +34,14 @@
 (defn- start-clean-up [file-set expires-in]
   (when expires-in
     (do-every expires-in
-      (remove-old-files file-set expires-in))))
+              (remove-old-files file-set expires-in))))
 
 (defn- ensure-shutdown-clean-up [file-set]
   (.addShutdownHook
-    (Runtime/getRuntime)
-    (Thread.
-      #(doseq [^File file @file-set]
-         (.delete file)))))
+   (Runtime/getRuntime)
+   (Thread.
+    #(doseq [^File file @file-set]
+       (.delete file)))))
 
 (defn temp-file-store
   "Returns a function that stores multipart file parameters as temporary files.
@@ -60,13 +60,13 @@
   {:arglists '([] [options])}
   ([] (temp-file-store {:expires-in 3600}))
   ([{:keys [expires-in]}]
-     (let [file-set (atom #{})
-           clean-up (delay (start-clean-up file-set expires-in))]
-       (ensure-shutdown-clean-up file-set)
-       (fn [item]
-         (force clean-up)
-         (let [temp-file (make-temp-file file-set)]
-           (io/copy (:stream item) temp-file)
-           (-> (select-keys item [:filename :content-type])
-               (assoc :tempfile temp-file
-                      :size (.length temp-file))))))))
+   (let [file-set (atom #{})
+         clean-up (delay (start-clean-up file-set expires-in))]
+     (ensure-shutdown-clean-up file-set)
+     (fn [item]
+       (force clean-up)
+       (let [temp-file (make-temp-file file-set)]
+         (io/copy (:stream item) temp-file)
+         (-> (select-keys item [:filename :content-type])
+             (assoc :tempfile temp-file
+                    :size (.length temp-file))))))))

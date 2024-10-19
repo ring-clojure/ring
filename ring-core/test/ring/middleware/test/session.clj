@@ -101,10 +101,10 @@
   (let [store (make-store (constantly {})
                           (constantly "foo:bar")
                           (constantly nil))
-	handler (constantly {:session {:foo "bar"}})
-	handler (wrap-session handler {:store store
+        handler (constantly {:session {:foo "bar"}})
+        handler (wrap-session handler {:store store
                                        :cookie-attrs {:max-age 5 :path "/foo"}})
-	response (handler {:cookies {}})
+        response (handler {:cookies {}})
         session-cookie (get-session-cookie response)]
     (is (and (.contains session-cookie "ring-session=foo%3Abar")
              (.contains session-cookie "Max-Age=5")
@@ -115,10 +115,10 @@
   (let [store (make-store (constantly {})
                           (constantly "foo:bar")
                           (constantly nil))
-	handler (constantly {:session {:foo "bar"}
-			     :cookies {"cookie2" "value2"}})
-	handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
-	response (handler {:cookies {}})]
+        handler (constantly {:session {:foo "bar"}
+                             :cookies {"cookie2" "value2"}})
+        handler (wrap-session handler {:store store :cookie-attrs {:max-age 5}})
+        response (handler {:cookies {}})]
     (is (= (first (remove is-session-cookie? (get-cookies response)))
            "cookie2=value2"))))
 
@@ -126,9 +126,9 @@
   (let [store (make-store (constantly {})
                           (constantly "foo:bar")
                           (constantly nil))
-	handler (constantly {:session {:foo "bar"}})
-	handler (wrap-session handler {:store store, :root "/foo"})
-	response (handler {:cookies {}})]
+        handler (constantly {:session {:foo "bar"}})
+        handler (wrap-session handler {:store store, :root "/foo"})
+        response (handler {:cookies {}})]
     (is (.contains (get-session-cookie response)
                    "Path=/foo"))))
 
@@ -136,10 +136,10 @@
   (let [store (make-store (constantly {})
                           (constantly "foo:bar")
                           (constantly nil))
-	handler (constantly {:session {:foo "bar"}
+        handler (constantly {:session {:foo "bar"}
                              :session-cookie-attrs {:max-age 5}})
-	handler (wrap-session handler {:store store})
-	response (handler {:cookies {}})]
+        handler (wrap-session handler {:store store})
+        response (handler {:cookies {}})]
     (is (.contains (get-session-cookie response)
                    "Max-Age=5"))))
 
@@ -147,9 +147,9 @@
   (let [store (make-store (constantly {})
                           (constantly {})
                           (constantly nil))
-	handler (constantly {:session {}})
-	handler (wrap-session handler {:store store :cookie-attrs {:http-only false}})
-	response (handler {:cookies {}})]
+        handler (constantly {:session {}})
+        handler (wrap-session handler {:store store :cookie-attrs {:http-only false}})
+        response (handler {:cookies {}})]
     (is (not (.contains (get-session-cookie response)
                         "HttpOnly")))))
 

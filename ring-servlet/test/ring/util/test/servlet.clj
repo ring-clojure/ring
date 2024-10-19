@@ -110,27 +110,27 @@
                  :servlet-context-path "/foo"
                  :ssl-client-cert cert
                  :body            body}
-          response (atom {})]
+        response (atom {})]
     (letfn [(handler [r]
-             (are [k v] (= (r k) v)
-               :server-port    8080
-               :server-name    "foobar"
-               :remote-addr    "127.0.0.1"
-               :uri            "/foo"
-               :query-string   "a=b"
-               :scheme         :http
-               :request-method :get
-               :protocol       "HTTP/1.1"
-               :headers        {"x-client" "Foo,Bar"
-                                "x-server" "Baz"
-                                "x-capital-i" "Qux"}
-               :content-type   "text/plain"
-               :content-length 10
-               :character-encoding "UTF-8"
-               :servlet-context-path "/foo"
-               :ssl-client-cert cert
-               :body            body)
-             {:status 200, :headers {}})]
+              (are [k v] (= (r k) v)
+                :server-port    8080
+                :server-name    "foobar"
+                :remote-addr    "127.0.0.1"
+                :uri            "/foo"
+                :query-string   "a=b"
+                :scheme         :http
+                :request-method :get
+                :protocol       "HTTP/1.1"
+                :headers        {"x-client" "Foo,Bar"
+                                 "x-server" "Baz"
+                                 "x-capital-i" "Qux"}
+                :content-type   "text/plain"
+                :content-length 10
+                :character-encoding "UTF-8"
+                :servlet-context-path "/foo"
+                :ssl-client-cert cert
+                :body            body)
+              {:status 200, :headers {}})]
       (testing "request"
         (run-servlet handler request response))
       (testing "mapping request header names to lower case"
@@ -138,10 +138,10 @@
           (run-servlet handler request response))))
     (testing "response"
       (letfn [(handler [r]
-               {:status  200
-                :headers {"Content-Type" "text/plain"
-                          "X-Server" "Bar"}
-                :body    "Hello World"})]
+                {:status  200
+                 :headers {"Content-Type" "text/plain"
+                           "X-Server" "Bar"}
+                 :body    "Hello World"})]
         (run-servlet handler request response)
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
@@ -191,7 +191,7 @@
              (servlet-request request)
              (servlet-response response))
     (is (= (@response :status) 200))
-    (is (= (get-in @response [:headers "Content-Type" ]) "text/plain"))
+    (is (= (get-in @response [:headers "Content-Type"]) "text/plain"))
     (is (= (.toString (@response :body)) "Hello World"))))
 
 (defn- service-handler [_]
