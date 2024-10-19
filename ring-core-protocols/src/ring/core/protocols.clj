@@ -36,11 +36,16 @@
     (io/writer output-stream :encoding charset)
     (io/writer output-stream)))
 
+;; Extending primitive arrays prior to Clojure 1.12 requires using the low-level
+;; extend function.
+(extend (Class/forName "[B")
+  StreamableResponseBody
+  {:write-body-to-stream
+   (fn [body _ ^OutputStream output-stream]
+     (.write output-stream ^bytes body)
+     (.close output-stream))})
+
 (extend-protocol StreamableResponseBody
-  #_{:clj-kondo/ignore [:syntax]} (Class/forName "[B")
-  (write-body-to-stream [body _ ^OutputStream output-stream]
-    (.write output-stream ^bytes body)
-    (.close output-stream))
   String
   (write-body-to-stream [body response output-stream]
     (doto (response-writer response output-stream)
