@@ -10,14 +10,14 @@
        "://"
        (get-in request [:headers "host"])
        (:uri request)
-       (if-let [query (:query-string request)]
+       (when-let [query (:query-string request)]
          (str "?" query))))
 
 (defn content-type
   "Return the content-type of the request, or nil if no content-type is set."
   {:added "1.3"}
   [request]
-  (if-let [type ^String (get (:headers request) "content-type")]
+  (when-let [type ^String (get (:headers request) "content-type")]
     (let [i (.indexOf type ";")]
       (if (neg? i) type (subs type 0 i)))))
 
@@ -25,7 +25,7 @@
   "Return the content-length of the request, or nil no content-length is set."
   {:added "1.3"}
   [request]
-  (if-let [^String length (get-in request [:headers "content-length"])]
+  (when-let [^String length (get-in request [:headers "content-length"])]
     (Long/valueOf length)))
 
 (defn character-encoding
@@ -39,7 +39,7 @@
   "True if a request contains a urlencoded form in the body."
   {:added "1.3"}
   [request]
-  (if-let [^String type (content-type request)]
+  (when-let [^String type (content-type request)]
     (.startsWith type "application/x-www-form-urlencoded")))
 
 (defmulti ^String body-string

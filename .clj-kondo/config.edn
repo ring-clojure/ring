@@ -1,0 +1,7 @@
+{:lint-as {hiccup.def/defhtml clojure.core/defn}
+ :linters
+ {:deprecated-var
+  {:exclude
+   {ring.middleware.file-info/file-info-response
+    {:defs [ring.middleware.file-info/wrap-file-info]
+     :namespaces [ring.middleware.test.file-info]}}}}}

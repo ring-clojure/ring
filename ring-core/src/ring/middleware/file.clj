@@ -13,7 +13,7 @@
   "Ensures that a directory exists at the given path, throwing if one does not."
   [dir-path]
   (let [dir (io/as-file dir-path)]
-    (if-not (.exists dir)
+    (when-not (.exists dir)
       (throw (Exception. (format "Directory does not exist: %s" dir-path))))))
 
 (defn file-request
@@ -27,7 +27,7 @@
                          :index-files? true
                          :allow-symlinks? false}
                         options)]
-     (if (#{:get :head} (:request-method request))
+     (when (#{:get :head} (:request-method request))
        (let [path (subs (codec/url-decode (request/path-info request)) 1)]
          (-> (response/file-response path options)
              (head/head-response request)))))))

@@ -10,7 +10,7 @@
 (defn- keyword-syntax?
   [s parse-namespaces?]
   (or (re-matches re-plain-keyword s)
-      (if parse-namespaces? (re-matches re-namespaced-keyword s))))
+      (when parse-namespaces? (re-matches re-namespaced-keyword s))))
 
 (defn- keyify-params [target parse-namespaces?]
   (cond

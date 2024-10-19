@@ -5,8 +5,7 @@
             [clojure.edn :as edn]
             [crypto.random :as random]
             [crypto.equality :as crypto])
-  (:import [java.security SecureRandom]
-           [javax.crypto Cipher Mac]
+  (:import [javax.crypto Cipher Mac]
            [javax.crypto.spec SecretKeySpec IvParameterSpec]))
 
 (def ^{:private true
@@ -74,7 +73,7 @@
 (defn- deserialize [x options]
   (edn/read-string (select-keys options [:readers]) x))
 
-(defn- ^String serialize [x options]
+(defn- serialize ^String [x options]
   {:post [(= x (deserialize % options))]}
   (pr-str x))
 
@@ -88,15 +87,15 @@
   "Retrieve a sealed Clojure data structure from a string"
   [key ^String string options]
   (let [[data mac] (.split string "--")]
-    (if-let [data (try (codec/base64-decode data)
+    (when-let [data (try (codec/base64-decode data)
                        (catch IllegalArgumentException _ nil))]
-      (if (crypto/eq? mac (hmac key data))
+      (when (crypto/eq? mac (hmac key data))
         (deserialize (decrypt key data) options)))))
 
 (deftype CookieStore [secret-key options]
   SessionStore
   (read-session [_ data]
-    (if data (unseal secret-key data options)))
+    (when data (unseal secret-key data options)))
   (write-session [_ _ data]
     (seal secret-key data options))
   (delete-session [_ _]

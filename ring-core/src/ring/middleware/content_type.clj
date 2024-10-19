@@ -14,7 +14,7 @@
   ([response request]
    (content-type-response response request {}))
   ([response request options]
-   (if response
+   (when response
      (if (get-header response "Content-Type")
        response
        (let [mime-type (guess-mime-type request response (:mime-types options))]

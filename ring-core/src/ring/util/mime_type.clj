@@ -104,7 +104,7 @@
 (defn- filename-ext
   "Returns the file extension of a filename or filepath."
   [filename]
-  (if-let [ext (second (re-find #"\.([^./\\]+)$" filename))]
+  (when-let [ext (second (re-find #"\.([^./\\]+)$" filename))]
     (str/lower-case ext)))
 
 (defn ext-mime-type

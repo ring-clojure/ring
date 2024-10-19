@@ -2,15 +2,15 @@
   "Middleware that returns a 304 Not Modified response for responses with
   Last-Modified headers."
   (:require [ring.util.time :refer [parse-date]]
-            [ring.util.response :refer [status get-header header]]
+            [ring.util.response :refer [get-header header]]
             [ring.util.io :refer [close!]]))
 
 (defn- etag-match? [request response]
-  (if-let [etag (get-header response "ETag")]
+  (when-let [etag (get-header response "ETag")]
     (= etag (get-header request "if-none-match"))))
 
-(defn- ^java.util.Date date-header [response header]
-  (if-let [http-date (get-header response header)]
+(defn- date-header ^java.util.Date [response header]
+  (when-let [http-date (get-header response header)]
     (parse-date http-date)))
 
 (defn- not-modified-since? [request response]

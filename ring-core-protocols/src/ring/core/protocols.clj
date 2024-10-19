@@ -37,7 +37,7 @@
     (io/writer output-stream)))
 
 (extend-protocol StreamableResponseBody
-  (Class/forName "[B")
+  #_{:clj-kondo/ignore [:syntax]} (Class/forName "[B")
   (write-body-to-stream [body _ ^OutputStream output-stream]
     (.write output-stream ^bytes body)
     (.close output-stream))

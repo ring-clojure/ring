@@ -9,7 +9,7 @@
    :rfc1036 "EEEE, dd-MMM-yy HH:mm:ss zzz"
    :asctime "EEE MMM d HH:mm:ss yyyy"})
 
-(defn- ^SimpleDateFormat formatter [format]
+(defn- formatter ^SimpleDateFormat [format]
   (doto (SimpleDateFormat. ^String (http-date-formats format) Locale/US)
     (.setTimeZone (TimeZone/getTimeZone "GMT"))))
 

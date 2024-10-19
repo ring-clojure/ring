@@ -17,7 +17,7 @@
   {:added "1.2"}
   [response request]
   (let [{:keys [session flash]} request]
-    (if response
+    (when response
       (let [session (if (contains? response :session)
                       (response :session)
                       session)

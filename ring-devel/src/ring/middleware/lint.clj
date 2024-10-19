@@ -1,7 +1,6 @@
 (ns ring.middleware.lint
   "Middleware that checks Ring requests and responses for correctness."
-  (:require [clojure.set :as set]
-            [clojure.string :as str])
+  (:require [clojure.string :as str])
   (:import [java.io File InputStream]
            [java.security.cert X509Certificate]))
 
@@ -11,7 +10,7 @@
   argument and a printing of an invalid val."
   [val spec message]
   (try
-    (if-not (spec val)
+    (when-not (spec val)
       (throw (Exception. (format "Ring lint error: specified %s, but %s was not"
                                  message (pr-str val)))))
     (catch Exception e

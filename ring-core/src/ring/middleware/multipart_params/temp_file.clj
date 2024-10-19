@@ -26,7 +26,7 @@
       (.delete file)
       (swap! file-set disj file))))
 
-(defn- ^File make-temp-file [file-set]
+(defn- make-temp-file ^File [file-set]
   (let [temp-file (File/createTempFile "ring-multipart-" nil)]
     (swap! file-set conj temp-file)
     temp-file))

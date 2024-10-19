@@ -7,7 +7,7 @@
             [ring.util.mime-type :refer [ext-mime-type]]
             [ring.util.io :refer [last-modified-date]])
   (:import [java.io File]
-           [java.util Date Locale TimeZone]
+           [java.util Locale TimeZone]
            [java.text SimpleDateFormat]))
 
 (defn- guess-mime-type
@@ -17,17 +17,17 @@
   (or (ext-mime-type (.getPath file) mime-types)
       "application/octet-stream"))
 
-(defn- ^SimpleDateFormat make-http-format
+(defn- make-http-format
   "Formats or parses dates into HTTP date format (RFC 822/1123)."
-  []
+  ^SimpleDateFormat []
   ;; SimpleDateFormat is not threadsafe, so return a new instance each time
   (doto (SimpleDateFormat. "EEE, dd MMM yyyy HH:mm:ss ZZZ" Locale/US)
     (.setTimeZone (TimeZone/getTimeZone "UTC"))))
 
 (defn- not-modified-since?
   "Has the file been modified since the last request from the client?"
-  [{headers :headers :as req} last-modified]
-  (if-let [modified-since (headers "if-modified-since")]
+  [{headers :headers} last-modified]
+  (when-let [modified-since (headers "if-modified-since")]
     (not (.before (.parse (make-http-format) modified-since)
                   last-modified))))
 

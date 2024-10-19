@@ -1,11 +1,9 @@
 (ns ring.util.io
   "Utility functions for handling I/O."
-  (:require [clojure.java.io :as io])
   (:import [java.io PipedInputStream
             PipedOutputStream
             ByteArrayInputStream
             File
-            Closeable
             IOException]))
 
 (defn piped-input-stream

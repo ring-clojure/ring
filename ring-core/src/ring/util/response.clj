@@ -84,7 +84,7 @@
 
 (defn- canonical-path ^String [^File file]
   (str (.getCanonicalPath file)
-       (if (.isDirectory file) File/separatorChar)))
+       (when (.isDirectory file) File/separatorChar)))
 
 (defn- safe-path? [^String root ^String path]
   (.startsWith (canonical-path (File. root path))
@@ -99,7 +99,7 @@
 
 (defn- find-file-named [^File dir ^String filename]
   (let [path (File. dir filename)]
-    (if (.isFile path)
+    (when (.isFile path)
       path)))
 
 (defn- find-file-starting-with [^File dir ^String prefix]
@@ -117,13 +117,13 @@
 
 (defn- safely-find-file [^String path opts]
   (if-let [^String root (:root opts)]
-    (if (or (safe-path? root path)
+    (when (or (safe-path? root path)
             (and (:allow-symlinks? opts) (not (directory-transversal? path))))
       (File. root path))
     (File. path)))
 
 (defn- find-file [^String path opts]
-  (if-let [^File file (safely-find-file path opts)]
+  (when-let [^File file (safely-find-file path opts)]
     (cond
       (.isDirectory file)
       (and (:index-files? opts true) (find-index-file file))
@@ -156,7 +156,7 @@
   ([filepath]
    (file-response filepath {}))
   ([filepath options]
-   (if-let [file (find-file filepath options)]
+   (when-let [file (find-file filepath options)]
      (let [data (file-data file)]
        (-> (response (:content data))
            (content-length (:content-length data))
@@ -170,7 +170,7 @@
 ;; As a work-around, we'll backport the fix from CLJ-1177 into
 ;; url-as-file.
 
-(defn- ^File url-as-file [^java.net.URL u]
+(defn- url-as-file ^File [^java.net.URL u]
   (-> (.getFile u)
       (str/replace \/ File/separatorChar)
       (str/replace "+" (URLEncoder/encode "+" "UTF-8"))
@@ -265,8 +265,8 @@
 
 (defmethod resource-data :file
   [url]
-  (if-let [file (url-as-file url)]
-    (if-not (.isDirectory file)
+  (when-let [file (url-as-file url)]
+    (when-not (.isDirectory file)
       (file-data file))))
 
 (defn- add-ending-slash [^String path]
@@ -282,17 +282,17 @@
 
 (defn- connection-content-length [^java.net.URLConnection conn]
   (let [len (.getContentLength conn)]
-    (if (<= 0 len) len)))
+    (when (<= 0 len) len)))
 
 (defn- connection-last-modified [^java.net.URLConnection conn]
   (let [last-mod (.getLastModified conn)]
-    (if-not (zero? last-mod)
+    (when-not (zero? last-mod)
       (Date. last-mod))))
 
 (defmethod resource-data :jar
   [^java.net.URL url]
   (let [conn (.openConnection url)]
-    (if-not (jar-directory? conn)
+    (when-not (jar-directory? conn)
       {:content        (.getInputStream conn)
        :content-length (connection-content-length conn)
        :last-modified  (connection-last-modified conn)})))
@@ -301,7 +301,7 @@
   "Return a response for the supplied URL."
   {:added "1.2"}
   [^URL url]
-  (if-let [data (resource-data url)]
+  (when-let [data (resource-data url)]
     (-> (response (:content data))
         (content-length (:content-length data))
         (last-modified (:last-modified data)))))
@@ -337,9 +337,9 @@
          load      #(if-let [loader (:loader options)]
                       (io/resource % loader)
                       (io/resource %))]
-     (if-not (directory-transversal? root+path)
-       (if-let [resource (load root+path)]
+     (when-not (directory-transversal? root+path)
+       (when-let [resource (load root+path)]
          (let [response (url-response resource)]
-           (if (or (not (instance? File (:body response)))
-                   (safe-file-resource? response options))
+           (when (or (not (instance? File (:body response)))
+                     (safe-file-resource? response options))
              response)))))))

@@ -13,7 +13,7 @@
   ([request root-path]
    (resource-request request root-path {}))
   ([request root-path options]
-   (if (#{:head :get} (:request-method request))
+   (when (#{:head :get} (:request-method request))
      (let [path (subs (codec/url-decode (request/path-info request)) 1)]
        (-> (response/resource-response path (assoc options :root root-path))
            (head/head-response request))))))

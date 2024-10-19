@@ -7,8 +7,8 @@
   (:require [clojure.java.io :as io]
             [hiccup.core :refer [html h]]
             [hiccup.page :refer [html5]]
-            [clj-stacktrace.core :refer :all]
-            [clj-stacktrace.repl :refer :all]
+            [clj-stacktrace.core :as st]
+            [clj-stacktrace.repl :as repl]
             [ring.util.response :refer [content-type response status]]))
 
 (defn wrap-stacktrace-log
@@ -26,13 +26,13 @@
         (try
           (handler request)
           (catch Throwable ex
-            (pst-on *err* color? ex)
+            (repl/pst-on *err* color? ex)
             (throw ex))))
        ([request respond raise]
         (try
-          (handler request respond (fn [ex] (pst-on *err* color? ex) (raise ex)))
+          (handler request respond (fn [ex] (repl/pst-on *err* color? ex) (raise ex)))
           (catch Throwable ex
-            (pst-on *err* color? ex)
+            (repl/pst-on *err* color? ex)
             (throw ex))))))))
 
 (defn- style-resource [path]
@@ -41,14 +41,14 @@
 (defn- elem-partial [elem]
   (if (:clojure elem)
     [:tr.clojure
-     [:td.source (h (source-str elem))]
-     [:td.method (h (clojure-method-str elem))]]
+     [:td.source (h (repl/source-str elem))]
+     [:td.method (h (repl/clojure-method-str elem))]]
     [:tr.java
-     [:td.source (h (source-str elem))]
-     [:td.method (h (java-method-str elem))]]))
+     [:td.source (h (repl/source-str elem))]
+     [:td.method (h (repl/java-method-str elem))]]))
 
 (defn- html-exception [ex]
-  (let [[ex & causes] (iterate :cause (parse-exception ex))]
+  (let [[ex & causes] (iterate :cause (st/parse-exception ex))]
     (html5
      [:head
       [:title "Ring: Stacktrace"]
@@ -69,7 +69,7 @@
             [:tbody (map elem-partial (:trace-elems cause))]]]])]])))
 
 (defn- text-ex-response [e]
-  (-> (response (with-out-str (pst e)))
+  (-> (response (with-out-str (repl/pst e)))
       (status 500)
       (content-type "text/plain")))
 

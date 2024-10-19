@@ -19,14 +19,14 @@
    :cookie-attrs (merge {:path "/"
                          :http-only true}
                         (options :cookie-attrs)
-                        (if-let [root (options :root)]
+                        (when-let [root (options :root)]
                           {:path root}))})
 
 (defn- bare-session-request
   [request {:keys [store cookie-name]}]
   (let [req-key  (get-in request [:cookies cookie-name :value])
         session  (store/read-session store req-key)
-        session-key (if session req-key)]
+        session-key (when session req-key)]
     (merge request {:session (or session {})
                     :session/key session-key})))
 
@@ -43,7 +43,7 @@
 
 (defn- bare-session-response
   [response {session-key :session/key} {:keys [store cookie-name cookie-attrs]}]
-  (let [new-session-key (if (contains? response :session)
+  (let [new-session-key (when (contains? response :session)
                           (if-let [session (response :session)]
                             (if (:recreate (meta session))
                               (do
@@ -51,7 +51,7 @@
                                 (->> (vary-meta session dissoc :recreate)
                                      (store/write-session store nil)))
                               (store/write-session store session-key session))
-                            (if session-key
+                            (when session-key
                               (store/delete-session store session-key))))
         session-attrs (:session-cookie-attrs response)
         cookie {cookie-name
@@ -70,7 +70,7 @@
   ([response request]
    (session-response response request {}))
   ([response request options]
-   (if response
+   (when response
      (-> response
          (bare-session-response request options)
          (cond-> (:set-cookies? options true) cookies/cookies-response)))))

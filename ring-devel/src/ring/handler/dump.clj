@@ -38,7 +38,7 @@
       [:tbody
        (for [key ring-keys]
          (req-pair key req))]]
-     (if-let [user-keys (set/difference (set (keys req)) (set ring-keys))]
+     (when-let [user-keys (set/difference (set (keys req)) (set ring-keys))]
        (html
         [:br]
         [:table.request.user
@@ -54,5 +54,5 @@
    (println)
    (-> (response (template request))
        (content-type "text/html")))
-  ([request respond raise]
+  ([request respond _raise]
    (respond (handle-dump request))))
