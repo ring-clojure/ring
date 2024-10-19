@@ -1,3 +1,14 @@
+## 1.13.0 (2024-10-19)
+
+* Added support for Unix domain sockets to Jetty adapter (#511)
+* Added support for file response bodies to `wrap-content-type` (#452)
+* Added docx extension to mimetypes (#510)
+* Fixed wrap-not-modified to remove `Content-Length` header (#509)
+* Improved session cookie secret key deprecation warning (#413)
+* Updated ns-tracker to 1.0.0 (#507)
+* Updated Jetty to 11.0.24
+* Updated Apache Commons IO to 2.17.0
+
 ## 1.12.2 (2024-06-13)
 
 * Updated Jetty to 11.0.21
