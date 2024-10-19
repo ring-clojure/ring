@@ -71,8 +71,9 @@
           last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
           h-resp {:status 200 :headers {"Last-Modified" last-modified} :body ""}
           resp   (not-modified-response h-resp (req last-modified))]
+      (is (= 304 (:status resp)))
       (is (nil? (:body resp)))
-      (is (= (get-in resp [:headers "Content-Length"]) "0"))))
+      (is (nil? (get-in resp [:headers "Content-Length"])))))
 
   (testing "no modification info"
     (let [response {:status 200 :headers {} :body ""}]
@@ -111,4 +112,16 @@
         200 304
         302 302
         404 404
-        500 500))))
+        500 500)))
+
+  (testing "content-type header is removed"
+    (let [req   #(hash-map :request-method :get :headers {"if-modified-since" %})
+          last-modified "Sun, 23 Sep 2012 11:00:00 GMT"
+          h-resp {:status 200
+                  :headers {"Last-Modified" last-modified
+                            "Content-Length" "11"}
+                  :body "hello world"}
+          resp   (not-modified-response h-resp (req last-modified))]
+      (is (= 304 (:status resp)))
+      (is (nil? (:body resp)))
+      (is (nil? (get-in resp [:headers "Content-Length"]))))))

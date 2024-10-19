@@ -2,7 +2,7 @@
   "Middleware that returns a 304 Not Modified response for responses with
   Last-Modified headers."
   (:require [ring.util.time :refer [parse-date]]
-            [ring.util.response :refer [get-header header]]
+            [ring.util.response :refer [get-header find-header header]]
             [ring.util.io :refer [close!]]))
 
 (defn- etag-match? [request response]
@@ -35,6 +35,11 @@
       (or (not-modified-since? request response)
           (etag-match? request response)))))
 
+(defn- dissoc-header [response header]
+  (if-some [[k _] (find-header response header)]
+    (update response :headers dissoc k)
+    response))
+
 (defn not-modified-response
   "Returns 304 or original response based on response and request.
   See: wrap-not-modified."
@@ -46,7 +51,7 @@
     (do (close! (:body response))
         (-> response
             (assoc :status 304)
-            (header "Content-Length" 0)
+            (dissoc-header "Content-Length")
             (assoc :body nil)))
     response))
 
