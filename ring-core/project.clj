@@ -8,7 +8,7 @@
                  [org.ring-clojure/ring-core-protocols "1.12.2"]
                  [org.ring-clojure/ring-websocket-protocols "1.12.2"]
                  [ring/ring-codec "1.2.0"]
-                 [commons-io "2.16.1"]
+                 [commons-io "2.17.0"]
                  [org.apache.commons/commons-fileupload2-core "2.0.0-M1"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
@@ -16,5 +16,5 @@
   :profiles
   {:dev  {:dependencies [[clj-time "0.15.2"]]}
    :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
-   :1.11 {:dependencies [[org.clojure/clojure "1.11.2"]]}
-   :1.12 {:dependencies [[org.clojure/clojure "1.12.0-alpha9"]]}})
+   :1.11 {:dependencies [[org.clojure/clojure "1.11.4"]]}
+   :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}})
