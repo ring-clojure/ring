@@ -6,7 +6,7 @@
 (defn- guess-mime-type [{:keys [uri]} {:keys [body]} mime-types]
   (or (ext-mime-type uri mime-types)
       (when (instance? java.io.File body)
-        (ext-mime-type (str body) mime-types))))
+        (ext-mime-type (.getAbsolutePath ^java.io.File body) mime-types))))
 
 (defn content-type-response
   "Adds a content-type header to response. See: wrap-content-type."
