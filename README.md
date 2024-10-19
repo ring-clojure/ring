@@ -47,6 +47,7 @@ Or to your Leiningen project file:
 
 ## Documentation
 
+* [Changelog](https://github.com/ring-clojure/ring/blob/master/CHANGELOG.md)
 * [Wiki](https://github.com/ring-clojure/ring/wiki)
 * [API docs](https://ring-clojure.github.io/ring/)
 
