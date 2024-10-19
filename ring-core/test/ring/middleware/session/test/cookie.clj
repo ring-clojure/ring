@@ -75,5 +75,6 @@
   (is (= (with-out-str
            (binding [*err* *out*]
              (cookie-store {:key "0123456789abcdef"})))
-         (str "WARNING: The secret key for the session cookie store should be a"
-              " byte array.\nString secret keys have been deprecated.\n"))))
+         (str "[ring.middleware.session.cookie] WARNING: The secret key for the "
+              "session cookie\nstore should be a byte array. Secret keys as "
+              "Strings have been deprecated.\n"))))

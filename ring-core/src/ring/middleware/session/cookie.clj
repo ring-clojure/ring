@@ -56,8 +56,9 @@
 
 (defn- print-string-secret-key-deprecation []
   (binding [*out* *err*]
-    (println "WARNING: The secret key for the session cookie store should be a"
-             "byte array.\nString secret keys have been deprecated.")))
+    (println "[ring.middleware.session.cookie] WARNING: The secret key for the"
+             "session cookie\nstore should be a byte array. Secret keys as"
+             "Strings have been deprecated.")))
 
 (defn- get-secret-key
   "Get a valid secret key from a map of options, or create a random one from
