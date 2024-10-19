@@ -88,7 +88,7 @@
   [key ^String string options]
   (let [[data mac] (.split string "--")]
     (when-let [data (try (codec/base64-decode data)
-                       (catch IllegalArgumentException _ nil))]
+                         (catch IllegalArgumentException _ nil))]
       (when (crypto/eq? mac (hmac key data))
         (deserialize (decrypt key data) options)))))
 

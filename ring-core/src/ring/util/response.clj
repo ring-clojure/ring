@@ -118,7 +118,7 @@
 (defn- safely-find-file [^String path opts]
   (if-let [^String root (:root opts)]
     (when (or (safe-path? root path)
-            (and (:allow-symlinks? opts) (not (directory-transversal? path))))
+              (and (:allow-symlinks? opts) (not (directory-transversal? path))))
       (File. root path))
     (File. path)))
 
