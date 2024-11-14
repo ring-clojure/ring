@@ -164,8 +164,8 @@ A representation of the request body that must satisfy the
 
 #### :headers
 
-A Clojure map of lowercased header name strings to either a string or
-a vector of strings that correspond to the header value or values.
+A Clojure map of header name strings to either a string or a vector of
+strings that correspond to the header value or values.
 
 #### :status
 
