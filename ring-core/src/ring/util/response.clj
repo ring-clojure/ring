@@ -289,6 +289,14 @@
     (when-not (zero? last-mod)
       (Date. last-mod))))
 
+(defmethod resource-data :resource
+  [^java.net.URL url]
+  ;; GraalVM resource scheme
+  (let [resource     (.openConnection url)]
+    {:content        (.getInputStream resource)
+     :content-length (connection-content-length resource)
+     :last-modified  (connection-last-modified resource)}))
+
 (defmethod resource-data :jar
   [^java.net.URL url]
   (let [conn (.openConnection url)]
