@@ -203,6 +203,9 @@
     (let [response ((wrap-multipart-params handler {:max-file-size 6})
                     {:headers headers, :body (string-input-stream form-body)})]
       (is (= 413 (:status response))))
+    (let [response ((wrap-multipart-params handler {:max-file-size 8})
+                    {:headers headers, :body (string-input-stream form-body)})]
+      (is (= 413 (:status response))))
     (let [response ((wrap-multipart-params handler {:max-file-size 9})
                     {:headers headers, :body (string-input-stream form-body)})]
       (is (= 200 (:status response))))
