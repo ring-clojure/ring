@@ -17,22 +17,22 @@
             SslConnectionFactory
             SecureRequestCustomizer]
            [org.eclipse.jetty.unixdomain.server UnixDomainServerConnector]
-           [org.eclipse.jetty.servlet ServletContextHandler ServletHandler]
+           [org.eclipse.jetty.ee9.servlet ServletContextHandler ServletHandler]
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
-           [org.eclipse.jetty.websocket.server
+           [org.eclipse.jetty.ee9.websocket.server
             JettyServerUpgradeRequest
             JettyServerUpgradeResponse
             JettyWebSocketServerContainer
             JettyWebSocketCreator]
-           [org.eclipse.jetty.websocket.api
+           [org.eclipse.jetty.ee9.websocket.api
             Session
             WebSocketConnectionListener
             WebSocketListener
             WebSocketPingPongListener
             WriteCallback]
-           [org.eclipse.jetty.websocket.server.config
+           [org.eclipse.jetty.ee9.websocket.server.config
             JettyWebSocketServletContainerInitializer]
            [jakarta.servlet AsyncContext AsyncEvent AsyncListener]
            [jakarta.servlet.http HttpServletRequest HttpServletResponse]))

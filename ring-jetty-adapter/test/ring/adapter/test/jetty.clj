@@ -16,7 +16,7 @@
            [org.eclipse.jetty.server.handler AbstractHandler]
            [org.eclipse.jetty.io ClientConnector]
            [org.eclipse.jetty.client HttpClient]
-           [org.eclipse.jetty.client.http HttpClientTransportOverHTTP]
+           [org.eclipse.jetty.client.transport HttpClientTransportOverHTTP]
            [java.net ServerSocket ConnectException]
            [java.security KeyStore]
            [java.io SequenceInputStream ByteArrayInputStream InputStream
