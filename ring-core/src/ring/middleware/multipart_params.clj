@@ -30,9 +30,7 @@
 
 (defn- file-upload [request {:keys [progress-fn max-file-size]}]
   (doto (proxy [AbstractFileUpload] [])
-    ;; There seems to be an off-by-one bug in FileUpload 2.0.0-M1 that requires
-    ;; us to increment the max-file-size option to get it to work correctly.
-    (.setFileSizeMax (if max-file-size (inc max-file-size) -1))
+    (.setFileSizeMax (or max-file-size -1))
     (set-progress-listener request progress-fn)))
 
 (defn- multipart-form? [request]
