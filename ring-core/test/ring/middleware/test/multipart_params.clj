@@ -50,6 +50,18 @@
     (is (= (get-in response [:params "foo"])
            ["bar" "baz"]))))
 
+(deftest test-parse-multipart-params
+  (let [form-body (str "--XXXX\r\n"
+                       "Content-Disposition: form-data;"
+                       "name=\"foo\"\r\n\r\n"
+                       "bar\r\n"
+                       "--XXXX")
+        request {:headers {"content-type" "multipart/form-data; boundary=XXXX"
+                           "content-length" (str (count form-body))}
+                 :body (string-input-stream form-body)}]
+    (is (= {"foo" "bar"} (parse-multipart-params request)))
+    (is (nil? (parse-multipart-params {:headers {}})))))
+
 (defn all-threads []
   (.keySet (Thread/getAllStackTraces)))
 

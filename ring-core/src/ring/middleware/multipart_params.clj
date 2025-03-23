@@ -86,23 +86,30 @@
 
 (def ^:private default-store (delay (tf/temp-file-store)))
 
-(defn- parse-multipart-params
-  [request {:keys [encoding fallback-encoding store max-file-count]
-            :as options}]
-  (let [store             (or store @default-store)
-        fallback-encoding (or encoding
-                              fallback-encoding
-                              (req/character-encoding request)
-                              "UTF-8")]
-    (->> (request-context request fallback-encoding)
-         (file-item-iterable (file-upload request options))
-         (sequence
-          (map-indexed (fn [i item]
-                         (if (and max-file-count (>= i max-file-count))
-                           (throw (ex-info "Max file count exceeded"
-                                           {:max-file-count max-file-count}))
-                           (parse-file-item item store)))))
-         (build-param-map encoding fallback-encoding))))
+(defn parse-multipart-params
+  "Parse a multipart request map and return a map of parameters. For a list of
+  available options, see: wrap-multipart-params."
+  {:added "1.14"}
+  ([request]
+   (parse-multipart-params request {}))
+  ([request options]
+   (when (multipart-form? request)
+     (let [store             (or (:store options) @default-store)
+           max-file-count    (:max-file-count options)
+           encoding          (:encoding options)
+           fallback-encoding (or encoding
+                                 (:fallback-encoding options)
+                                 (req/character-encoding request)
+                                 "UTF-8")]
+       (->> (request-context request fallback-encoding)
+            (file-item-iterable (file-upload request options))
+            (sequence
+             (map-indexed (fn [i item]
+                            (if (and max-file-count (>= i max-file-count))
+                              (throw (ex-info "Max file count exceeded"
+                                              {:max-file-count max-file-count}))
+                              (parse-file-item item store)))))
+            (build-param-map encoding fallback-encoding))))))
 
 (defn multipart-params-request
   "Adds :multipart-params and :params keys to request.
@@ -111,9 +118,7 @@
   ([request]
    (multipart-params-request request {}))
   ([request options]
-   (let [params (if (multipart-form? request)
-                  (parse-multipart-params request options)
-                  {})]
+   (let [params (or (parse-multipart-params request options) {})]
      (merge-with merge request
                  {:multipart-params params}
                  {:params params}))))
