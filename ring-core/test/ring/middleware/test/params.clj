@@ -12,6 +12,11 @@
     (is (empty? (:form-params resp)))
     (is (= {"foo" "bar" "biz" "bat%"} (:params resp)))))
 
+(deftest wrap-params-partial-query-params
+  (let [req  {:query-string "foo"}
+        resp (wrapped-echo req)]
+    (is (= {"foo" ""} (:query-params resp)))))
+
 (deftest wrap-params-query-and-form-params
   (let [req  {:query-string "foo=bar"
               :headers      {"content-type" "application/x-www-form-urlencoded"}

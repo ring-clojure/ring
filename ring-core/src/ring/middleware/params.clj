@@ -5,7 +5,7 @@
             [ring.util.request :as req]))
 
 (defn- parse-params [params encoding]
-  (let [params (codec/form-decode params encoding)]
+  (let [params (codec/form-decode-map params encoding)]
     (if (map? params) params {})))
 
 (defn- assoc-param-map [req k v]
