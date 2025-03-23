@@ -1,3 +1,11 @@
+## 1.13.1 (2025-03-23)
+
+* Fixed query-string parsing edge condition (#524)
+* Updated Apache Commons FileUpload to 2.0.0-M2
+* Updated Apache Commons IO to 2.18.0
+* Updated Jetty to 11.0.25
+* Updated Ring-Codec to 1.3.0
+
 ## 1.13.0 (2024-10-19)
 
 * Added support for Unix domain sockets to Jetty adapter (#511)
