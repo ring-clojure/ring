@@ -66,6 +66,6 @@ the years.
 
 ## License
 
-Copyright © 2009-2024 Mark McGranaghan, James Reeves & contributors.
+Copyright © 2009-2025 Mark McGranaghan, James Reeves & contributors.
 
 Released under the MIT license.
