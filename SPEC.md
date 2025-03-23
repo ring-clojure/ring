@@ -154,7 +154,7 @@ following keys. Any key not marked as **required** may be omitted.
 
 #### :body
 
-A representation of the request body that must satisfy the
+A representation of the response body that must satisfy the
 `ring.core.protocols/StreamableResponseBody` protocol.
 
 ```clojure
