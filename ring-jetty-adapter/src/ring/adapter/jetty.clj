@@ -9,7 +9,6 @@
   (:import [java.nio ByteBuffer]
            [java.time Duration]
            [org.eclipse.jetty.server
-            Request
             Server
             ServerConnector
             ConnectionFactory
@@ -22,6 +21,7 @@
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
+           [org.eclipse.jetty.ee9.nested Request]
            [org.eclipse.jetty.ee9.websocket.server
             JettyServerUpgradeRequest
             JettyServerUpgradeResponse
