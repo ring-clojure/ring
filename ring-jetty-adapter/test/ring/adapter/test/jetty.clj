@@ -849,7 +849,63 @@
           (Thread/sleep 100)
           @(hato/close! ws)
           (Thread/sleep 100)))
-      (is (= ["Hello" "World"] @log)))))
+      (is (= ["Hello" "World"] @log))))
+
+  (testing "testing idle timeout"
+    (let [closer  (promise)
+          handler (constantly
+                   {::ws/listener
+                    (reify wsp/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port, :ws-idle-timeout 100}
+        @(hato/websocket test-websocket-url
+                         {:on-close (fn [_ status reason]
+                                      (closer [status reason]))})
+        (Thread/sleep 150)
+        (is (realized? closer))
+        (is (= @closer [1001 "Connection Idle Timeout"])))))
+
+  (testing "max text message size"
+    (let [closer  (promise)
+          handler (constantly
+                   {::ws/listener
+                    (reify wsp/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port, :ws-max-text-size 5}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-close (fn [_ status reason]
+                                               (closer [status reason]))})]
+          @(hato/send! ws "123456")
+          (Thread/sleep 50)
+          (is (realized? closer))
+          (is (= @closer [1009 "Text message too large: 6 > 5"]))))))
+
+  (testing "max text message size"
+    (let [closer  (promise)
+          handler (constantly
+                   {::ws/listener
+                    (reify wsp/Listener
+                      (on-open [_ _])
+                      (on-message [_ _ _])
+                      (on-pong [_ _ _])
+                      (on-error [_ _ _])
+                      (on-close [_ _ _ _]))})]
+      (with-server handler {:port test-port, :ws-max-binary-size 5}
+        (let [ws @(hato/websocket test-websocket-url
+                                  {:on-close (fn [_ status reason]
+                                               (closer [status reason]))})]
+          @(hato/send! ws (ByteBuffer/wrap (.getBytes "123456")))
+          (Thread/sleep 50)
+          (is (realized? closer))
+          (is (= @closer [1009 "Binary message too large: 6 > 5"])))))))
 
 (deftest run-jetty-async-websocket-test
   (testing "ping/pong"

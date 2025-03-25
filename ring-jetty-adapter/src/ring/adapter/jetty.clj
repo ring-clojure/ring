@@ -7,6 +7,7 @@
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp])
   (:import [java.nio ByteBuffer]
+           [java.time Duration]
            [org.eclipse.jetty.server
             Request
             Server
@@ -96,20 +97,25 @@
         (.setAcceptedSubProtocol resp protocol))
       (websocket-listener listener))))
 
-(defn- upgrade-to-websocket [^HttpServletRequest request response response-map]
+(defn- upgrade-to-websocket
+  [^HttpServletRequest request response response-map options]
   (let [context   (.getServletContext request)
         container (JettyWebSocketServerContainer/getContainer context)
         creator   (websocket-creator response-map)]
+    (doto container
+      (.setIdleTimeout (Duration/ofMillis (:ws-idle-timeout options 30000)))
+      (.setMaxTextMessageSize (:ws-max-text-size options 65536))
+      (.setMaxBinaryMessageSize (:ws-max-binary-size options 65536)))
     (.upgrade container creator request response)))
 
-(defn- proxy-handler ^ServletHandler [handler]
+(defn- proxy-handler ^ServletHandler [handler options]
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request request response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (try
           (if (ws/websocket-response? response-map)
-            (upgrade-to-websocket request response response-map)
+            (upgrade-to-websocket request response response-map options)
             (servlet/update-servlet-response response response-map))
           (finally
             (.setHandled base-request true)))))))
@@ -119,36 +125,39 @@
     (.sendError response 500 (.getMessage exception))
     (.complete context)))
 
-(defn- async-jetty-respond [^AsyncContext context request response]
+(defn- async-jetty-respond [^AsyncContext context request response options]
   (fn [response-map]
     (if (ws/websocket-response? response-map)
-      (do (upgrade-to-websocket request response response-map)
+      (do (upgrade-to-websocket request response response-map options)
           (.complete context))
       (servlet/update-servlet-response response context response-map))))
 
-(defn- async-timeout-listener [request context response handler]
+(defn- async-timeout-listener [request context response handler options]
   (proxy [AsyncListener] []
     (onTimeout [^AsyncEvent _]
       (handler (servlet/build-request-map request)
-               (async-jetty-respond context request response)
+               (async-jetty-respond context request response options)
                (async-jetty-raise context response)))
     (onComplete [^AsyncEvent _])
     (onError [^AsyncEvent _])
     (onStartAsync [^AsyncEvent _])))
 
-(defn- async-proxy-handler ^ServletHandler [handler timeout timeout-handler]
+(defn- async-proxy-handler ^ServletHandler
+  [handler {:keys [async-timeout async-timeout-handler]
+            :or {async-timeout 0}
+            :as options}]
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request ^HttpServletRequest request response]
       (let [^AsyncContext context (.startAsync request)]
-        (.setTimeout context timeout)
-        (when timeout-handler
-          (.addListener
-           context
-           (async-timeout-listener request context response timeout-handler)))
+        (.setTimeout context async-timeout)
+        (when async-timeout-handler
+          (.addListener context
+                        (async-timeout-listener request context response
+                                                async-timeout-handler options)))
         (try
           (handler
            (servlet/build-request-map request)
-           (async-jetty-respond context request response)
+           (async-jetty-respond context request response options)
            (async-jetty-raise context response))
           (finally
             (.setHandled base-request true)))))))
@@ -163,7 +172,8 @@
   (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
                              (into-array ConnectionFactory factories)))
 
-(defn- unix-domain-server-connector ^UnixDomainServerConnector [^Server server & factories]
+(defn- unix-domain-server-connector ^UnixDomainServerConnector
+  [^Server server & factories]
   (UnixDomainServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
                                        (into-array ConnectionFactory factories)))
 
@@ -323,14 +333,18 @@
   :output-buffer-size     - the response body buffer size (default 32768)
   :request-header-size    - the maximum size of a request header (default 8192)
   :response-header-size   - the maximum size of a response header (default 8192)
-  :send-server-version?   - add Server header to HTTP response (default true)"
+  :send-server-version?   - add Server header to HTTP response (default true)
+  :ws-idle-timeout        - the idle timeout for WebSockets in milliseconds
+                            (default 30000)
+  :ws-max-binary-size     - the maximum allowed size in bytes for a WebSocket
+                            binary message (default 65536)
+  :ws-max-text-size       - the maximum allowed size in bytes for a WebSocket
+                            text message (default 65536)"
   ^Server [handler options]
   (let [server (create-server (dissoc options :configurator))
         proxy  (if (:async? options)
-                 (async-proxy-handler handler
-                                      (:async-timeout options 0)
-                                      (:async-timeout-handler options))
-                 (proxy-handler handler))]
+                 (async-proxy-handler handler options)
+                 (proxy-handler handler options))]
     (.setHandler server (context-handler proxy))
     (when-let [configurator (:configurator options)]
       (configurator server))
