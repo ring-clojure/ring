@@ -1,3 +1,10 @@
+## 1.14.0 (2025-03-25)
+
+* Added Jetty option `:ws-idle-timeout` for setting idle timeout (#513)
+* Added Jetty options `:ws-max-text-size` and `:ws-max-binary-size`
+* Added `parse-multipart-params` function (#520)
+* Updated Jetty to 12.0.18
+
 ## 1.13.1 (2025-03-23)
 
 * Fixed query-string parsing edge condition (#524)

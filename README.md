@@ -39,11 +39,11 @@ more in-depth documentation on how to use Ring.
 To include one of the above libraries, for instance `ring-core`, add
 the following dependency to your `deps.edn` file:
 
-    ring/ring-core {:mvn/version "1.13.1"}
+    ring/ring-core {:mvn/version "1.14.0"}
 
 Or to your Leiningen project file:
 
-    [ring/ring-core "1.13.1"]
+    [ring/ring-core "1.14.0"]
 
 ## Documentation
 

@@ -1,4 +1,4 @@
-(defproject org.ring-clojure/ring-websocket-protocols "1.13.1"
+(defproject org.ring-clojure/ring-websocket-protocols "1.14.0"
   :description "Ring protocols for websockets."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
