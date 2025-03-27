@@ -1,3 +1,7 @@
+## 1.14.1 (2025-03-27)
+
+* Fixed reflection warning in Jetty adapter
+
 ## 1.14.0 (2025-03-25)
 
 * Added Jetty option `:ws-idle-timeout` for setting idle timeout (#513)
