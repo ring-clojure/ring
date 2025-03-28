@@ -8,6 +8,8 @@
 * Added Jetty options `:ws-max-text-size` and `:ws-max-binary-size`
 * Added `parse-multipart-params` function (#520)
 * Updated Jetty to 12.0.18
+* The `ring/ring-core` library now requires Java 11+
+* The `ring/ring-jetty-adapter` library now requires Java 17+
 
 ## 1.13.1 (2025-03-23)
 
@@ -100,6 +102,7 @@
 * Updated Commons-FileUpload to 2.0.0-M1 (#483)
 * Updated Jetty to 11.0.15 (#481)
 * Updated Commons-IO to 2.13.0
+* The `ring/ring-jetty-adapter` library now requires Java 11+
 
 ## 1.10.0 (2023-04-03)
 
