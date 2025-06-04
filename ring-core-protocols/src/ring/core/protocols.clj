@@ -55,7 +55,8 @@
   (write-body-to-stream [body response output-stream]
     (let [writer (response-writer response output-stream)]
       (doseq [chunk body]
-        (.write writer (str chunk)))
+        (.write writer (str chunk))
+        (.flush writer))
       (.close writer)))
   java.io.InputStream
   (write-body-to-stream [body _ ^OutputStream output-stream]
