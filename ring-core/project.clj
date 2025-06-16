@@ -9,7 +9,7 @@
                  [org.ring-clojure/ring-websocket-protocols "1.14.1"]
                  [ring/ring-codec "1.3.0"]
                  [commons-io "2.18.0"]
-                 [org.apache.commons/commons-fileupload2-core "2.0.0-M2"]
+                 [org.apache.commons/commons-fileupload2-core "2.0.0-M4"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
   :aliases {"test-all" ["with-profile" "default:+1.10:+1.11:+1.12" "test"]}

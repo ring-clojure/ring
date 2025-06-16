@@ -41,7 +41,8 @@
     (getContentType [_]       (get-in request [:headers "content-type"]))
     (getContentLength [_]     (or (req/content-length request) -1))
     (getCharacterEncoding [_] encoding)
-    (getInputStream [_]       (:body request))))
+    (getInputStream [_]       (:body request))
+    (isMultipartRelated [_]   false)))
 
 (defn- file-item-iterable [^AbstractFileUpload upload ^RequestContext context]
   (reify Iterable
