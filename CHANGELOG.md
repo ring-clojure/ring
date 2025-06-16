@@ -1,3 +1,9 @@
+## 1.14.2 (2025-06-16)
+
+* Updated Apache Commons FileUpload to 2.0.0-M4 (#529)
+* Updated Apache Commons IO to 2.19.0
+* Updated Jetty to 12.0.21
+
 ## 1.14.1 (2025-03-27)
 
 * Fixed reflection warning in Jetty adapter
