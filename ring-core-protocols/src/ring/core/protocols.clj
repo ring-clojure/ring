@@ -1,7 +1,7 @@
 (ns ring.core.protocols
   "Protocols necessary for Ring."
   {:added "1.6"}
-  (:import [java.io Writer OutputStream])
+  (:import [java.io OutputStream OutputStreamWriter Writer])
   (:require [clojure.java.io :as io]))
 
 (defprotocol ^{:added "1.6"} StreamableResponseBody
@@ -26,15 +26,18 @@
   (when-let [m (re-find re-charset content-type)]
     (or (m 1) (m 2))))
 
-(defn- response-charset [response]
+(defn- response-charset ^String [response]
   (some->> (:headers response)
            (some #(when (.equalsIgnoreCase "content-type" (key %)) (val %)))
            (find-charset-in-content-type)))
 
-(defn- response-writer ^Writer [response output-stream]
+(defn- str->bytes [^String s ^String charset]
+  (if charset (.getBytes s charset) (.getBytes s)))
+
+(defn- response-writer ^Writer [response ^OutputStream output-stream]
   (if-let [charset (response-charset response)]
-    (io/writer output-stream :encoding charset)
-    (io/writer output-stream)))
+    (OutputStreamWriter. output-stream charset)
+    (OutputStreamWriter. output-stream)))
 
 ;; Extending primitive arrays prior to Clojure 1.12 requires using the low-level
 ;; extend function.
@@ -45,12 +48,17 @@
      (.write output-stream ^bytes body)
      (.close output-stream))})
 
+;; Note: output streams are deliberately not closed on error, so that the
+;; adapter or error middleware can potentially send extra error information to
+;; the client.
+
 (extend-protocol StreamableResponseBody
   String
   (write-body-to-stream [body response output-stream]
-    (doto (response-writer response output-stream)
-      (.write body)
-      (.close)))
+    ;; No need to use a writer for a single string, and this prevents a
+    ;; flush being used for a value of fixed length.
+    (.write output-stream (str->bytes body (response-charset response)))
+    (.close output-stream))
   clojure.lang.ISeq
   (write-body-to-stream [body response output-stream]
     (let [writer (response-writer response output-stream)]

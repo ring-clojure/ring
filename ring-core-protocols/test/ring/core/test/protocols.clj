@@ -22,7 +22,8 @@
           response {:headers {"Content-Type" "text/plain; charset=UTF-16"}
                     :body    "Hello World"}]
       (write-body-to-stream (:body response) response output)
-      (is (= "Hello World" (.toString output "UTF-16")))))
+      (is (= (seq (.getBytes "Hello World" "UTF-16"))
+             (seq (.toByteArray output))))))
 
   (testing "seqs"
     (let [output   (java.io.ByteArrayOutputStream.)
@@ -35,7 +36,8 @@
           response {:headers {"Content-Type" "text/plain; charset=UTF-16"}
                     :body    (list "Hello" " " "World")}]
       (write-body-to-stream (:body response) response output)
-      (is (= "Hello World" (.toString output "UTF-16")))))
+      (is (= (seq (.getBytes "Hello World" "UTF-16"))
+             (seq (.toByteArray output))))))
 
   (testing "input streams"
     (let [output   (java.io.ByteArrayOutputStream.)
@@ -92,3 +94,22 @@
       (is (thrown? IOException
                    (write-body-to-stream (:body response) response output)))
       (is (= false @closed?)))))
+
+(defn output-stream-with-flush-flag []
+  (let [stream-flushed? (atom false)
+        output-stream   (proxy [OutputStream] []
+                          (write
+                            ([])
+                            ([^bytes _])
+                            ([^bytes _ _ _]))
+                          (flush []
+                            (reset! stream-flushed? true))
+                          (close []))]
+    [output-stream stream-flushed?]))
+
+(deftest test-response-flushing []
+  (testing "response doesn't flush for strings"
+    (let [[output flushed?] (output-stream-with-flush-flag)
+          response {:body "Hello World"}]
+      (write-body-to-stream (:body response) response output)
+      (is (not @flushed?)))))
