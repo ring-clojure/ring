@@ -162,6 +162,19 @@ A representation of the response body that must satisfy the
   (write-body-to-stream [body response output-stream]))
 ```
 
+The `response` argument is the full Ring response map, and the
+`output-stream` argument is a `java.io.OutputStream` instance.
+
+The `ring.core.protocols` namespace provides default implementations for
+the following types:
+
+* `byte[]`
+* `String`
+* `clojure.lang.ISeq`
+* `java.io.InputStream`
+* `java.io.File`
+* `nil`
+
 #### :headers
 
 A Clojure map of header name strings to either a string or a vector of
