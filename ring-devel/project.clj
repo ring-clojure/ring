@@ -1,11 +1,11 @@
-(defproject ring/ring-devel "1.14.2"
+(defproject ring/ring-devel "1.15.0-beta1"
   :description "Ring development and debugging libraries."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [ring/ring-core "1.14.2"]
+                 [ring/ring-core "1.15.0-beta1"]
                  [hiccup "1.0.5"]
                  [clj-stacktrace "0.2.8"]
                  [ns-tracker "1.0.0"]]

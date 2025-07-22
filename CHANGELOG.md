@@ -1,3 +1,9 @@
+## 1.15.0-beta1 (2025-07-22)
+
+* Added `wrap-content-length` middleware
+* Fixed unnecessary flushing of string response bodies (#519)
+* Fixed seq response bodies to flush after each element (#528)
+
 ## 1.14.2 (2025-06-16)
 
 * Updated Apache Commons FileUpload to 2.0.0-M4 (#529)
