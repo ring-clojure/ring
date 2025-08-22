@@ -14,7 +14,7 @@
            [org.eclipse.jetty.util.thread QueuedThreadPool]
            [org.eclipse.jetty.server Server Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
-           [org.eclipse.jetty.io ClientConnector]
+           [org.eclipse.jetty.io ClientConnector Transport$TCPUnix]
            [org.eclipse.jetty.client HttpClient]
            [org.eclipse.jetty.client.transport HttpClientTransportOverHTTP]
            [java.net ServerSocket ConnectException]
@@ -120,10 +120,12 @@
         (with-server hello-world {:http? false
                                   :unix-socket test-unix-domain-socket}
           (let [path (Paths/get test-unix-domain-socket (make-array String 0))
-                connector (ClientConnector/forUnixDomain path)
-                transport (HttpClientTransportOverHTTP. connector)
-                client (doto (HttpClient. transport) (.start))
-                response (.GET client "http://localhost")]
+                transport (HttpClientTransportOverHTTP. (ClientConnector.))
+                client    (doto (HttpClient. transport) (.start))
+                response  (-> client
+                              (.newRequest  "http://localhost")
+                              (.transport (Transport$TCPUnix. path))
+                              (.send))]
             (is (= (.getStatus response) 200))
             (is (.getMediaType response) "text/plain")
             (is (= (.getContentAsString response) "Hello World")))))))
