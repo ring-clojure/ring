@@ -120,12 +120,10 @@
         (with-server hello-world {:http? false
                                   :unix-socket test-unix-domain-socket}
           (let [path (Paths/get test-unix-domain-socket (make-array String 0))
-                transport (HttpClientTransportOverHTTP. (ClientConnector.))
-                client    (doto (HttpClient. transport) (.start))
-                response  (-> client
-                              (.newRequest  "http://localhost")
-                              (.transport (Transport$TCPUnix. path))
-                              (.send))]
+                response (-> (doto (HttpClient.) (.start))
+                             (.newRequest "http://localhost")
+                             (.transport (Transport$TCPUnix. path))
+                             (.send))]
             (is (= (.getStatus response) 200))
             (is (.getMediaType response) "text/plain")
             (is (= (.getContentAsString response) "Hello World")))))))
