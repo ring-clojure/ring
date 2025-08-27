@@ -362,7 +362,7 @@
           (is (= (:content-length request-map) 5))
           (is (= (:character-encoding request-map) "UTF-8"))
           (is (= (:request-method request-map) :post))
-          (is (= (:content-type request-map) "text/plain; charset=UTF-8"))
+          (is (= (:content-type request-map) "text/plain; charset=utf-8"))
           (is (= (:remote-addr request-map) "127.0.0.1"))
           (is (= (:scheme request-map) :http))
           (is (= (:server-name request-map) "localhost"))

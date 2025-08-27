@@ -142,6 +142,13 @@
     (onError [_ _])
     (onStartAsync [_ _])))
 
+(def ^:private empty-listener
+  (reify AsyncListener
+    (onTimeout [_ _])
+    (onComplete [_ _])
+    (onError [_ _])
+    (onStartAsync [_ _])))
+
 (defn- async-proxy-handler ^ServletHandler
   [handler {:keys [async-timeout async-timeout-handler]
             :or {async-timeout 0}
@@ -149,6 +156,8 @@
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request ^HttpServletRequest request response]
       (let [^AsyncContext context (.startAsync request)]
+        ;; Workaround for https://github.com/jetty/jetty.project/issues/13502
+        (.addListener context empty-listener)
         (.setTimeout context async-timeout)
         (when async-timeout-handler
           (.addListener context
