@@ -35,7 +35,7 @@
             WriteCallback]
            [org.eclipse.jetty.ee9.websocket.server.config
             JettyWebSocketServletContainerInitializer]
-           [jakarta.servlet AsyncContext AsyncEvent AsyncListener]
+           [jakarta.servlet AsyncContext AsyncListener]
            [jakarta.servlet.http HttpServletRequest HttpServletResponse]))
 
 (defn- websocket-socket [^Session session]
@@ -133,14 +133,14 @@
       (servlet/update-servlet-response response context response-map))))
 
 (defn- async-timeout-listener [request context response handler options]
-  (proxy [AsyncListener] []
-    (onTimeout [^AsyncEvent _]
+  (reify AsyncListener
+    (onTimeout [_ _]
       (handler (servlet/build-request-map request)
                (async-jetty-respond context request response options)
                (async-jetty-raise context response)))
-    (onComplete [^AsyncEvent _])
-    (onError [^AsyncEvent _])
-    (onStartAsync [^AsyncEvent _])))
+    (onComplete [_ _])
+    (onError [_ _])
+    (onStartAsync [_ _])))
 
 (defn- async-proxy-handler ^ServletHandler
   [handler {:keys [async-timeout async-timeout-handler]
