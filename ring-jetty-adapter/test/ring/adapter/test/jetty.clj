@@ -126,7 +126,14 @@
                              (.send))]
             (is (= (.getStatus response) 200))
             (is (.getMediaType response) "text/plain")
-            (is (= (.getContentAsString response) "Hello World")))))))
+            (is (= (.getContentAsString response) "Hello World"))))
+        (testing "with custom connector options"
+          (let [server (run-jetty hello-world {:http? false
+                                               :unix-socket test-unix-domain-socket
+                                               :join? false
+                                               :acceptor-threads 2})]
+            (is (= 2 (-> server (.getConnectors) first (.getAcceptors))))
+            (.stop server))))))
 
   (testing "HTTPS server"
     (with-server hello-world {:port test-port
@@ -327,6 +334,22 @@
                                          :thread-idle-timeout 1000})
           thread-pool (. server getThreadPool)]
       (is (= 1000 (. thread-pool getIdleTimeout)))
+      (.stop server)))
+
+  (testing "using default connector options"
+    (let [server (run-jetty hello-world {:port test-port
+                                         :join? false})]
+      (is (>= 1 (-> server (.getConnectors) first (.getAcceptors))))
+      (is (> (-> server (.getConnectors) first (.getSelectorManager) (.getSelectorCount)) 1))
+      (.stop server)))
+
+  (testing "using custom connector options"
+    (let [server (run-jetty hello-world {:port test-port
+                                         :join? false
+                                         :acceptor-threads 2
+                                         :selector-threads 8})]
+      (is (= 2 (-> server (.getConnectors) first (.getAcceptors))))
+      (is (= 8 (-> server (.getConnectors) first (.getSelectorManager) (.getSelectorCount))))
       (.stop server)))
 
   (testing "providing custom thread-pool"

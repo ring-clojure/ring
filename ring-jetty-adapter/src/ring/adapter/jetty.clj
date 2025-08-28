@@ -177,14 +177,20 @@
     (.setAllowNullPathInfo true)
     (JettyWebSocketServletContainerInitializer/configure nil)))
 
-(defn- server-connector ^ServerConnector [^Server server & factories]
-  (ServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
-                             (into-array ConnectionFactory factories)))
+(defn- server-connector ^ServerConnector [^Server server factories options]
+  (let [acceptors (options :acceptor-threads -1)
+        selectors (options :selector-threads -1)]
+    (ServerConnector. server (int acceptors) (int selectors)
+                      ^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
+                      (into-array ConnectionFactory factories))))
 
 (defn- unix-domain-server-connector ^UnixDomainServerConnector
-  [^Server server & factories]
-  (UnixDomainServerConnector. server #^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
-                                       (into-array ConnectionFactory factories)))
+  [^Server server factories options]
+  (let [acceptors (options :acceptor-threads -1)
+        selectors (options :selector-threads -1)]
+    (UnixDomainServerConnector. server (int acceptors) (int selectors)
+                                ^"[Lorg.eclipse.jetty.server.ConnectionFactory;"
+                                (into-array ConnectionFactory factories))))
 
 (defn- http-config ^HttpConfiguration [options]
   (doto (HttpConfiguration.)
@@ -196,7 +202,7 @@
 
 (defn- http-connector ^ServerConnector [server options]
   (let [http-factory (HttpConnectionFactory. (http-config options))]
-    (doto (server-connector server http-factory)
+    (doto (server-connector server [http-factory] options)
       (.setPort (options :port 80))
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
@@ -248,7 +254,7 @@
     (when-let [scan-interval (options :keystore-scan-interval)]
       (.addBean server (doto (KeyStoreScanner. ssl-context)
                          (.setScanInterval scan-interval))))
-    (doto (server-connector server ssl-factory http-factory)
+    (doto (server-connector server [ssl-factory http-factory] options)
       (.setPort ssl-port)
       (.setHost (options :host))
       (.setIdleTimeout (options :max-idle-time 200000)))))
@@ -257,7 +263,7 @@
   (let [http-factory (HttpConnectionFactory. (http-config options))
         socket (io/file (options :unix-socket))]
     (.deleteOnExit socket)
-    (doto (unix-domain-server-connector server http-factory)
+    (doto (unix-domain-server-connector server [http-factory] options)
       (.setUnixDomainPath (.toPath socket))
       (.setIdleTimeout (options :max-idle-time 200000)))))
 
@@ -328,6 +334,8 @@
   :thread-pool            - custom thread pool instance for Jetty to use
   :truststore             - a truststore to use for SSL connections
   :trust-password         - the password to the truststore
+  :acceptor-threads       - the number of acceptor threads to use
+  :selector-threads       - the number of selector threads to use
   :max-threads            - the maximum number of threads to use (default 50)
   :min-threads            - the minimum number of threads to use (default 8)
   :max-queued-requests    - the maximum number of requests to be queued
