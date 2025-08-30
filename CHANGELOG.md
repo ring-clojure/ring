@@ -1,3 +1,8 @@
+## 1.15.0-beta2 (2025-08-30)
+
+* Added `:acceptor-threads` and `:selector-threads` to Jetty (#534)
+* Updated Jetty to 12.1.0
+
 ## 1.15.0-beta1 (2025-07-22)
 
 * Added `wrap-content-length` middleware
