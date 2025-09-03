@@ -3,6 +3,7 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [clj-http.client :as http]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [hato.websocket :as hato]
             [less.awful.ssl :as less-ssl]
             [ring.core.protocols :as p]
@@ -474,7 +475,8 @@
    {:status  200
     :headers {"Transfer-Encoding" "chunked"}
     :body    (SequenceInputStream.
-              (ByteArrayInputStream. (.getBytes (str (range 100000)) "UTF-8"))
+              (ByteArrayInputStream.
+               (.getBytes (apply str (range 100000)) "UTF-8"))
               (proxy [InputStream] []
                 (read
                   ([] (throw (IOException. "test error")))
@@ -493,21 +495,29 @@
    (response (chunked-lazy-seq-with-error request))))
 
 (deftest streaming-with-error
-  (testing "chunked stream without sending termination chunk on error"
+  (testing "chunked stream interrupted by error"
     (with-server chunked-stream-with-error {:port test-port}
-      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+      (let [response (http/get test-url)]
+        (is (= 200 (:status response)))
+        (is (str/ends-with? (:body response) "99999")))))
 
-  (testing "chunked sequence without sending termination chunk on error"
+  (testing "chunked sequence interrupted by error"
     (with-server chunked-lazy-seq-with-error {:port test-port}
-      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+      (let [response (http/get test-url)]
+        (is (= 200 (:status response)))
+        (is (str/ends-with? (:body response) "99999")))))
 
-  (testing "async chunked stream without sending termination chunk on error"
+  (testing "async chunked stream interrupted by error"
     (with-server chunked-stream-with-error {:port test-port :async? true}
-      (is (thrown? MalformedChunkCodingException (http/get test-url)))))
+      (let [response (http/get test-url)]
+        (is (= 200 (:status response)))
+        (is (str/ends-with? (:body response) "99999")))))
 
-  (testing "async chunked sequence without sending termination chunk on error"
+  (testing "async chunked sequence interrupted by error"
     (with-server chunked-lazy-seq-with-error {:port test-port :async? true}
-      (is (thrown? MalformedChunkCodingException (http/get test-url))))))
+      (let [response (http/get test-url)]
+        (is (= 200 (:status response)))
+        (is (str/ends-with? (:body response) "99999"))))))
 
 (def thread-exceptions (atom []))
 
@@ -985,3 +995,28 @@
               [:t "t: one"]
               [:t "b: two"]]
              @log)))))
+
+(defn make-client-timeout-handler [ex-callback]
+  (fn [_ respond raise]
+    (let [response {:status 200
+                    :body (reify p/StreamableResponseBody
+                            (write-body-to-stream [_ _ os]
+                              (with-open [os os]
+                                (.write os (.getBytes "foo"))
+                                (.flush os)
+                                (Thread/sleep 100)
+                                (.write os (.getBytes " bar"))
+                                (.flush os))))}]
+      (try (respond response)
+           (catch Exception ex (ex-callback ex)))
+      (try (raise (ex-info "Test" {}))
+           (catch Exception ex (ex-callback ex)))
+      (ex-callback nil))))
+
+(deftest test-callbacks-do-not-throw
+  (let [raised  (promise)
+        handler (make-client-timeout-handler raised)]
+    (with-server handler {:port test-port, :async? true}
+      (try (http/get (str test-url "/") {:socket-timeout 50})
+           (catch java.net.SocketTimeoutException _))
+      (is (nil? (deref raised 200 :error))))))

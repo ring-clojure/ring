@@ -118,19 +118,27 @@
             (upgrade-to-websocket request response response-map options)
             (servlet/update-servlet-response response response-map))
           (finally
-            (.setHandled base-request true)))))))
+            (.setHandled base-request true)
+            (-> response .getOutputStream .close)))))))
 
 (defn- async-jetty-raise [^AsyncContext context ^HttpServletResponse response]
   (fn [^Throwable exception]
-    (.sendError response 500 (.getMessage exception))
-    (.complete context)))
+    (try
+      (.sendError response 500 (.getMessage exception))
+      (catch Exception _)
+      (finally
+        (.complete context)))))
 
 (defn- async-jetty-respond [^AsyncContext context request response options]
-  (fn [response-map]
-    (if (ws/websocket-response? response-map)
-      (do (upgrade-to-websocket request response response-map options)
-          (.complete context))
-      (servlet/update-servlet-response response context response-map))))
+  (let [raise (async-jetty-raise context response)]
+    (fn [response-map]
+      (try
+        (if (ws/websocket-response? response-map)
+          (do (upgrade-to-websocket request response response-map options)
+              (.complete context))
+          (servlet/update-servlet-response response context response-map))
+        (catch Exception ex
+          (raise ex))))))
 
 (defn- async-timeout-listener [request context response handler options]
   (reify AsyncListener
@@ -142,13 +150,6 @@
     (onError [_ _])
     (onStartAsync [_ _])))
 
-(def ^:private empty-listener
-  (reify AsyncListener
-    (onTimeout [_ _])
-    (onComplete [_ _])
-    (onError [_ _])
-    (onStartAsync [_ _])))
-
 (defn- async-proxy-handler ^ServletHandler
   [handler {:keys [async-timeout async-timeout-handler]
             :or {async-timeout 0}
@@ -156,8 +157,6 @@
   (proxy [ServletHandler] []
     (doHandle [_ ^Request base-request ^HttpServletRequest request response]
       (let [^AsyncContext context (.startAsync request)]
-        ;; Workaround for https://github.com/jetty/jetty.project/issues/13502
-        (.addListener context empty-listener)
         (.setTimeout context async-timeout)
         (when async-timeout-handler
           (.addListener context
