@@ -1,3 +1,7 @@
+## 1.15.0-RC1 (2025-09-04)
+
+* Fixed Jetty respond/raise callbacks from throwing exceptions (#535)
+
 ## 1.15.0-beta2 (2025-08-30)
 
 * Added `:acceptor-threads` and `:selector-threads` to Jetty (#534)
