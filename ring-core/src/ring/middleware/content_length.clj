@@ -33,11 +33,12 @@
   "Adds a Content-Length header to the response. See: wrap-content-length."
   {:added "1.15"}
   [response]
-  (if (resp/get-header response "content-length")
-    response
-    (if-let [size (body-size-in-bytes (:body response) response)]
-      (-> response (resp/header "Content-Length" (str size)))
-      response)))
+  (when response
+    (if (resp/get-header response "content-length")
+      response
+      (if-let [size (body-size-in-bytes (:body response) response)]
+        (-> response (resp/header "Content-Length" (str size)))
+        response))))
 
 (defn wrap-content-length
   "Middleware that adds a Content-Length header to the response, if the

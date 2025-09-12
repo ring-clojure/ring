@@ -28,10 +28,12 @@
                      :headers {}
                      :body (java.io.File. "test/ring/assets/plain.txt")})
                    (get-in [:headers "Content-Length"])))))
-  (testing "nil"
+  (testing "nil body"
     (is (= "0" (-> (content-length-response
                     {:status 200, :headers {}, :body nil})
                    (get-in [:headers "Content-Length"])))))
+  (testing "nil response"
+    (is (nil? (content-length-response nil))))
   (testing "other data"
     (is (nil? (-> (content-length-response
                    {:status 200
