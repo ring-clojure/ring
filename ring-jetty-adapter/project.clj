@@ -1,4 +1,4 @@
-(defproject ring/ring-jetty-adapter "1.15.0-RC1"
+(defproject ring/ring-jetty-adapter "1.15.0"
   :description "Ring Jetty adapter."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}
@@ -6,8 +6,8 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies
   [[org.clojure/clojure "1.9.0"]
-   [ring/ring-core "1.15.0-RC1"]
-   [org.ring-clojure/ring-jakarta-servlet "1.15.0-RC1"]
+   [ring/ring-core "1.15.0"]
+   [org.ring-clojure/ring-jakarta-servlet "1.15.0"]
    [org.eclipse.jetty/jetty-server "12.1.0"]
    [org.eclipse.jetty/jetty-unixdomain-server "12.1.0"]
    [org.eclipse.jetty.ee9/jetty-ee9-servlet "12.1.0"]

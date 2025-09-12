@@ -1,4 +1,4 @@
-(defproject org.ring-clojure/ring-core-protocols "1.15.0-RC1"
+(defproject org.ring-clojure/ring-core-protocols "1.15.0"
   :description "Ring core protocols."
   :url "https://github.com/ring-clojure/ring"
   :scm {:dir ".."}

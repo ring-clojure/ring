@@ -1,3 +1,7 @@
+## 1.15.0 (2025-09-12)
+
+* Functionally the same as 1.15.0-RC1
+
 ## 1.15.0-RC1 (2025-09-04)
 
 * Fixed Jetty respond/raise callbacks from throwing exceptions (#535)
