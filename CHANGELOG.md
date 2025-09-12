@@ -1,3 +1,7 @@
+## 1.15.1 (2025-09-13)
+
+* Fixed bug with `wrap-content-length` and `nil` responses
+
 ## 1.15.0 (2025-09-12)
 
 * Functionally the same as 1.15.0-RC1
