@@ -14,12 +14,12 @@
 (extend (Class/forName "[B")
   SizableResponseBody
   {:body-size-in-bytes
-   (fn [bs _] (alength bs))})
+   (fn [^bytes bs _] (alength bs))})
 
 (extend-protocol SizableResponseBody
   String
   (body-size-in-bytes [s response]
-    (when-let [charset (resp/get-charset response)]
+    (when-let [^String charset (resp/get-charset response)]
       (alength (.getBytes s charset))))
   java.io.File
   (body-size-in-bytes [f _]
