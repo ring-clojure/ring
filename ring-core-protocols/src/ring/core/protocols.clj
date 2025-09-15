@@ -31,7 +31,7 @@
            (some #(when (.equalsIgnoreCase "content-type" (key %)) (val %)))
            (find-charset-in-content-type)))
 
-(defn- str->bytes [^String s ^String charset]
+(defn- str->bytes ^bytes [^String s ^String charset]
   (if charset (.getBytes s charset) (.getBytes s)))
 
 (defn- response-writer ^Writer [response ^OutputStream output-stream]
@@ -54,7 +54,7 @@
 
 (extend-protocol StreamableResponseBody
   String
-  (write-body-to-stream [body response output-stream]
+  (write-body-to-stream [body response ^OutputStream output-stream]
     ;; No need to use a writer for a single string, and this prevents a
     ;; flush being used for a value of fixed length.
     (.write output-stream (str->bytes body (response-charset response)))
