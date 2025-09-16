@@ -1,3 +1,8 @@
+## 1.15.2 (2025-09-16)
+
+* Fixed reflection warnings in `ring.core.protocols`
+* Fixed reflection warnings in `ring.middleware.content-length`
+
 ## 1.15.1 (2025-09-13)
 
 * Fixed bug with `wrap-content-length` and `nil` responses
