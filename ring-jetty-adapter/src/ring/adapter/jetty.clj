@@ -21,7 +21,7 @@
            [org.eclipse.jetty.util BlockingArrayQueue]
            [org.eclipse.jetty.util.thread ThreadPool QueuedThreadPool]
            [org.eclipse.jetty.util.ssl SslContextFactory$Server KeyStoreScanner]
-           [org.eclipse.jetty.ee9.nested Request]
+           [org.eclipse.jetty.ee9.nested Request Response]
            [org.eclipse.jetty.ee9.websocket.server
             JettyServerUpgradeRequest
             JettyServerUpgradeResponse
@@ -110,7 +110,7 @@
 
 (defn- proxy-handler ^ServletHandler [handler options]
   (proxy [ServletHandler] []
-    (doHandle [_ ^Request base-request request response]
+    (doHandle [_ ^Request base-request request ^Response response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (try
@@ -209,7 +209,7 @@
 (defn- ssl-context-factory ^SslContextFactory$Server [options]
   (let [context-server (SslContextFactory$Server.)]
     (if (string? (options :keystore))
-      (.setKeyStorePath context-server (options :keystore))
+      (.setKeyStorePath context-server ^String (options :keystore))
       (.setKeyStore context-server ^java.security.KeyStore (options :keystore)))
     (when (string? (options :keystore-type))
       (.setKeyStoreType context-server (options :keystore-type)))
