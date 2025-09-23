@@ -9,4 +9,5 @@
                  [ring/ring-jetty-adapter "1.15.2"]
                  [ring/ring-servlet "1.15.2"]]
   :jvm-opts {}
-  :main ring.bench.servlet)
+  :main ring.bench.servlet
+  :global-vars {*warn-on-reflection* true})
