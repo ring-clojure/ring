@@ -8,7 +8,9 @@
             [less.awful.ssl :as less-ssl]
             [ring.core.protocols :as p]
             [ring.websocket :as ws]
-            [ring.websocket.protocols :as wsp])
+            [ring.websocket.protocols :as wsp]
+            [ring.sse :as sse]
+            [ring.sse.protocols :as ssep])
   (:import [java.io File]
            [java.nio ByteBuffer]
            [java.nio.file Paths]
@@ -939,6 +941,56 @@
           (Thread/sleep 50)
           (is (realized? closer))
           (is (= @closer [1009 "Binary message too large: 6 > 5"])))))))
+
+;; All browsers have SSE support but I could not find any simple SSE client libs 
+;; that I could use for testing. This is rather crude way to test SSE, but...
+
+(defn sse-get [test-port]
+  (with-open [socket (java.net.Socket. "localhost" test-port)
+              out     (-> (.getOutputStream socket) (io/writer))
+              in      (-> (.getInputStream socket) (io/reader))]
+    (let [read-kv (fn [key-fn]
+                    (loop [data {}]
+                      (let [line (.readLine in)]
+                        (if (str/blank? line)
+                          data
+                          (let [[_ k v] (re-matches #"([^:]+):\s*(.*)" line)]
+                            (recur (assoc data (key-fn k) v)))))))]
+      (doto out
+        (.write "GET / HTTP/1.1\r\n")
+        (.write "host: localhost\r\n")
+        (.write "accept: text/event-stream\r\n")
+        (.write "connection: close\r\n")
+        (.write "\r\n")
+        (.flush))
+      (let [status-line  (.readLine in)
+            [_ status _] (str/split status-line #"\s+")
+            headers      (read-kv str/lower-case)]
+        {:status  (parse-long status)
+         :headers headers
+         :body    (->> (repeatedly (fn [] (read-kv keyword)))
+                       (take-while (fn [message] (-> message :event (not= "close"))))
+                       (into []))}))))
+
+(deftest run-jetty-sse-test
+  (let [messages [{:id    "1"
+                   :event "test"
+                   :data  "message 1"}
+                  {:id    "2"
+                   :data  "message 2"}]
+        handler (constantly
+                 {::sse/listener {:on-open (fn [sse-sender]
+                                             ;; Send the test messages:
+                                             (doseq [message messages]
+                                               (sse/send sse-sender message))
+                                             ;; Send close message so that the `sse-get` knows when to stop
+                                             ;; reading response:
+                                             (sse/send sse-sender {:event "close"}))}})]
+    (with-server handler {:port test-port}
+      (let [resp (sse-get test-port)]
+        (is (= 200 (:status resp)))
+        (is (= "text/event-stream" (get-in resp [:headers "content-type"])))
+        (is (= messages (:body resp)))))))
 
 (deftest run-jetty-async-websocket-test
   (testing "ping/pong"

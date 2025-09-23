@@ -5,7 +5,9 @@
   (:require [clojure.java.io :as io]
             [ring.util.jakarta.servlet :as servlet]
             [ring.websocket :as ws]
-            [ring.websocket.protocols :as wsp])
+            [ring.websocket.protocols :as wsp]
+            [ring.sse :as sse]
+            [ring.sse.protocols :as ssep])
   (:import [java.nio ByteBuffer]
            [java.time Duration]
            [org.eclipse.jetty.server
@@ -108,14 +110,61 @@
       (.setMaxBinaryMessageSize (:ws-max-binary-size options 65536)))
     (.upgrade container creator request response)))
 
+(defn- sse-write [^java.io.Writer out k v]
+  (when v
+    (doto out
+      (.write (name k))
+      (.write ": ")
+      (.write (str v))
+      (.write "\r\n"))))
+
+(defn- make-sse-sender [^java.io.OutputStream resp-stream ^java.util.concurrent.CountDownLatch close-latch]
+  (let [out (io/writer resp-stream)]
+    (reify ssep/Sender
+      (-send [_ {:keys [id event data]}]
+        (try
+          (doto out
+            (sse-write :id id)
+            (sse-write :event event)
+            (sse-write :data data)
+            (.write "\r\n")
+            (.flush))
+          (catch java.io.IOException _
+            (.countDown close-latch)))))))
+
+(defn- upgrade-to-sse
+  [^Request request ^HttpServletResponse response response-map _options]
+  (let [context (.startAsync request)
+        output  (servlet/make-output-stream response context)]
+    (try
+      (let [close-latch (java.util.concurrent.CountDownLatch. 1)
+            on-open     (-> response-map :ring.sse/listener :on-open)
+            sse-sender  (make-sse-sender output close-latch)]
+        (doto response
+          (.setStatus (:status response-map 200))
+          (servlet/set-headers (assoc (:headers response-map) "Content-Type" "text/event-stream")))
+        (.start context (fn [] (on-open sse-sender)))
+        (.await close-latch))
+      ;; Client terminates the connection:
+      (catch java.io.IOException _)
+      (catch java.lang.InterruptedException _)
+      (finally
+        (.close output)))))
+
 (defn- proxy-handler ^ServletHandler [handler options]
   (proxy [ServletHandler] []
-    (doHandle [_ ^Request base-request request response]
+    (doHandle [_ ^Request base-request ^Request request response]
       (let [request-map  (servlet/build-request-map request)
             response-map (handler request-map)]
         (try
-          (if (ws/websocket-response? response-map)
+          (cond
+            (ws/websocket-response? response-map)
             (upgrade-to-websocket request response response-map options)
+
+            (sse/sse-response? response-map)
+            (upgrade-to-sse request response response-map options)
+
+            :else
             (servlet/update-servlet-response response response-map))
           (finally
             (.setHandled base-request true)

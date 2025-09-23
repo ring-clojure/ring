@@ -21,7 +21,8 @@
                          "ring-jetty-adapter/src"
                          "ring-servlet/src"
                          "ring-jakarta-servlet/src"
-                         "ring-websocket-protocols/src"]}
+                         "ring-websocket-protocols/src"
+                         "ring-sse-protocols/src"]}
   :aliases {"test"     ["sub" "test"]
             "test-all" ["sub" "test-all"]
             "bench"    ["sub" "-s" "ring-bench" "run"]

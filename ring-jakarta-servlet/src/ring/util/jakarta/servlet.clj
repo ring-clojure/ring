@@ -59,7 +59,7 @@
           :servlet-context      (.getServletContext servlet)
           :servlet-context-path (.getContextPath request)}))
 
-(defn- set-headers [^HttpServletResponse response, headers]
+(defn set-headers [^HttpServletResponse response, headers]
   (doseq [[key val-or-vals] headers]
     (if (string? val-or-vals)
       (.setHeader response key val-or-vals)
@@ -69,7 +69,7 @@
   (when-let [content-type (get headers "Content-Type")]
     (.setContentType response content-type)))
 
-(defn- make-output-stream
+(defn make-output-stream
   [^HttpServletResponse response ^AsyncContext context]
   (let [os (.getOutputStream response)]
     (if (nil? context)
