@@ -2,7 +2,9 @@
   (:require [clojure.test :refer :all]
             [ring.util.servlet :refer :all]
             [ring.core.protocols :as proto])
-  (:import [java.util Locale]))
+  (:import [java.io OutputStream]
+           [java.util Locale]
+           [javax.servlet ServletConfig]))
 
 (defmacro ^:private with-locale [locale & body]
   `(let [old-locale# (Locale/getDefault)]
@@ -49,7 +51,10 @@
       (getOutputStream []
         (proxy [javax.servlet.ServletOutputStream] []
           (write
-            ([b] (.write output-stream b))
+            ([b]
+             (if (bytes? b)
+               (.write output-stream ^bytes b)
+               (.write output-stream ^int b)))
             ([b off len] (.write output-stream b off len)))))
       (setStatus [status]
         (swap! response assoc :status status))
@@ -59,7 +64,7 @@
       (setContentType [value]
         (swap! response assoc :content-type value)))))
 
-(defn- servlet-config []
+(defn- servlet-config ^ServletConfig []
   (proxy [javax.servlet.ServletConfig] []
     (getServletContext [] nil)))
 
@@ -146,7 +151,7 @@
         (is (= (@response :status) 200))
         (is (= (@response :content-type) "text/plain"))
         (is (= (get-in @response [:headers "X-Server"]) "Bar"))
-        (is (= (.toString (@response :body)) "Hello World"))))))
+        (is (= (.toString ^OutputStream (@response :body)) "Hello World"))))))
 
 (deftest servlet-cps-test
   (let [handler  (fn [_ respond _]
@@ -168,7 +173,7 @@
     (is (= @(:completed request) true))
     (is (= (@response :status) 200))
     (is (= (@response :content-type) "text/plain"))
-    (is (= (.toString (@response :body)) "Hello World"))))
+    (is (= (.toString ^OutputStream (@response :body)) "Hello World"))))
 
 (defn- defservice-test* [service]
   (let [body     (proxy [javax.servlet.ServletInputStream] [])
@@ -192,7 +197,7 @@
              (servlet-response response))
     (is (= (@response :status) 200))
     (is (= (get-in @response [:headers "Content-Type"]) "text/plain"))
-    (is (= (.toString (@response :body)) "Hello World"))))
+    (is (= (.toString ^OutputStream (@response :body)) "Hello World"))))
 
 (defn- service-handler [_]
   {:status  200
@@ -215,6 +220,6 @@
       :headers {}
       :body    (reify proto/StreamableResponseBody
                  (write-body-to-stream [_ _ os]
-                   (.write os (int \h))
-                   (.write os (.getBytes "ello"))))})
-    (is (= "hello" (.toString (:body @response))))))
+                   (.write ^OutputStream os (int \h))
+                   (.write ^OutputStream os (.getBytes "ello"))))})
+    (is (= "hello" (.toString ^OutputStream (:body @response))))))

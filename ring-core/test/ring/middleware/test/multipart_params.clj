@@ -161,7 +161,7 @@
                  :body (string-input-stream form-body)}
         response (handler request)]
     (let [upload (get-in response [:multipart-params "upload"])]
-      (is (java.util.Arrays/equals (:bytes upload) (.getBytes "foo"))))))
+      (is (java.util.Arrays/equals ^bytes (:bytes upload) (.getBytes "foo"))))))
 
 (deftest forced-encoding-option-works
   (let [form-body (str "--XXXX\r\n"

@@ -9,12 +9,14 @@
             [ring.core.protocols :as p]
             [ring.websocket :as ws]
             [ring.websocket.protocols :as wsp])
-  (:import [java.io File]
+  (:import [java.io File OutputStream]
            [java.nio ByteBuffer]
            [java.nio.file Paths]
-           [org.eclipse.jetty.util.thread QueuedThreadPool]
-           [org.eclipse.jetty.server Server Request SslConnectionFactory]
+           [org.eclipse.jetty.util.ssl SslContextFactory$Server]
+           [org.eclipse.jetty.util.thread QueuedThreadPool ThreadPool$SizedThreadPool]
+           [org.eclipse.jetty.server Server ServerConnector Request SslConnectionFactory]
            [org.eclipse.jetty.server.handler AbstractHandler]
+           [org.eclipse.jetty.unixdomain.server UnixDomainServerConnector]
            [org.eclipse.jetty.io ClientConnector Transport$TCPUnix]
            [org.eclipse.jetty.client HttpClient]
            [org.eclipse.jetty.client.transport HttpClientTransportOverHTTP]
@@ -66,12 +68,12 @@
     port))
 
 (defn- get-ssl-context-factory
-  [^Server s]
-  (->> (seq (.getConnectors s))
-       (mapcat #(seq (.getConnectionFactories %)))
-       (filter #(instance? SslConnectionFactory %))
-       (first)
-       (.getSslContextFactory)))
+  ^SslContextFactory$Server [^Server s]
+  (let [^SslConnectionFactory factory (->> (seq (.getConnectors s))
+                                           (mapcat #(seq (.getConnectionFactories ^ServerConnector %)))
+                                           (filter #(instance? SslConnectionFactory %))
+                                           (first))]
+    (.getSslContextFactory factory)))
 
 (defn- exclude-ciphers [server]
   (set (.getExcludeCipherSuites (get-ssl-context-factory server))))
@@ -109,7 +111,7 @@
     (with-server hello-world {:port test-port}
       (let [response (http/get test-url)]
         (is (= (:status response) 200))
-        (is (.startsWith (get-in response [:headers "content-type"])
+        (is (.startsWith ^String (get-in response [:headers "content-type"])
                          "text/plain"))
         (is (= (:body response) "Hello World")))))
 
@@ -132,8 +134,9 @@
           (let [server (run-jetty hello-world {:http? false
                                                :unix-socket test-unix-domain-socket
                                                :join? false
-                                               :acceptor-threads 2})]
-            (is (= 2 (-> server (.getConnectors) first (.getAcceptors))))
+                                               :acceptor-threads 2})
+                ^UnixDomainServerConnector connector (-> server (.getConnectors) first)]
+            (is (= 2 (.getAcceptors connector)))
             (.stop server))))))
 
   (testing "HTTPS server"
@@ -258,12 +261,12 @@
     (let [max-threads 20
           new-handler  (proxy [AbstractHandler] []
                          (handle [_ ^Request base-request request response]))
-          configurator (fn [server]
-                         (.setMaxThreads (.getThreadPool server) max-threads)
+          configurator (fn [^Server server]
+                         (-> server ^ThreadPool$SizedThreadPool (.getThreadPool) (.setMaxThreads max-threads))
                          (.setHandler server new-handler))
           server (run-jetty hello-world
                             {:join? false :port test-port :configurator configurator})]
-      (is (= (.getMaxThreads (.getThreadPool server)) max-threads))
+      (is (= (.getMaxThreads ^ThreadPool$SizedThreadPool (.getThreadPool server)) max-threads))
       (is (identical? new-handler (.getHandler server)))
       (is (= 1 (count (.getHandlers server))))
       (.stop server)))
@@ -271,15 +274,15 @@
   (testing "setting daemon threads"
     (testing "default (daemon off)"
       (let [server (run-jetty hello-world {:port test-port :join? false})]
-        (is (not (.. server getThreadPool isDaemon)))
+        (is (not (-> server ^QueuedThreadPool (.getThreadPool) .isDaemon)))
         (.stop server)))
     (testing "daemon on"
       (let [server (run-jetty hello-world {:port test-port :join? false :daemon? true})]
-        (is (.. server getThreadPool isDaemon))
+        (is (-> server ^QueuedThreadPool (.getThreadPool) .isDaemon))
         (.stop server)))
     (testing "daemon off"
       (let [server (run-jetty hello-world {:port test-port :join? false :daemon? false})]
-        (is (not (.. server getThreadPool isDaemon)))
+        (is (not (-> server ^QueuedThreadPool (.getThreadPool) .isDaemon)))
         (.stop server))))
 
   (testing "setting max idle timeout"
@@ -291,8 +294,8 @@
                                          :max-idle-time 5000
                                          :sni-host-check? false})
           connectors (. server getConnectors)]
-      (is (= 5000 (. (first connectors) getIdleTimeout)))
-      (is (= 5000 (. (second connectors) getIdleTimeout)))
+      (is (= 5000 (.getIdleTimeout ^ServerConnector (first connectors))))
+      (is (= 5000 (.getIdleTimeout ^ServerConnector (second connectors))))
       (.stop server)))
 
   (testing "using the default max idle time"
@@ -303,54 +306,56 @@
                                          :sni-host-check? false
                                          :join? false})
           connectors (. server getConnectors)]
-      (is (= 200000 (. (first connectors) getIdleTimeout)))
-      (is (= 200000 (. (second connectors) getIdleTimeout)))
+      (is (= 200000 (.getIdleTimeout ^ServerConnector (first connectors))))
+      (is (= 200000 (.getIdleTimeout ^ServerConnector (second connectors))))
       (.stop server)))
 
   (testing "setting min-threads"
     (let [server (run-jetty hello-world {:port test-port
                                          :min-threads 3
                                          :join? false})
-          thread-pool (. server getThreadPool)]
-      (is (= 3 (. thread-pool getMinThreads)))
+          ^QueuedThreadPool thread-pool (. server getThreadPool)]
+      (is (= 3 (.getMinThreads thread-pool)))
       (.stop server)))
 
   (testing "default min-threads"
     (let [server (run-jetty hello-world {:port test-port
                                          :join? false})
-          thread-pool (. server getThreadPool)]
-      (is (= 8 (. thread-pool getMinThreads)))
+          ^QueuedThreadPool thread-pool (. server getThreadPool)]
+      (is (= 8 (.getMinThreads thread-pool)))
       (.stop server)))
 
   (testing "default thread-idle-timeout"
     (let [server (run-jetty hello-world {:port test-port
                                          :join? false})
-          thread-pool (. server getThreadPool)]
-      (is (= 60000 (. thread-pool getIdleTimeout)))
+          ^QueuedThreadPool thread-pool (. server getThreadPool)]
+      (is (= 60000 (.getIdleTimeout thread-pool)))
       (.stop server)))
 
   (testing "setting thread-idle-timeout"
     (let [server (run-jetty hello-world {:port test-port
                                          :join? false
                                          :thread-idle-timeout 1000})
-          thread-pool (. server getThreadPool)]
-      (is (= 1000 (. thread-pool getIdleTimeout)))
+          ^QueuedThreadPool thread-pool (. server getThreadPool)]
+      (is (= 1000 (.getIdleTimeout thread-pool)))
       (.stop server)))
 
   (testing "using default connector options"
     (let [server (run-jetty hello-world {:port test-port
-                                         :join? false})]
-      (is (>= 1 (-> server (.getConnectors) first (.getAcceptors))))
-      (is (> (-> server (.getConnectors) first (.getSelectorManager) (.getSelectorCount)) 1))
+                                         :join? false})
+          ^org.eclipse.jetty.server.ServerConnector connector (-> server (.getConnectors) first)]
+      (is (>= 1 (-> connector (.getAcceptors))))
+      (is (> (-> connector (.getSelectorManager) (.getSelectorCount)) 1))
       (.stop server)))
 
   (testing "using custom connector options"
     (let [server (run-jetty hello-world {:port test-port
                                          :join? false
                                          :acceptor-threads 2
-                                         :selector-threads 8})]
-      (is (= 2 (-> server (.getConnectors) first (.getAcceptors))))
-      (is (= 8 (-> server (.getConnectors) first (.getSelectorManager) (.getSelectorCount))))
+                                         :selector-threads 8})
+          ^org.eclipse.jetty.server.ServerConnector connector (-> server (.getConnectors) first)]
+      (is (= 2 (-> connector (.getAcceptors))))
+      (is (= 8 (-> connector (.getSelectorManager) (.getSelectorCount))))
       (.stop server)))
 
   (testing "providing custom thread-pool"
@@ -365,7 +370,7 @@
     (with-server (content-type-handler "text/plain") {:port test-port}
       (let [response (http/get test-url)]
         (is (.contains
-             (get-in response [:headers "content-type"])
+             ^String (get-in response [:headers "content-type"])
              "text/plain")))))
 
   (testing "custom content-type"
@@ -476,7 +481,7 @@
     :headers {"Transfer-Encoding" "chunked"}
     :body    (SequenceInputStream.
               (ByteArrayInputStream.
-               (.getBytes (apply str (range 100000)) "UTF-8"))
+               (.getBytes ^String (apply str (range 100000)) "UTF-8"))
               (proxy [InputStream] []
                 (read
                   ([] (throw (IOException. "test error")))
@@ -585,7 +590,7 @@
         (Thread/sleep 100)
         (is (empty? @thread-exceptions))
         (is (= (:status response) 200))
-        (is (.startsWith (get-in response [:headers "content-type"])
+        (is (.startsWith ^String (get-in response [:headers "content-type"])
                          "text/plain"))
         (is (= (:body response) "Hello World")))))
 
@@ -593,7 +598,7 @@
     (with-server hello-world-cps {:port test-port, :async? true}
       (let [response (http/get test-url)]
         (is (= (:status response) 200))
-        (is (.startsWith (get-in response [:headers "content-type"])
+        (is (.startsWith ^String (get-in response [:headers "content-type"])
                          "text/plain"))
         (is (= (:body response) "Hello World")))))
 
@@ -601,7 +606,7 @@
     (with-server hello-world-streaming {:port test-port, :async? true}
       (let [response (http/get test-url)]
         (is (= (:status response) 200))
-        (is (.startsWith (get-in response [:headers "content-type"])
+        (is (.startsWith ^String (get-in response [:headers "content-type"])
                          "text/event-stream"))
         (is (= (:body response)
                "data: hello\n\ndata: world\n\n")))))
@@ -694,7 +699,7 @@
 
 (def test-websocket-url (str "ws://localhost:" test-port))
 
-(defn- buf->str [buffer]
+(defn- buf->str [^ByteBuffer buffer]
   (let [bs (byte-array (.capacity buffer))]
     (.get buffer bs)
     (String. bs)))
@@ -1001,7 +1006,7 @@
     (let [response {:status 200
                     :body (reify p/StreamableResponseBody
                             (write-body-to-stream [_ _ os]
-                              (with-open [os os]
+                              (with-open [^OutputStream os os]
                                 (.write os (.getBytes "foo"))
                                 (.flush os)
                                 (Thread/sleep 100)

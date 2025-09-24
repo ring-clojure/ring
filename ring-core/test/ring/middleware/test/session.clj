@@ -24,10 +24,10 @@
 (defn get-cookies [response]
   (get-in response [:headers "Set-Cookie"]))
 
-(defn is-session-cookie? [c]
+(defn is-session-cookie? [^String c]
   (.contains c "ring-session="))
 
-(defn get-session-cookie [response]
+(defn get-session-cookie ^String [response]
   (first (filter is-session-cookie? (get-cookies response))))
 
 (deftest session-is-read

@@ -10,9 +10,9 @@
   (is (thrown-with-msg? Exception #".*Directory does not exist.*"
                         (wrap-file (constantly test-response) "not_here"))))
 
-(def public-dir "test/ring/assets")
-(def index-html (File. ^String public-dir "index.html"))
-(def foo-html   (File. ^String public-dir "foo.html"))
+(def ^String public-dir "test/ring/assets")
+(def index-html (File. public-dir "index.html"))
+(def foo-html   (File. public-dir "foo.html"))
 
 (def app (wrap-file (constantly test-response) public-dir))
 

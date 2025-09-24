@@ -3,7 +3,9 @@
             [ring.middleware.session.store :refer :all]
             [ring.middleware.session.cookie :as cookie :refer [cookie-store]]
             [ring.util.codec :as codec]
-            [crypto.random :as random]))
+            [crypto.random :as random])
+  (:import [java.io Writer]
+           [java.time Instant]))
 
 (deftest cookie-session-read-not-exist
   (let [store (cookie-store)]
@@ -58,14 +60,14 @@
        (cookie-store {:key (.getBytes "012345678901234567890")}))))
 
 ; setup for serializing/deserializing Instant.
-(defmethod print-method java.time.Instant [dt out]
+(defmethod print-method Instant [^Instant dt ^Writer out]
   (.write out (str "#foo/instant \"" (.toString dt) "\"")))
 
-(defn parse-instant [x] (java.time.Instant/parse x))
+(defn parse-instant [x] (Instant/parse x))
 
 (deftest cookie-session-custom-type
   (let [store    (cookie-store {:readers {'foo/instant #'parse-instant}})
-        now      (java.time.Instant/now)
+        now      (Instant/now)
         sess-key (write-session store nil {:foo now})]
     (is (not (nil? sess-key)))
     (is (= (read-session store sess-key)

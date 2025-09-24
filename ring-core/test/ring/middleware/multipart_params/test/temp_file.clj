@@ -1,7 +1,8 @@
 (ns ring.middleware.multipart-params.test.temp-file
   (:require [clojure.test :refer :all]
             [ring.middleware.multipart-params.temp-file :refer :all]
-            [ring.util.io :refer [string-input-stream]]))
+            [ring.util.io :refer [string-input-stream]])
+  (:import [java.io File]))
 
 (deftest test-temp-file-store
   (let [store  (temp-file-store)
@@ -12,11 +13,11 @@
     (is (= (:filename result) "foo.txt"))
     (is (= (:content-type result) "text/plain"))
     (is (= (:size result) 3))
-    (is (instance? java.io.File (:tempfile result)))
-    (is (.exists (:tempfile result)))
+    (is (instance? File (:tempfile result)))
+    (is (.exists ^File (:tempfile result)))
     (is (= (slurp (:tempfile result)) "foo"))))
 
-(defn eventually [check n d]
+(defn eventually [check n ^long d]
   (loop [i n]
     (if (check)
       true
@@ -30,9 +31,9 @@
                 {:filename "foo.txt"
                  :content-type "text/plain"
                  :stream (string-input-stream "foo")})]
-    (is (.exists (:tempfile result)))
+    (is (.exists ^File (:tempfile result)))
     (Thread/sleep 2000)
-    (let [deleted? (eventually #(not (.exists (:tempfile result))) 120 250)]
+    (let [deleted? (eventually #(not (.exists ^File (:tempfile result))) 120 250)]
       (is deleted?))))
 
 (defn all-threads []
