@@ -1,3 +1,7 @@
+## 1.15.3 (2025-09-24)
+
+* Fixed reflection warnings in `ring.adapter.jetty`
+
 ## 1.15.2 (2025-09-16)
 
 * Fixed reflection warnings in `ring.core.protocols`
