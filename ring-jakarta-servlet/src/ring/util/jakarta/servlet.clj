@@ -129,9 +129,9 @@
 
 (defn servlet
   "Create a servlet from a Ring handler."
-  ([handler]
+  (^HttpServlet [handler]
    (servlet handler {}))
-  ([handler options]
+  (^HttpServlet [handler options]
    (let [service-method (make-service-method handler options)]
      (proxy [HttpServlet] []
        (service [request response]

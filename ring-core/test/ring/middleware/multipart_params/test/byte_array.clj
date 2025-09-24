@@ -11,4 +11,4 @@
                  :stream (string-input-stream "foo")})]
     (is (= (:filename result) "foo.txt"))
     (is (= (:content-type result) "text/plain"))
-    (is (= (String. (:bytes result)) "foo"))))
+    (is (= (String. ^bytes (:bytes result)) "foo"))))

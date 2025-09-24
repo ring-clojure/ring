@@ -4,6 +4,7 @@
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
+  :managed-dependencies [[org.clojure/tools.reader "1.5.2"]]
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [ring/ring-core "1.15.2"]
                  [hiccup "2.0.0"]
@@ -13,4 +14,5 @@
   :profiles
   {:1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
    :1.11 {:dependencies [[org.clojure/clojure "1.11.4"]]}
-   :1.12 {:dependencies [[org.clojure/clojure "1.12.1"]]}})
+   :1.12 {:dependencies [[org.clojure/clojure "1.12.1"]]}}
+  :global-vars {*warn-on-reflection* true})

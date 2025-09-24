@@ -15,10 +15,11 @@
   "Lets us use a known file modification time for tests, without permanently changing
    the file's modification time."
   [[file new-time] form]
-  `(let [old-time# (.lastModified ~file)]
-     (.setLastModified ~file ~(* new-time 1000))
-     (try ~form
-          (finally (.setLastModified ~file old-time#)))))
+  (let [file (vary-meta file assoc :tag `File)]
+    `(let [old-time# (.lastModified ~file)]
+       (.setLastModified ~file ~(* new-time 1000))
+       (try ~form
+         (finally (.setLastModified ~file old-time#))))))
 
 (def custom-type-app
   (wrap-file-info

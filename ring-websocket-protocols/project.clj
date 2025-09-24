@@ -6,4 +6,5 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies []
   :profiles
-  {:dev {:dependencies [[org.clojure/clojure "1.9.0"]]}})
+  {:dev {:dependencies [[org.clojure/clojure "1.9.0"]]}}
+  :global-vars {*warn-on-reflection* true})

@@ -24,7 +24,7 @@
 (deftest resource-loader-test
   (let [root-loader (->> (Thread/currentThread)
                          .getContextClassLoader
-                         (iterate (memfn getParent))
+                         (iterate (memfn ^ClassLoader getParent))
                          (take-while identity)
                          last)
         jarfile     (io/file "test/resource.jar")
