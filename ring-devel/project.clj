@@ -4,6 +4,7 @@
   :scm {:dir ".."}
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
+  :managed-dependencies [[org.clojure/tools.reader "1.5.2"]]
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [ring/ring-core "1.15.2"]
                  [hiccup "2.0.0"]
