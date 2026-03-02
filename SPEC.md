@@ -27,7 +27,7 @@ response map.
 
 ### 1.2. Middleware
 
-Ring middlware augment the functionality of handlers. Middleware is
+Ring middleware augment the functionality of handlers. Middleware is
 implemented as higher-order functions that take one or more handlers
 and configuration options as arguments and return a new handler with
 the desired additional behavior.
