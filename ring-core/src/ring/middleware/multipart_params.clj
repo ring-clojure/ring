@@ -30,7 +30,7 @@
 
 (defn- file-upload [request {:keys [progress-fn max-file-size]}]
   (doto (proxy [AbstractFileUpload] [])
-    (.setFileSizeMax (or max-file-size -1))
+    (.setMaxFileSize (or max-file-size -1))
     (set-progress-listener request progress-fn)))
 
 (defn- multipart-form? [request]
