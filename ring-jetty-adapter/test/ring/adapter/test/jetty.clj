@@ -816,8 +816,8 @@
                       (on-close [_ _ _ _])
                       wsp/PingListener
                       (on-ping [_ sock data]
-                        (ws/pong sock data)
-                        (swap! log conj [:ping (buf->str data)])))})]
+                        (swap! log conj [:ping (buf->str (.duplicate data))])
+                        (ws/pong sock data)))})]
       (with-server handler {:port test-port}
         (let [ws @(hato/websocket test-websocket-url
                                   {:on-pong
