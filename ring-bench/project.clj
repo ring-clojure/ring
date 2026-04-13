@@ -5,7 +5,7 @@
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [jmh-clojure "0.4.0"]
+                 [jmh-clojure "0.4.1"]
                  [ring/ring-jetty-adapter "1.15.3"]
                  [ring/ring-servlet "1.15.3"]]
   :jvm-opts {}

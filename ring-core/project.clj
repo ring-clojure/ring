@@ -8,7 +8,7 @@
                  [org.ring-clojure/ring-core-protocols "1.15.3"]
                  [org.ring-clojure/ring-websocket-protocols "1.15.3"]
                  [ring/ring-codec "1.3.0"]
-                 [commons-io "2.20.0"]
+                 [commons-io "2.21.0"]
                  [org.apache.commons/commons-fileupload2-core "2.0.0-M5"]
                  [crypto-random "1.2.1"]
                  [crypto-equality "1.0.1"]]
@@ -17,5 +17,5 @@
   {:dev  {:dependencies [[clj-time "0.15.2"]]}
    :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
    :1.11 {:dependencies [[org.clojure/clojure "1.11.4"]]}
-   :1.12 {:dependencies [[org.clojure/clojure "1.12.1"]]}}
+   :1.12 {:dependencies [[org.clojure/clojure "1.12.4"]]}}
   :global-vars {*warn-on-reflection* true})
