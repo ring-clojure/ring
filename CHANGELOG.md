@@ -1,3 +1,9 @@
+## 1.15.4 (2026-04-13)
+
+* Updated Apache Commons FileUpload to 2.0.0-M5 (#551)
+* Updated Jetty to 12.1.8 (#552)
+* Updated Apache Commons IO to 2.21.0
+
 ## 1.15.3 (2025-09-24)
 
 * Fixed reflection warnings in `ring.adapter.jetty`
