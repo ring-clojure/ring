@@ -147,9 +147,12 @@
     (let [body (:body (resource-response "ring/util/response.clj"))]
       (is (instance? File body))
       (is (.startsWith (slurp body) "(ns ring.util.response")))
-    (let [body (:body (resource-response "clojure/java/io.clj"))]
+    (let [resource-path
+            (str "META-INF/maven/org.ring-clojure/"
+                 "ring-core-protocols/pom.properties")
+          body (:body (resource-response resource-path))]
       (is (instance? InputStream body))
-      (is (.contains (slurp body) "clojure.java.io"))))
+      (is (.contains (slurp body) "artifactId=ring-core-protocols")))
 
   (testing "resource is a directory"
     (is (nil? (resource-response "/ring/assets"))))
