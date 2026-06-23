@@ -1,3 +1,7 @@
+## 1.15.5 (2026-06-23)
+
+* Fixed ReDoS attack vector in `wrap-nested-params` middleware
+
 ## 1.15.4 (2026-04-13)
 
 * Updated Apache Commons FileUpload to 2.0.0-M5 (#551)
