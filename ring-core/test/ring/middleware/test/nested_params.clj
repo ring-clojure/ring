@@ -71,3 +71,14 @@
 
 (deftest nested-params-request-test
   (is (fn? nested-params-request)))
+
+(deftest parse-nested-keys-linear-test
+  (testing "nested parameter names parse in linear time"
+    (let [open   (apply str (repeat 200000 "["))
+          pairs  (str "x" (apply str (repeat 100000 "[]")))
+          result (deref (future [(parse-nested-keys open)
+                                 (parse-nested-keys pairs)])
+                        5000 ::timeout)]
+      (is (not= ::timeout result) "must complete well within the deadline")
+      (is (= (list open) (first result)))
+      (is (= (cons "x" (repeat 100000 "")) (second result))))))

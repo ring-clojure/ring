@@ -11,9 +11,10 @@
     \"foo[bar][][baz]\"
     => [\"foo\" \"bar\" \"\" \"baz\"]"
   [param-name]
-  (let [[_ k ks] (re-matches #"(?s)(.*?)((?:\[.*?\])*)" (name param-name))
-        keys     (when ks (map second (re-seq #"\[(.*?)\]" ks)))]
-    (cons k keys)))
+  (if-some [[_ k ks] (re-matches #"(?s)([^\[\]]*)(\[.*\])?" (name param-name))]
+    (let [keys (when ks (map second (re-seq #"\[([^\[\]]*)\]" ks)))]
+      (cons k keys))
+    (list param-name)))
 
 (defn- assoc-vec [m k v]
   (let [m (if (contains? m k) m (assoc m k []))]
