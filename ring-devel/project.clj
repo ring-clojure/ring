@@ -14,5 +14,5 @@
   :profiles
   {:1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
    :1.11 {:dependencies [[org.clojure/clojure "1.11.4"]]}
-   :1.12 {:dependencies [[org.clojure/clojure "1.12.4"]]}}
+   :1.12 {:dependencies [[org.clojure/clojure "1.12.6"]]}}
   :global-vars {*warn-on-reflection* true})
