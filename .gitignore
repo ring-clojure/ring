@@ -5,6 +5,7 @@ ring.jar
 ring-standalone.jar
 pom.xml
 pom.xml.asc
+pom.xml.sig
 autodoc
 .lein-failures
 codox
