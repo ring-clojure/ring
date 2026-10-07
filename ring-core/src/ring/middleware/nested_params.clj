@@ -67,7 +67,7 @@
      (update-in request [:params] nest-params parse))))
 
 (defn wrap-nested-params
-  "Middleware to converts a flat map of parameters into a nested map.
+  "Middleware to convert a flat map of parameters into a nested map.
   Accepts the following options:
 
   :key-parser - the function to use to parse the parameter names into a list
