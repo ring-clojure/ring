@@ -1,3 +1,8 @@
+## 1.15.6 (2026-10-19)
+
+* Updated Jetty to 12.1.14
+* Updated Apache Commons IO to 2.22.0
+
 ## 1.15.5 (2026-06-23)
 
 * Fixed ReDoS attack vector in `wrap-nested-params` middleware
