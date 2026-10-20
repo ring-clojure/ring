@@ -10,7 +10,7 @@
        "://"
        (get-in request [:headers "host"])
        (:uri request)
-       (when-let [query (:query-string request)]
+       (when-let [query (not-empty (:query-string request))]
          (str "?" query))))
 
 (defn content-type

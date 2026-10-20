@@ -17,6 +17,11 @@
   (is (= (request-url {:scheme :https
                        :uri "/index.html"
                        :headers {"host" "www.example.com"}})
+         "https://www.example.com/index.html"))
+  (is (= (request-url {:scheme :https
+                       :uri "/index.html"
+                       :headers {"host" "www.example.com"}
+                       :query-string ""})
          "https://www.example.com/index.html")))
 
 (deftest test-content-type
